@@ -1,0 +1,68 @@
+<svg width="600" height="350" viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dark metallic gradient for A with texture effect -->
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5a5a5a;stop-opacity:1" />
+      <stop offset="25%" style="stop-color:#3d3d3d;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#242424;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#333333;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4a4a4a;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Blue gradient for S -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5cb3ff;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#3399ff;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#1e90ff;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#0077cc;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#005999;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0a3d62;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Text gradient from dark to blue -->
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1a2a3c;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0d476e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e90ff;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Drop shadow -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- AS Monogram - Combined Design -->
+  <g transform="translate(150, 50)" filter="url(#shadow)">
+    
+    <!-- Letter A - Dark Metallic (Background letter) -->
+    <path d="M 100 180 L 45 50 L 72 50 L 100 115 L 128 50 L 155 50 L 100 180 Z" 
+          fill="url(#metalGrad)"/>
+    
+    <!-- A inner triangle cutout -->
+    
+    <!-- Letter S - Blue (Foreground, overlapping A) -->
+    <path d="M 160 80 C 160 45, 125 30, 95 45 C 75 55, 72 85, 90 100 C 108 115, 150 105, 150 145 C 150 180, 110 195, 80 180 C 62 171, 58 145, 72 125" 
+          fill="none" 
+          stroke="url(#blueGrad)" 
+          stroke-width="28" 
+          stroke-linecap="round"/>
+    
+    <!-- S filled version for solid appearance -->
+    <path d="M 155 80 C 155 48, 126 35, 100 48 C 82 57, 80 82, 95 95 C 110 108, 145 98, 145 145 C 145 175, 112 188, 85 175 C 70 168, 68 148, 78 130" 
+          fill="url(#blueGrad)"/>
+    
+    <!-- Small triangle accent next to S -->
+    <path d="M 165 175 L 185 175 L 175 195 Z" fill="url(#metalGrad)"/>
+  </g>
+  
+  <!-- Text "AUTO SYNEX" -->
+  <text x="300" y="280" 
+        font-family="Arial, Helvetica, sans-serif" 
+        font-size="56" 
+        font-weight="900" 
+        letter-spacing="2"
+        text-anchor="middle" 
+        fill="url(#textGrad)"
+        filter="url(#shadow)">AUTO SYNEX</text>
+</svg>
