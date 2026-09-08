@@ -1,0 +1,100 @@
+export interface Offer {
+  readonly id: string;
+  readonly name: string;
+  readonly tagline: string;
+  readonly description: string;
+  readonly points: readonly string[];
+  readonly icon: string;
+  readonly featured?: boolean;
+}
+
+/**
+ * Agency-level configuration for the demo selector at `/`.
+ *
+ * Rename `brandName`, swap the contact details and the offer copy — the landing
+ * page reads everything from here.
+ */
+export const siteConfig = {
+  brandName: 'Auto Synex',
+  tagline: 'Websites, booking systems and dashboards for businesses that take reservations.',
+  metaTitle: 'Auto Synex — Interactive Website & Booking System Demos',
+  metaDescription:
+    'Five fully interactive demo websites with real booking flows and business dashboards — for clinics, dental practices, salons, hotels and restaurants.',
+  email: 'hello@autosynex.com',
+  phone: '+1 (415) 555-0110',
+
+  hero: {
+    kicker: 'Interactive demos — not screenshots',
+    headline: ['Your business,', 'already built.'],
+    lead: 'Five complete websites you can click through right now. Real booking flows, real availability logic, real dashboards. Pick the one closest to your business and try it as if it were yours.',
+    stats: [
+      { value: '5', label: 'Live industry demos' },
+      { value: '3', label: 'Products per demo' },
+      { value: '100%', label: 'Interactive, no mockups' },
+    ],
+  },
+
+  offers: [
+    {
+      id: 'website',
+      name: 'Website',
+      tagline: 'The storefront',
+      description:
+        'A custom, animated, fully responsive site built around your brand — not a template with your logo dropped in.',
+      points: [
+        'Bespoke design and art direction',
+        'Motion built in, not bolted on',
+        'Mobile-first, fast on real phones',
+        'SEO structure and metadata',
+        'Content you can edit yourself',
+      ],
+      icon: 'palette',
+    },
+    {
+      id: 'booking',
+      name: 'Booking System',
+      tagline: 'The engine',
+      description:
+        'Real availability logic: working hours, staff rotas, service durations, double-booking prevention and confirmations.',
+      points: [
+        'Multi-step booking flow',
+        'Working hours & break handling',
+        'Per-staff availability',
+        'Double-booking prevention',
+        'Email / SMS confirmations',
+      ],
+      icon: 'calendar',
+      featured: true,
+    },
+    {
+      id: 'complete',
+      name: 'Website + Booking + Dashboard',
+      tagline: 'The whole operation',
+      description:
+        'Everything above plus the back office: appointments, calendar, customers, staff, services and revenue in one place.',
+      points: [
+        'Everything in Website + Booking',
+        'Operations dashboard',
+        'Calendar and appointment table',
+        'Customer and staff records',
+        'Revenue and occupancy reporting',
+      ],
+      icon: 'building',
+    },
+  ] as readonly Offer[],
+
+  capabilities: [
+    { icon: 'zap', title: 'Fast by default', text: 'Server-rendered, image-optimised, and tuned for mobile networks.' },
+    { icon: 'calendar', title: 'Booking that holds up', text: 'Hours, breaks, lead times and staff rotas — handled properly.' },
+    { icon: 'sparkles', title: 'Motion with restraint', text: 'Animation that signals quality without getting in the way.' },
+    { icon: 'shield', title: 'Built to be maintained', text: 'Config-driven content, typed end to end, easy to hand over.' },
+  ],
+
+  process: [
+    { title: 'Pick a direction', text: 'Start from the demo closest to your business, or start from a blank page.' },
+    { title: 'We adapt it to you', text: 'Your brand, services, staff, hours and pricing — usually inside a week.' },
+    { title: 'You go live', text: 'Deployed, measured and handed over with everything you need to run it.' },
+  ],
+} as const;
+
+export type SiteConfig = typeof siteConfig;

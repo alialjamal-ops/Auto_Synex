@@ -1,0 +1,253 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/*                                                                     */
+/* Every colour is a CSS variable. The agency landing page uses the     */
+/* defaults below; each demo layout overrides the same variables inline */
+/* from its config, so one component tree renders five identities.      */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --brand: #2e6fd0;
+  --brand-soft: rgba(46, 111, 208, 0.16);
+  --brand-contrast: #ffffff;
+  --accent: #5b9be8;
+  --bg: #07080a;
+  --surface: #101115;
+  --surface-alt: #17181d;
+  --ink: #f4f5f7;
+  --ink-muted: #8d939d;
+  --line: rgba(244, 245, 247, 0.12);
+  --radius: 12px;
+  --radius-lg: 24px;
+  --display-font: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --body-font: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --nav-height: 72px;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-contrast: var(--brand-contrast);
+  --color-accent: var(--accent);
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-line: var(--line);
+
+  --radius-brand: var(--radius);
+  --radius-brand-lg: var(--radius-lg);
+
+  --font-display: var(--display-font);
+  --font-body: var(--body-font);
+
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Anchor links must clear the fixed navbar. */
+    scroll-padding-top: calc(var(--nav-height) + 24px);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--body-font);
+    /* Nothing in this project may scroll sideways. */
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--brand);
+    color: var(--brand-contrast);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--display-font);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Utilities                                                           */
+/* ------------------------------------------------------------------ */
+
+@utility container-x {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 84rem;
+  padding-inline: 1.25rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 2rem;
+  }
+
+  @media (width >= 80rem) {
+    padding-inline: 2.5rem;
+  }
+}
+
+@utility hairline {
+  border-top: 1px solid var(--line);
+}
+
+/* ------------------------------------------------------------------ */
+/* Display-type personality                                            */
+/*                                                                     */
+/* Each demo root carries data-display="tight|airy|italic|caps" from    */
+/* its theme tokens; headings inherit the matching treatment.           */
+/* ------------------------------------------------------------------ */
+
+[data-display='tight'] :is(h1, h2, h3, .font-display) {
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-weight: 700;
+}
+
+[data-display='airy'] :is(h1, h2, h3, .font-display) {
+  letter-spacing: -0.005em;
+  line-height: 1.06;
+  font-weight: 400;
+}
+
+[data-display='italic'] :is(h1, h2, h3, .font-display) {
+  font-style: italic;
+  letter-spacing: -0.015em;
+  line-height: 0.98;
+  font-weight: 300;
+}
+
+[data-display='caps'] :is(h1, h2, h3, .font-display) {
+  letter-spacing: 0.01em;
+  line-height: 1.02;
+  font-weight: 600;
+}
+
+/* Only the big headings shout; item names stay readable. */
+[data-display='caps'] :is(h1, h2) {
+  text-transform: uppercase;
+}
+
+@utility glass {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/** Subtle film grain used on dark hero imagery. */
+@utility grain {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.16;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/** Image placeholder while a remote photo decodes. */
+@utility media-skeleton {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--surface-alt) 90%, transparent),
+    color-mix(in srgb, var(--line) 60%, transparent),
+    color-mix(in srgb, var(--surface-alt) 90%, transparent)
+  );
+}
