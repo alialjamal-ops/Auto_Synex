@@ -40,17 +40,22 @@ prices, images, ids and booking rules can never drift from the English config.
 
 ## Deploying it
 
-On Vercel, create a **second project** from this same repository:
+The demos run as their own Vercel project, built from the `demos/` folder of
+this repository. Two settings are all it needs:
 
-1. vercel.com → **Add New → Project** → import `alialjamal-ops/Auto_Synex`
-2. Open **Root Directory** and set it to **`demos`**
-3. Framework preset: **Next.js** (auto-detected once the root directory is set)
-4. Add one environment variable: `NEXT_PUBLIC_BASE_PATH` = `/demos`
-5. **Deploy**
+1. **Settings → Git** → connect `alialjamal-ops/Auto_Synex`
+2. **Settings → General → Root Directory** → `demos`
 
-The base path makes Next prefix every route, asset and link with `/demos`, which
-is what lets the main site proxy the demos onto its own domain (below). Without
-it the demos still work, they just serve from the root.
+That's it — no environment variables. `.env.production` in this folder already
+sets `NEXT_PUBLIC_BASE_PATH=/demos`, so Next prefixes every route, asset and
+link with `/demos`, which is what lets the main site proxy the demos onto its
+own domain (below). Delete that file to serve them from the root instead.
+
+Once Git is connected, every push to `main` redeploys automatically and nothing
+above ever has to be repeated.
+
+If you are starting from scratch instead: vercel.com → **Add New → Project** →
+import the repository → set Root Directory to `demos` → **Deploy**.
 
 The main site keeps deploying from the repository root exactly as before; the
 two projects live side by side.

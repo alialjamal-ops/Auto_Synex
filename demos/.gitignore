@@ -42,3 +42,6 @@ next-env.d.ts
 
 # build artefacts
 tsconfig.tsbuildinfo
+
+# The public base path is deployment config, not a secret.
+!.env.production
