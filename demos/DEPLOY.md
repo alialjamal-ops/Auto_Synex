@@ -90,8 +90,8 @@ repository root proxies them:
 ```json
 {
   "rewrites": [
-    { "source": "/demos", "destination": "https://autosynex-templates.vercel.app/demos" },
-    { "source": "/demos/:path*", "destination": "https://autosynex-templates.vercel.app/demos/:path*" }
+    { "source": "/demos", "destination": "https://auto-synex-demos.vercel.app/demos" },
+    { "source": "/demos/:path*", "destination": "https://auto-synex-demos.vercel.app/demos/:path*" }
   ]
 }
 ```
@@ -123,9 +123,11 @@ which restores any missing photo or font and skips whatever is already on disk.
 
 1. **`src/` is missing from this repository.** `index.html` loads
    `/src/main.tsx`, but the folder is not committed — only the built
-   `dist/index.html`. The repo cannot be rebuilt from source as it stands.
-   Committing `src/` would fix that and would also let the Templates section
-   above be wired in directly.
+   `dist/index.html`, which is self-contained (inline JS and CSS). `vite build`
+   therefore fails, which is why the root-directory projects were failing.
+   `vercel.json` now skips the build and serves `dist/` directly, so they
+   deploy again. Committing `src/` would restore real builds and would also let
+   the Templates section above be wired in directly.
 
 2. **`public/assets/logo.svg` is broken.** It draws the S as two overlapping
    paths (which renders as a solid blue blob) and the A as an inverted V that

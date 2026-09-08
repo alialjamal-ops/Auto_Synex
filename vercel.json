@@ -1,13 +1,19 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "echo 'No build: this repository ships the prebuilt dist/. See DEPLOY.md.'",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/demos",
-      "destination": "https://autosynex-templates.vercel.app/demos"
+      "destination": "https://auto-synex-demos.vercel.app/demos"
     },
     {
       "source": "/demos/:path*",
-      "destination": "https://autosynex-templates.vercel.app/demos/:path*"
+      "destination": "https://auto-synex-demos.vercel.app/demos/:path*"
+    },
+    {
+      "source": "/((?!assets/).*)",
+      "destination": "/index.html"
     }
   ]
 }
