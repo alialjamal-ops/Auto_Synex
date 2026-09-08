@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useMemo, useState } from 'react';
+import { useLocale } from '@/hooks/use-locale';
 import { EASE } from '@/components/animations/motion-primitives';
 import { Calendar } from '@/components/booking/calendar';
 import { Field, TextField } from '@/components/booking/field';
@@ -41,6 +42,7 @@ import {
   formatTime,
 } from '@/lib/date';
 import { formatDuration, formatMoney } from '@/lib/format';
+import type { Locale, Ui } from '@/config/i18n';
 import type { BookingStepId, DemoConfig } from '@/types/demo';
 
 interface BookingFlowProps {
@@ -61,6 +63,7 @@ export function BookingFlow({
   initialStaffId,
 }: BookingFlowProps) {
   const { bookings, addBooking } = useBookings();
+  const { ui, locale, rtl } = useLocale();
   const { booking: settings } = config;
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -243,9 +246,7 @@ export function BookingFlow({
       );
       if (!stillOpen) {
         setStatus('error');
-        setFailure(
-          'That time was taken while you were filling in your details. Please choose another slot.',
-        );
+        setFailure(ui.booking.slotTaken);
         return;
       }
     }
@@ -301,7 +302,7 @@ export function BookingFlow({
     time: settings.labels.time,
     guests: settings.labels.guests,
     details: settings.labels.customer,
-    confirm: 'Confirmation',
+    confirm: ui.booking.confirmation,
   };
 
   if (status === 'success' && confirmed) {
@@ -323,10 +324,11 @@ export function BookingFlow({
               transition={{ duration: 0.32, ease: EASE }}
             >
               <StepHeader
+                ui={ui}
                 index={stepIndex}
                 total={steps.length}
-                title={headingFor(currentStep, settings.labels)}
-                subtitle={subtitleFor(currentStep, config, draft)}
+                title={headingFor(currentStep, settings.labels, ui)}
+                subtitle={subtitleFor(currentStep, config, draft, ui, locale)}
               />
 
               <div className="mt-6">
@@ -344,7 +346,7 @@ export function BookingFlow({
                     staff={eligibleStaff}
                     value={draft.staffId}
                     onChange={(id) => patch({ staffId: id, time: null })}
-                    anyLabel={`Any available ${settings.labels.staff.toLowerCase()}`}
+                    anyLabel={`${ui.booking.anyAvailable} · ${settings.labels.staff}`}
                   />
                 ) : null}
 
@@ -363,10 +365,10 @@ export function BookingFlow({
                     {settings.dateMode === 'range' ? (
                       <p className="mt-4 rounded-brand bg-[color:var(--brand-soft)] px-4 py-3 text-[13px] text-brand">
                         {!draft.date
-                          ? 'Select your check-in date.'
+                          ? ui.booking.selectCheckIn
                           : !draft.endDate
-                            ? 'Now select your check-out date.'
-                            : `${formatDayShort(draft.date)} → ${formatDayShort(draft.endDate)} · ${nights} night${nights > 1 ? 's' : ''}`}
+                            ? ui.booking.selectCheckOut
+                            : `${formatDayShort(draft.date, locale)} → ${formatDayShort(draft.endDate, locale)} · ${nights} ${nights > 1 ? ui.common.nights : ui.common.night}`}
                       </p>
                     ) : null}
                   </div>
@@ -394,37 +396,37 @@ export function BookingFlow({
                 {currentStep === 'details' ? (
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field
-                      label="Full name"
+                      label={ui.booking.fullName}
                       required
                       autoComplete="name"
-                      placeholder="Alex Moreau"
+                      placeholder={ui.booking.namePlaceholder}
                       value={draft.name}
-                      error={errors.name}
+                      error={errors.name ? ui.booking.errors[errors.name] : undefined}
                       onChange={(event) => patch({ name: event.target.value })}
                     />
                     <Field
-                      label="Phone"
+                      label={ui.booking.phoneField}
                       required
                       type="tel"
                       autoComplete="tel"
-                      placeholder="+1 415 555 0142"
+                      placeholder={ui.booking.phonePlaceholder}
                       value={draft.phone}
-                      error={errors.phone}
+                      error={errors.phone ? ui.booking.errors[errors.phone] : undefined}
                       onChange={(event) => patch({ phone: event.target.value })}
                     />
                     <Field
-                      label="Email"
+                      label={ui.booking.emailField}
                       required
                       type="email"
                       autoComplete="email"
-                      placeholder="alex@example.com"
+                      placeholder={ui.booking.emailPlaceholder}
                       className="sm:col-span-2"
                       value={draft.email}
-                      error={errors.email}
+                      error={errors.email ? ui.booking.errors[errors.email] : undefined}
                       onChange={(event) => patch({ email: event.target.value })}
                     />
                     <TextField
-                      label="Notes (optional)"
+                      label={ui.booking.notesOptional}
                       className="sm:col-span-2"
                       placeholder={settings.notesPlaceholder}
                       value={draft.notes}
@@ -457,7 +459,7 @@ export function BookingFlow({
                   className="mt-2 inline-flex items-center gap-1.5 font-medium underline underline-offset-4"
                 >
                   <RotateCcw className="size-3.5" />
-                  Choose another time
+                  {ui.booking.chooseAnotherTime}
                 </button>
               </div>
             </motion.div>
@@ -470,8 +472,8 @@ export function BookingFlow({
               disabled={stepIndex === 0}
               className="inline-flex items-center gap-2 text-[13px] text-muted transition-colors enabled:hover:text-ink disabled:opacity-35"
             >
-              <ArrowLeft className="size-4" />
-              Back
+              <ArrowLeft className={cn('size-4', rtl && 'rotate-180')} />
+              {ui.booking.back}
             </button>
 
             {currentStep === 'details' ? (
@@ -479,19 +481,19 @@ export function BookingFlow({
                 {status === 'submitting' ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    Confirming…
+                    {ui.booking.confirming}
                   </>
                 ) : (
                   <>
                     {settings.labels.submit}
-                    <ArrowRight className="size-4" />
+                    <ArrowRight className={cn('size-4', rtl && 'rotate-180')} />
                   </>
                 )}
               </Button>
             ) : (
               <Button size="lg" onClick={goNext} disabled={!canAdvance(currentStep)}>
-                Continue
-                <ArrowRight className="size-4" />
+                {ui.booking.continue}
+                <ArrowRight className={cn('size-4', rtl && 'rotate-180')} />
               </Button>
             )}
           </div>
@@ -504,7 +506,7 @@ export function BookingFlow({
             config={config}
             draft={draft}
             serviceName={service?.name ?? null}
-            staffName={staffMember?.name ?? (draft.staffId === 'any' ? 'Any available' : null)}
+            staffName={staffMember?.name ?? (draft.staffId === 'any' ? ui.booking.anyAvailable : null)}
             durationMin={durationMin}
             nights={nights}
             total={total}
@@ -519,16 +521,20 @@ export function BookingFlow({
 /* Sub-components                                                      */
 /* ------------------------------------------------------------------ */
 
-function headingFor(step: BookingStepId, labels: DemoConfig['booking']['labels']): string {
+function headingFor(
+  step: BookingStepId,
+  labels: DemoConfig['booking']['labels'],
+  ui: Ui,
+): string {
   switch (step) {
     case 'service':
       return labels.servicePlural;
     case 'staff':
       return labels.staffPlural;
     case 'date':
-      return `Select your ${labels.date.toLowerCase()}`;
+      return `${ui.booking.selectYour} ${labels.date}`;
     case 'time':
-      return `Select a ${labels.time.toLowerCase()}`;
+      return `${ui.booking.selectA} ${labels.time}`;
     case 'guests':
       return labels.guests;
     case 'details':
@@ -538,22 +544,28 @@ function headingFor(step: BookingStepId, labels: DemoConfig['booking']['labels']
   }
 }
 
-function subtitleFor(step: BookingStepId, config: DemoConfig, draft: BookingDraft): string {
+function subtitleFor(
+  step: BookingStepId,
+  config: DemoConfig,
+  draft: BookingDraft,
+  ui: Ui,
+  locale: Locale,
+): string {
   switch (step) {
     case 'service':
-      return 'Prices include everything shown — nothing is added afterwards.';
+      return ui.booking.pricesInclude;
     case 'staff':
-      return 'Availability updates instantly for the person you choose.';
+      return ui.booking.availabilityUpdates;
     case 'date':
       return config.booking.dateMode === 'range'
-        ? 'Closed days and unavailable dates are greyed out.'
-        : 'Greyed-out days are closed or fully booked.';
+        ? ui.booking.greyedOutRange
+        : ui.booking.greyedOut;
     case 'time':
-      return draft.date ? formatDayLong(draft.date) : '';
+      return draft.date ? formatDayLong(draft.date, locale) : '';
     case 'guests':
-      return 'We match the room or table to your party.';
+      return ui.booking.matchParty;
     case 'details':
-      return 'We only use this to confirm and remind you.';
+      return ui.booking.onlyToConfirm;
     default:
       return '';
   }
@@ -609,16 +621,18 @@ function StepHeader({
   total,
   title,
   subtitle,
+  ui,
 }: {
   index: number;
   total: number;
   title: string;
   subtitle: string;
+  ui: Ui;
 }) {
   return (
     <div>
       <p className="text-[11px] uppercase tracking-[0.2em] text-brand">
-        Step {index + 1} of {total}
+        {ui.booking.step} {index + 1} {ui.booking.of} {total}
       </p>
       <h2 className="mt-3 font-display text-[clamp(1.6rem,3.4vw,2.3rem)]">{title}</h2>
       {subtitle ? <p className="mt-2 text-sm text-muted">{subtitle}</p> : null}
@@ -643,6 +657,7 @@ function Summary({
   nights: number;
   total: number;
 }) {
+  const { ui, locale } = useLocale();
   const { labels, currencySymbol, mode } = config.booking;
 
   const rows: { label: string; value: string | null }[] = [
@@ -679,7 +694,7 @@ function Summary({
   return (
     <div className="overflow-hidden rounded-brand-lg border border-line bg-surface">
       <div className="border-b border-line px-6 py-5">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted">Your booking</p>
+        <p className="text-[11px] uppercase tracking-[0.18em] text-muted">{ui.booking.yourBooking}</p>
         <p className="mt-1.5 font-display text-lg">{config.businessName}</p>
       </div>
 
@@ -693,7 +708,7 @@ function Summary({
                 row.value ? 'text-ink' : 'text-muted/45',
               )}
             >
-              {row.value ?? 'Not selected'}
+              {row.value ?? ui.booking.notSelected}
             </dd>
           </div>
         ))}
@@ -702,7 +717,9 @@ function Summary({
       <div className="border-t border-line px-6 py-5">
         <div className="flex items-baseline justify-between">
           <span className="text-[13px] text-muted">
-            {mode === 'stay' && nights > 0 ? `Total · ${nights} night${nights > 1 ? 's' : ''}` : 'Estimated total'}
+            {mode === 'stay' && nights > 0
+              ? `${ui.booking.total} · ${nights} ${nights > 1 ? ui.common.nights : ui.common.night}`
+              : ui.booking.estimatedTotal}
           </span>
           <span className="font-display text-2xl">
             {total > 0 ? formatMoney(total, currencySymbol) : '—'}
@@ -710,10 +727,10 @@ function Summary({
         </div>
         {mode !== 'stay' && durationMin ? (
           <p className="mt-1.5 text-[12px] text-muted">
-            Duration {formatDuration(durationMin)} · payable at the venue
+            {ui.booking.duration} {formatDuration(durationMin, locale)} · {ui.booking.payableAtVenue}
           </p>
         ) : (
-          <p className="mt-1.5 text-[12px] text-muted">No card required · pay on arrival</p>
+          <p className="mt-1.5 text-[12px] text-muted">{ui.booking.noCardPayOnArrival}</p>
         )}
       </div>
     </div>
@@ -733,6 +750,7 @@ function Confirmation({
   config: DemoConfig;
   onRestart: () => void;
 }) {
+  const { ui, locale, href } = useLocale();
   const service = findService(config, booking.serviceId);
   const staffMember = findStaff(config, booking.staffId);
   const { labels, currencySymbol } = config.booking;
@@ -740,7 +758,7 @@ function Confirmation({
   const rows = [
     { label: labels.service, value: service?.name ?? '—' },
     ...(config.booking.steps.includes('staff')
-      ? [{ label: labels.staff, value: staffMember?.name ?? 'Any available' }]
+      ? [{ label: labels.staff, value: staffMember?.name ?? ui.booking.anyAvailable }]
       : []),
     {
       label: labels.date,
@@ -752,14 +770,14 @@ function Confirmation({
       ? [
           {
             label: labels.time,
-            value: `${formatTime(booking.time)} – ${formatTime(addMinutes(booking.time, service?.durationMin ?? 60))}`,
+            value: `${formatTime(booking.time, locale)} – ${formatTime(addMinutes(booking.time, service?.durationMin ?? 60), locale)}`,
           },
         ]
       : []),
     ...(booking.guests ? [{ label: labels.guests, value: String(booking.guests) }] : []),
-    { label: 'Reference', value: booking.reference },
-    { label: 'Name', value: booking.customer.name },
-    { label: 'Contact', value: `${booking.customer.phone} · ${booking.customer.email}` },
+    { label: ui.booking.reference, value: booking.reference },
+    { label: ui.booking.name, value: booking.customer.name },
+    { label: ui.booking.contact, value: `${booking.customer.phone} · ${booking.customer.email}` },
   ];
 
   const downloadIcs = () => {
@@ -825,7 +843,7 @@ function Confirmation({
           ))}
           {booking.price > 0 ? (
             <div className="flex items-baseline justify-between gap-4 bg-[color:var(--brand-soft)] px-6 py-4">
-              <dt className="text-[13px] text-brand">Total</dt>
+              <dt className="text-[13px] text-brand">{ui.booking.total}</dt>
               <dd className="font-display text-xl text-brand">
                 {formatMoney(booking.price, currencySymbol)}
               </dd>
@@ -836,21 +854,21 @@ function Confirmation({
         <div className="flex flex-col gap-3 border-t border-line p-6 sm:flex-row">
           <Button onClick={downloadIcs} variant="outline" className="flex-1">
             <CalendarPlus className="size-4" />
-            Add to calendar
+            {ui.booking.addToCalendar}
           </Button>
-          <Button href={`/${config.slug}/dashboard`} className="flex-1">
+          <Button href={href(`/${config.slug}/dashboard`)} className="flex-1">
             <LayoutDashboard className="size-4" />
-            See it in the dashboard
+            {ui.booking.seeInDashboard}
           </Button>
         </div>
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-muted">
         <button type="button" onClick={onRestart} className="hover:text-ink">
-          Make another booking
+          {ui.booking.bookAnother}
         </button>
-        <Link href={`/${config.slug}`} className="hover:text-ink">
-          Back to {config.businessName}
+        <Link href={href(`/${config.slug}`)} className="hover:text-ink">
+          {ui.booking.backTo} {config.businessName}
         </Link>
         <Link href="/" className="hover:text-ink">
           All demos

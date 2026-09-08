@@ -7,6 +7,7 @@ import { ImageReveal } from '@/components/animations/image-reveal';
 import { EASE, Reveal, Stagger, StaggerItem } from '@/components/animations/motion-primitives';
 import { SectionHeading, SectionShell } from '@/components/ui/primitives';
 import { SmartImage } from '@/components/ui/smart-image';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import type { BeforeAfterSection, GalleryItem, GallerySection } from '@/types/demo';
 
@@ -15,6 +16,7 @@ import type { BeforeAfterSection, GalleryItem, GallerySection } from '@/types/de
 /* ------------------------------------------------------------------ */
 
 export function Gallery({ section }: { section: GallerySection }) {
+  const { ui, rtl } = useLocale();
   const [active, setActive] = useState<number | null>(null);
 
   const close = useCallback(() => setActive(null), []);
@@ -107,13 +109,13 @@ export function Gallery({ section }: { section: GallerySection }) {
             className="fixed inset-0 z-[70] flex items-center justify-center bg-black/92 p-4"
             role="dialog"
             aria-modal="true"
-            aria-label="Gallery image"
+            aria-label={ui.common.galleryImage}
           >
             <button
               type="button"
               onClick={close}
               className="absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10"
-              aria-label="Close gallery"
+              aria-label={ui.common.closeGallery}
             >
               <X className="size-5" />
             </button>
@@ -121,17 +123,17 @@ export function Gallery({ section }: { section: GallerySection }) {
               type="button"
               onClick={() => step(-1)}
               className="absolute left-3 grid size-11 place-items-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 sm:left-6"
-              aria-label="Previous image"
+              aria-label={ui.common.previousImage}
             >
-              <ChevronLeft className="size-5" />
+              <ChevronLeft className={cn('size-5', rtl && 'rotate-180')} />
             </button>
             <button
               type="button"
               onClick={() => step(1)}
               className="absolute right-3 grid size-11 place-items-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 sm:right-6"
-              aria-label="Next image"
+              aria-label={ui.common.nextImage}
             >
-              <ChevronRight className="size-5" />
+              <ChevronRight className={cn('size-5', rtl && 'rotate-180')} />
             </button>
 
             <motion.figure
@@ -220,6 +222,7 @@ function GalleryTile({
 /* ------------------------------------------------------------------ */
 
 export function BeforeAfter({ section }: { section: BeforeAfterSection }) {
+  const { ui } = useLocale();
   const [index, setIndex] = useState(0);
   const item = section.items[index]!;
 
@@ -261,23 +264,23 @@ export function BeforeAfter({ section }: { section: BeforeAfterSection }) {
           <p className="mt-3 text-sm text-muted">{item.note}</p>
           <dl className="mt-7 space-y-4 border-t border-line pt-6 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">Treatment</dt>
+              <dt className="text-muted">{ui.common.treatment}</dt>
               <dd>{item.title.split('·')[0]?.trim()}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">Timeline</dt>
+              <dt className="text-muted">{ui.common.timeline}</dt>
               <dd>{item.note}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">Case</dt>
+              <dt className="text-muted">{ui.common.caseLabel}</dt>
               <dd>
-                {index + 1} of {section.items.length}
+                {index + 1} / {section.items.length}
               </dd>
             </div>
           </dl>
           <p className="mt-6 flex items-center gap-2 text-[12px] text-muted">
             <MoveHorizontal className="size-4 text-brand" />
-            Drag the handle to compare
+            {ui.booking.dragToCompare}
           </p>
         </div>
       </div>
@@ -294,6 +297,7 @@ function CompareSlider({
   after: GalleryItem['image'];
   label: string;
 }) {
+  const { ui } = useLocale();
   const [position, setPosition] = useState(50);
   const ref = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -347,10 +351,10 @@ function CompareSlider({
       </div>
 
       <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-white backdrop-blur">
-        Before
+        {ui.common.before}
       </span>
       <span className="pointer-events-none absolute right-4 top-4 rounded-full bg-brand px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-[color:var(--brand-contrast)]">
-        After
+        {ui.common.after}
       </span>
 
       <div

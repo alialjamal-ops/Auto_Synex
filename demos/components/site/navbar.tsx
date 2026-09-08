@@ -5,14 +5,17 @@ import { Menu, Phone, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EASE } from '@/components/animations/motion-primitives';
-import { Button, ButtonArrow } from '@/components/ui/button';
+import { LanguageToggle } from '@/components/site/language-toggle';
 import { DemoLogo } from '@/components/site/logo';
+import { Button, ButtonArrow } from '@/components/ui/button';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import type { DemoConfig } from '@/types/demo';
 
 export function Navbar({ config }: { config: DemoConfig }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { ui, rtl, href } = useLocale();
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, 'change', (value) => {
@@ -35,6 +38,8 @@ export function Navbar({ config }: { config: DemoConfig }) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const bookHref = href(`/${config.slug}/book`);
+
   return (
     <>
       <motion.header
@@ -48,7 +53,7 @@ export function Navbar({ config }: { config: DemoConfig }) {
         style={{ height: 'var(--nav-height)' }}
       >
         <nav className="container-x flex h-full items-center justify-between gap-6">
-          <DemoLogo config={config} href={`/${config.slug}`} />
+          <DemoLogo config={config} href={href(`/${config.slug}`)} />
 
           <ul className="hidden items-center gap-1 lg:flex">
             {config.nav.map((link) => (
@@ -57,10 +62,7 @@ export function Navbar({ config }: { config: DemoConfig }) {
                   href={link.href}
                   className="relative rounded-brand px-3 py-2 text-[13.5px] text-ink/75 transition-colors duration-300 hover:text-ink"
                 >
-                  <span className="relative">
-                    {link.label}
-                    <span className="absolute -bottom-1 left-0 h-px w-0 bg-brand transition-all duration-300 hover:w-full" />
-                  </span>
+                  {link.label}
                 </a>
               </li>
             ))}
@@ -69,20 +71,22 @@ export function Navbar({ config }: { config: DemoConfig }) {
           <div className="flex items-center gap-2">
             <a
               href={`tel:${config.contact.phone.replace(/\s/g, '')}`}
+              dir="ltr"
               className="hidden items-center gap-2 rounded-brand px-3 py-2 text-[13.5px] text-ink/75 transition-colors hover:text-ink xl:inline-flex"
             >
               <Phone className="size-3.5" />
               {config.contact.phone}
             </a>
-            <Button href={`/${config.slug}/book`} size="sm" className="hidden sm:inline-flex">
+            <LanguageToggle className="hidden sm:inline-flex" />
+            <Button href={bookHref} size="sm" className="hidden sm:inline-flex">
               {config.cta.label}
-              <ButtonArrow />
+              <ButtonArrow className={rtl ? 'rotate-180 group-hover/btn:-translate-x-1' : ''} />
             </Button>
             <button
               type="button"
               onClick={() => setOpen(true)}
               className="grid size-10 place-items-center rounded-brand border border-line text-ink transition-colors hover:border-[color:var(--brand)] lg:hidden"
-              aria-label="Open menu"
+              aria-label={ui.common.openMenu}
               aria-expanded={open}
             >
               <Menu className="size-5" />
@@ -107,14 +111,17 @@ export function Navbar({ config }: { config: DemoConfig }) {
               aria-hidden
             />
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: rtl ? '-100%' : '100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              exit={{ x: rtl ? '-100%' : '100%' }}
               transition={{ duration: 0.5, ease: EASE }}
-              className="absolute inset-y-0 right-0 flex w-[min(88vw,380px)] flex-col bg-page"
+              className={cn(
+                'absolute inset-y-0 flex w-[min(88vw,380px)] flex-col bg-page',
+                rtl ? 'left-0' : 'right-0',
+              )}
               role="dialog"
               aria-modal="true"
-              aria-label="Menu"
+              aria-label={ui.common.menu}
             >
               <div
                 className="flex items-center justify-between border-b border-line px-5"
@@ -125,7 +132,7 @@ export function Navbar({ config }: { config: DemoConfig }) {
                   type="button"
                   onClick={() => setOpen(false)}
                   className="grid size-10 place-items-center rounded-brand border border-line text-ink"
-                  aria-label="Close menu"
+                  aria-label={ui.common.closeMenu}
                 >
                   <X className="size-5" />
                 </button>
@@ -135,7 +142,7 @@ export function Navbar({ config }: { config: DemoConfig }) {
                 {config.nav.map((link, index) => (
                   <motion.li
                     key={link.href}
-                    initial={{ opacity: 0, x: 24 }}
+                    initial={{ opacity: 0, x: rtl ? -24 : 24 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.12 + index * 0.05, duration: 0.4, ease: EASE }}
                     className="border-b border-line/60 last:border-0"
@@ -153,14 +160,17 @@ export function Navbar({ config }: { config: DemoConfig }) {
               </ul>
 
               <div className="space-y-3 border-t border-line p-5">
-                <Button href={`/${config.slug}/book`} size="lg" fullWidth onClick={() => setOpen(false)}>
+                <Button href={bookHref} size="lg" fullWidth onClick={() => setOpen(false)}>
                   {config.cta.label}
-                  <ButtonArrow />
+                  <ButtonArrow className={rtl ? 'rotate-180' : ''} />
                 </Button>
+                <LanguageToggle className="w-full justify-center" />
                 <div className="flex items-center justify-between text-xs text-muted">
-                  <a href={`tel:${config.contact.phone.replace(/\s/g, '')}`}>{config.contact.phone}</a>
-                  <Link href="/" className="underline underline-offset-4">
-                    All demos
+                  <a href={`tel:${config.contact.phone.replace(/\s/g, '')}`} dir="ltr">
+                    {config.contact.phone}
+                  </a>
+                  <Link href={href('/')} className="underline underline-offset-4">
+                    {ui.common.allDemos}
                   </Link>
                 </div>
               </div>

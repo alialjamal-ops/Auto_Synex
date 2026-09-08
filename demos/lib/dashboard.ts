@@ -183,7 +183,7 @@ export interface DashboardSummary {
   newCustomers: number;
   occupancy: number;
   recent: Appointment[];
-  weekSeries: { iso: string; label: string; value: number; bookings: number }[];
+  weekSeries: { iso: string; weekday: number; value: number; bookings: number }[];
   serviceSplit: { id: string; name: string; count: number; revenue: number }[];
   staffLoad: { id: string; name: string; count: number; revenue: number }[];
   channelSplit: { channel: BookingChannel; count: number }[];
@@ -217,7 +217,7 @@ export function summarize(
     const dayItems = appointments.filter((item) => item.date === iso);
     return {
       iso,
-      label: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][weekdayOf(iso)] ?? '',
+      weekday: weekdayOf(iso),
       value: sum(dayItems),
       bookings: dayItems.filter((item) => item.status !== 'cancelled').length,
     };

@@ -20,6 +20,24 @@ Each has `/[demo]`, `/[demo]/book` and `/[demo]/dashboard` (with
 
 ---
 
+## Languages
+
+Every route exists in both languages:
+
+```
+/clinic          /ar/clinic
+/clinic/book     /ar/clinic/book
+/clinic/dashboard/…   /ar/clinic/dashboard/…
+```
+
+English keeps clean URLs at the root; Arabic lives under `/ar` and renders
+right-to-left with Arabic content, dates, times and durations. A toggle in the
+header switches between the two on the current page.
+
+Interface copy lives in `config/i18n.ts`. Business content is an overlay per
+demo — `config/demos/<slug>.ar.ts` supplies only the strings that change, so
+prices, images, ids and booking rules can never drift from the English config.
+
 ## Deploying it
 
 On Vercel, create a **second project** from this same repository:
@@ -27,7 +45,12 @@ On Vercel, create a **second project** from this same repository:
 1. vercel.com → **Add New → Project** → import `alialjamal-ops/Auto_Synex`
 2. Open **Root Directory** and set it to **`demos`**
 3. Framework preset: **Next.js** (auto-detected once the root directory is set)
-4. **Deploy** — no environment variables required
+4. Add one environment variable: `NEXT_PUBLIC_BASE_PATH` = `/demos`
+5. **Deploy**
+
+The base path makes Next prefix every route, asset and link with `/demos`, which
+is what lets the main site proxy the demos onto its own domain (below). Without
+it the demos still work, they just serve from the root.
 
 The main site keeps deploying from the repository root exactly as before; the
 two projects live side by side.
@@ -56,19 +79,22 @@ import TemplatesSection from './components/TemplatesSection';
 
 Set `DEMOS_URL` at the top of that file to the deployed demos origin.
 
-**To serve the demos under your own domain** instead of a separate
-`*.vercel.app` host, add this to the *main site's* `vercel.json`:
+**The demos already serve from your own domain.** `vercel.json` at the
+repository root proxies them:
 
 ```json
 {
   "rewrites": [
-    { "source": "/demos", "destination": "https://<demos-project>.vercel.app" },
-    { "source": "/demos/:path*", "destination": "https://<demos-project>.vercel.app/:path*" }
+    { "source": "/demos", "destination": "https://autosynex-templates.vercel.app/demos" },
+    { "source": "/demos/:path*", "destination": "https://autosynex-templates.vercel.app/demos/:path*" }
   ]
 }
 ```
 
-Then set `DEMOS_URL = '/demos'` and drop the `target="_blank"` attributes.
+Change the destination host if the demos project is deployed under a different
+name. Visitors then browse `autosynex.com/demos/clinic` — same domain, same
+session, no `*.vercel.app` in the address bar — and the Templates section links
+to it with plain relative URLs.
 
 ---
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/demos",
+      "destination": "https://autosynex-templates.vercel.app/demos"
+    },
+    {
+      "source": "/demos/:path*",
+      "destination": "https://autosynex-templates.vercel.app/demos/:path*"
+    }
+  ]
+}

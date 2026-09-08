@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { EASE } from '@/components/animations/motion-primitives';
+import { AutoSynexMark } from '@/components/brand/mark';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import type { DemoConfig } from '@/types/demo';
 
@@ -20,13 +22,15 @@ export function DemoBar({ config }: { config: DemoConfig }) {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const pathname = usePathname();
+  const { ui, href } = useLocale();
 
   if (hidden) return null;
 
+  const root = href(`/${config.slug}`);
   const links = [
-    { href: `/${config.slug}`, label: 'Website', icon: Globe },
-    { href: `/${config.slug}/book`, label: 'Booking', icon: CalendarCheck },
-    { href: `/${config.slug}/dashboard`, label: 'Dashboard', icon: LayoutDashboard },
+    { href: root, label: ui.common.website, icon: Globe },
+    { href: `${root}/book`, label: ui.common.booking, icon: CalendarCheck },
+    { href: `${root}/dashboard`, label: ui.common.dashboard, icon: LayoutDashboard },
   ];
 
   return (
@@ -49,9 +53,7 @@ export function DemoBar({ config }: { config: DemoConfig }) {
             >
               {links.map((link) => {
                 const active =
-                  link.href === `/${config.slug}`
-                    ? pathname === link.href
-                    : pathname.startsWith(link.href);
+                  link.href === root ? pathname === link.href : pathname.startsWith(link.href);
                 return (
                   <Link
                     key={link.href}
@@ -70,17 +72,17 @@ export function DemoBar({ config }: { config: DemoConfig }) {
               })}
               <span aria-hidden className="mx-0.5 h-5 w-px bg-line" />
               <Link
-                href="/"
+                href={href('/')}
                 className="flex items-center gap-1.5 rounded-full px-3 py-2 text-[12px] text-ink/75 transition-colors hover:bg-[color:var(--brand-soft)] hover:text-ink"
               >
                 <Grid2x2 className="size-3.5" />
-                <span className="hidden sm:inline">All demos</span>
+                <span className="hidden sm:inline">{ui.common.allDemos}</span>
               </Link>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 className="grid size-8 place-items-center rounded-full text-muted transition-colors hover:text-ink"
-                aria-label="Collapse demo bar"
+                aria-label={ui.common.close}
               >
                 <X className="size-3.5" />
               </button>
@@ -96,11 +98,9 @@ export function DemoBar({ config }: { config: DemoConfig }) {
               transition={{ duration: 0.25 }}
               className="flex items-center gap-2.5 px-4 py-2.5 text-[12px] font-medium tracking-wide"
             >
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-[pulse-ring_2.4s_ease-out_infinite] rounded-full bg-brand" />
-                <span className="relative inline-flex size-2 rounded-full bg-brand" />
-              </span>
-              Interactive demo
+              <AutoSynexMark className="h-6" />
+              <span aria-hidden className="h-4 w-px bg-line" />
+              {ui.common.interactiveDemo}
               <ChevronUp className="size-3.5 text-muted" />
             </motion.button>
           )}
@@ -113,7 +113,7 @@ export function DemoBar({ config }: { config: DemoConfig }) {
           onClick={() => setHidden(true)}
           className="pointer-events-auto ml-2 hidden text-[11px] text-muted underline underline-offset-4 hover:text-ink sm:block"
         >
-          hide
+          {ui.common.hideBar}
         </button>
       ) : null}
     </motion.div>

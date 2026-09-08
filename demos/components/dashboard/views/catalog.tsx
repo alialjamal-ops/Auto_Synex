@@ -13,6 +13,7 @@ import {
 import { RankedBars } from '@/components/dashboard/charts';
 import { SmartImage } from '@/components/ui/smart-image';
 import { Button } from '@/components/ui/button';
+import { useLocale } from '@/hooks/use-locale';
 import { useAppointmentBook } from '@/hooks/use-appointment-book';
 import { cn } from '@/lib/cn';
 import { formatDayShort } from '@/lib/date';
@@ -25,6 +26,7 @@ import type { DemoConfig } from '@/types/demo';
 /* ------------------------------------------------------------------ */
 
 export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIso: string }) {
+  const { ui, locale, href } = useLocale();
   const { summary } = useAppointmentBook(config, todayIso);
   const [query, setQuery] = useState('');
   const symbol = config.booking.currencySymbol;
@@ -48,11 +50,11 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
   return (
     <>
       <PageHeader
-        title="Services"
-        subtitle={`${config.services.length} bookable ${config.services.length === 1 ? 'service' : 'services'} · last 30 days`}
+        title={ui.dashboard.services.title}
+        subtitle={`${config.services.length} ${config.services.length === 1 ? ui.dashboard.services.bookableOne : ui.dashboard.services.bookableMany} · ${ui.dashboard.services.last30}`}
         actions={
-          <Button href={`/${config.slug}`} variant="outline" size="sm">
-            View on site
+          <Button href={href(`/${config.slug}`)} variant="outline" size="sm">
+            {ui.dashboard.services.viewOnSite}
           </Button>
         }
       />
@@ -60,20 +62,20 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
           index={0}
-          label="Revenue (30 days)"
+          label={ui.dashboard.services.revenue30}
           value={formatCompactMoney(totalRevenue, symbol)}
           icon={TrendingUp}
         />
         <StatCard
           index={1}
-          label="Most booked"
+          label={ui.dashboard.services.mostBooked}
           value={busiest?.service.name ?? '—'}
-          hint={`${busiest?.count ?? 0} bookings`}
+          hint={`${busiest?.count ?? 0} ${ui.dashboard.overview.bookings}`}
           icon={Star}
         />
         <StatCard
           index={2}
-          label={isStay ? 'Room types' : 'Average duration'}
+          label={isStay ? ui.dashboard.services.roomTypes : ui.dashboard.services.avgDuration}
           value={
             isStay
               ? String(config.services.length)
@@ -94,17 +96,17 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
             <SearchInput
               value={query}
               onChange={setQuery}
-              placeholder="Search services…"
+              placeholder={ui.dashboard.filters.searchServices}
               className="sm:max-w-xs"
             />
           </div>
           {rows.length === 0 ? (
             <EmptyState
-              title="No services match"
-              text="Try a different search term."
+              title={ui.dashboard.filters.noServicesMatch}
+              text={ui.dashboard.filters.noServicesMatchText}
               action={
                 <Button size="sm" variant="outline" onClick={() => setQuery('')}>
-                  Clear search
+                  {ui.dashboard.filters.clearSearch}
                 </Button>
               }
             />
@@ -112,11 +114,11 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
             <DataTable
               head={[
                 config.booking.labels.service,
-                isStay ? 'Rate' : 'Duration',
-                'Price',
-                'Bookings',
-                'Revenue',
-                'Status',
+                isStay ? ui.dashboard.table.rate : ui.dashboard.table.duration,
+                ui.dashboard.table.price,
+                ui.dashboard.table.bookings,
+                ui.dashboard.table.revenue,
+                ui.dashboard.table.status,
               ]}
             >
               {rows.map(({ service, count, revenue }) => {
@@ -137,12 +139,12 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px] text-muted">
-                      {isStay ? 'per night' : formatDuration(service.durationMin)}
+                      {isStay ? ui.dashboard.table.perNight : formatDuration(service.durationMin, locale)}
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px] tabular-nums">
                       {service.price === 0
                         ? '—'
-                        : `${service.priceFrom ? 'from ' : ''}${formatMoney(service.price, symbol)}`}
+                        : `${service.priceFrom ? `${ui.common.from} ` : ''}${formatMoney(service.price, symbol)}`}
                     </td>
                     <td className="px-5 py-3.5 text-[13px] tabular-nums">{count}</td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px] tabular-nums">
@@ -151,7 +153,7 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
                     <td className="px-5 py-3.5">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/12 px-2.5 py-1 text-[11px] font-medium text-emerald-500">
                         <span className="size-1.5 rounded-full bg-current" />
-                        Active
+                        {ui.dashboard.table.active}
                       </span>
                     </td>
                   </tr>
@@ -161,7 +163,7 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
           )}
         </Panel>
 
-        <Panel title="Share of bookings">
+        <Panel title={ui.dashboard.services.share}>
           <RankedBars
             items={summary.serviceSplit.slice(0, 8)}
             valueFormatter={(item) => `${item.count}`}
@@ -177,6 +179,7 @@ export function ServicesView({ config, todayIso }: { config: DemoConfig; todayIs
 /* ------------------------------------------------------------------ */
 
 export function StaffView({ config, todayIso }: { config: DemoConfig; todayIso: string }) {
+  const { ui, locale } = useLocale();
   const { appointments, summary } = useAppointmentBook(config, todayIso);
   const symbol = config.booking.currencySymbol;
   const label = pluralize(2, config.booking.labels.staff);
@@ -184,11 +187,11 @@ export function StaffView({ config, todayIso }: { config: DemoConfig; todayIso: 
   if (config.staff.length === 0) {
     return (
       <>
-        <PageHeader title="Team" />
+        <PageHeader title={ui.dashboard.nav.services} />
         <Panel padded={false}>
           <EmptyState
-            title="No team members yet"
-            text="This business books at venue level. Add team members in settings to enable per-person scheduling."
+            title={ui.dashboard.staff.noTeam}
+            text={ui.dashboard.staff.noTeamText}
           />
         </Panel>
       </>
@@ -199,7 +202,7 @@ export function StaffView({ config, todayIso }: { config: DemoConfig; todayIso: 
     <>
       <PageHeader
         title={label.charAt(0).toUpperCase() + label.slice(1)}
-        subtitle={`${config.staff.length} people · load over the last 7 days`}
+        subtitle={`${config.staff.length} ${ui.dashboard.staff.people}`}
       />
 
       <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
@@ -232,18 +235,22 @@ export function StaffView({ config, todayIso }: { config: DemoConfig; todayIso: 
                         {member.rating.toFixed(1)}
                       </span>
                     ) : null}
-                    {member.experienceYears ? <span>{member.experienceYears} yrs</span> : null}
+                    {member.experienceYears ? (
+                      <span>
+                        {member.experienceYears} {ui.dashboard.staff.years}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </div>
 
               <dl className="grid grid-cols-2 divide-x divide-line border-y border-line">
                 <div className="px-5 py-3">
-                  <dt className="text-[11px] text-muted">Bookings · 7d</dt>
+                  <dt className="text-[11px] text-muted">{ui.dashboard.staff.bookings7}</dt>
                   <dd className="mt-0.5 font-display text-lg tabular-nums">{load?.count ?? 0}</dd>
                 </div>
                 <div className="px-5 py-3">
-                  <dt className="text-[11px] text-muted">Revenue · 7d</dt>
+                  <dt className="text-[11px] text-muted">{ui.dashboard.staff.revenue7}</dt>
                   <dd className="mt-0.5 font-display text-lg tabular-nums">
                     {formatCompactMoney(load?.revenue ?? 0, symbol)}
                   </dd>
@@ -253,10 +260,10 @@ export function StaffView({ config, todayIso }: { config: DemoConfig; todayIso: 
               <div className="p-5">
                 <p className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-muted">
                   <CalendarRange className="size-3.5" />
-                  Next up
+                  {ui.dashboard.staff.nextUp}
                 </p>
                 {upcoming.length === 0 ? (
-                  <p className="text-[13px] text-muted">Nothing scheduled.</p>
+                  <p className="text-[13px] text-muted">{ui.dashboard.staff.nothingScheduled}</p>
                 ) : (
                   <ul className="space-y-2.5">
                     {upcoming.map((appointment) => (
@@ -266,7 +273,7 @@ export function StaffView({ config, todayIso }: { config: DemoConfig; todayIso: 
                       >
                         <span className="min-w-0 truncate">{appointment.customer.name}</span>
                         <span className="shrink-0 tabular-nums text-muted">
-                          {formatDayShort(appointment.date)}
+                          {formatDayShort(appointment.date, locale)}
                         </span>
                       </li>
                     ))}

@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, Check, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AutoSynexLockup, AutoSynexLogo } from '@/components/brand/mark';
+import { LanguageToggle } from '@/components/site/language-toggle';
 import { ImageReveal } from '@/components/animations/image-reveal';
 import { Marquee } from '@/components/animations/marquee';
 import {
@@ -19,7 +20,8 @@ import {
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { Eyebrow, SectionHeading } from '@/components/ui/primitives';
 import { SmartImage } from '@/components/ui/smart-image';
-import { siteConfig } from '@/config/site';
+import { getSite, parentSiteUrl } from '@/config/site';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import { getIcon } from '@/lib/icons';
 import type { DemoConfig } from '@/types/demo';
@@ -28,13 +30,16 @@ import type { DemoConfig } from '@/types/demo';
 /* Navigation                                                          */
 /* ------------------------------------------------------------------ */
 
-const NAV = [
-  { href: '#demos', label: 'Demos' },
-  { href: '#what', label: 'What we build' },
-  { href: '#how', label: 'How it works' },
-];
+
 
 export function LandingNav() {
+  const { ui, locale, rtl, href } = useLocale();
+  const siteConfig = getSite(locale);
+  const NAV = [
+    { href: '#demos', label: ui.landing.demosNav },
+    { href: '#what', label: ui.landing.whatNav },
+    { href: '#how', label: ui.landing.howNav },
+  ];
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -54,11 +59,20 @@ export function LandingNav() {
       style={{ height: 'var(--nav-height)' }}
     >
       <nav className="container-x flex h-full items-center justify-between gap-6">
-        <Link href="/" aria-label={`${siteConfig.brandName} — home`}>
+        <Link href={href('/')} aria-label={siteConfig.brandName}>
           <AutoSynexLogo />
         </Link>
 
         <ul className="hidden items-center gap-7 md:flex">
+          <li>
+            <a
+              href={parentSiteUrl}
+              className="flex items-center gap-1.5 text-[13.5px] text-muted transition-colors hover:text-ink"
+            >
+              <ArrowRight className={cn('size-3.5', rtl ? '' : 'rotate-180')} />
+              {siteConfig.brandName}
+            </a>
+          </li>
           {NAV.map((item) => (
             <li key={item.href}>
               <a
@@ -72,15 +86,16 @@ export function LandingNav() {
         </ul>
 
         <div className="flex items-center gap-2">
+          <LanguageToggle className="hidden sm:inline-flex" />
           <Button href="#demos" size="sm" className="hidden sm:inline-flex">
-            Explore demos
-            <ButtonArrow />
+            {ui.common.explore}
+            <ButtonArrow className={rtl ? 'rotate-180 group-hover/btn:-translate-x-1' : ''} />
           </Button>
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
             className="grid size-10 place-items-center rounded-brand border border-line md:hidden"
-            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-label={open ? ui.common.closeMenu : ui.common.openMenu}
             aria-expanded={open}
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -108,9 +123,10 @@ export function LandingNav() {
             ))}
           </ul>
           <Button href="#demos" fullWidth className="mt-4" onClick={() => setOpen(false)}>
-            Explore demos
-            <ButtonArrow />
+            {ui.common.explore}
+            <ButtonArrow className={rtl ? 'rotate-180' : ''} />
           </Button>
+          <LanguageToggle className="mt-3 w-full justify-center" />
         </motion.div>
       ) : null}
     </header>
@@ -122,6 +138,9 @@ export function LandingNav() {
 /* ------------------------------------------------------------------ */
 
 export function LandingHero({ demos }: { demos: readonly DemoConfig[] }) {
+  const { ui, locale, rtl } = useLocale();
+  const siteConfig = getSite(locale);
+
   return (
     <section className="relative overflow-hidden pt-[calc(var(--nav-height)+4rem)] pb-16 sm:pb-20 lg:pt-[calc(var(--nav-height)+6rem)]">
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -177,11 +196,11 @@ export function LandingHero({ demos }: { demos: readonly DemoConfig[] }) {
           className="mt-9 flex flex-col gap-3 sm:flex-row"
         >
           <Button href="#demos" size="lg">
-            Choose your business
-            <ButtonArrow />
+            {ui.landing.chooseBusiness}
+            <ButtonArrow className={rtl ? 'rotate-180 group-hover/btn:-translate-x-1' : ''} />
           </Button>
           <Button href="#what" variant="outline" size="lg">
-            See what&apos;s included
+            {ui.landing.seeIncluded}
           </Button>
         </motion.div>
 
@@ -221,14 +240,16 @@ export function LandingHero({ demos }: { demos: readonly DemoConfig[] }) {
 /* ------------------------------------------------------------------ */
 
 export function DemoGrid({ demos }: { demos: readonly DemoConfig[] }) {
+  const { ui } = useLocale();
+
   return (
     <section id="demos" className="scroll-mt-24 py-20 sm:py-24 lg:py-28">
       <div className="container-x">
         <Reveal>
           <SectionHeading
-            eyebrow="Interactive demos"
-            title="Choose your business"
-            text="Each demo is a complete, working product: a website, a booking flow with real availability logic, and an operations dashboard. Click anything — it all works."
+            eyebrow={ui.common.interactiveDemo}
+            title={ui.landing.chooseBusiness}
+            text={ui.landing.closingLead}
           />
         </Reveal>
 
@@ -251,6 +272,7 @@ function DemoCard({
   index: number;
   featured?: boolean;
 }) {
+  const { ui, rtl, href } = useLocale();
   const { ref, inView } = useRevealed('-8% 0px -8% 0px');
 
   return (
@@ -326,24 +348,24 @@ function DemoCard({
 
           <div className="mt-auto flex flex-wrap items-center gap-2 pt-7">
             <Link
-              href={`/${demo.slug}`}
+              href={href(`/${demo.slug}`)}
               className="inline-flex h-11 items-center gap-2 rounded-brand px-5 text-[13.5px] font-medium text-white transition-transform duration-300 hover:-translate-y-0.5"
               style={{ background: demo.card.accent }}
             >
               {demo.card.ctaLabel}
-              <ArrowRight className="size-4" />
+              <ArrowRight className={cn('size-4', rtl && 'rotate-180')} />
             </Link>
             <Link
-              href={`/${demo.slug}/book`}
+              href={href(`/${demo.slug}/book`)}
               className="inline-flex h-11 items-center rounded-brand border border-line px-4 text-[13px] text-muted transition-colors hover:border-[color:var(--brand)] hover:text-ink"
             >
-              Booking
+              {ui.common.booking}
             </Link>
             <Link
-              href={`/${demo.slug}/dashboard`}
+              href={href(`/${demo.slug}/dashboard`)}
               className="inline-flex h-11 items-center rounded-brand border border-line px-4 text-[13px] text-muted transition-colors hover:border-[color:var(--brand)] hover:text-ink"
             >
-              Dashboard
+              {ui.common.dashboard}
             </Link>
           </div>
         </div>
@@ -357,14 +379,16 @@ function DemoCard({
 /* ------------------------------------------------------------------ */
 
 export function OfferSection() {
+  const { ui, locale } = useLocale();
+  const siteConfig = getSite(locale);
+
   return (
     <section id="what" className="scroll-mt-24 border-t border-line bg-surface py-20 sm:py-24 lg:py-28">
       <div className="container-x">
         <Reveal>
           <SectionHeading
-            eyebrow="What we build"
-            title="Three ways to work with us"
-            text="Start with the website, add the booking engine when you are ready, or take the whole operation in one build."
+            eyebrow={ui.landing.whatNav}
+            title={siteConfig.tagline}
           />
         </Reveal>
 
@@ -383,7 +407,7 @@ export function OfferSection() {
                 >
                   {offer.featured ? (
                     <span className="absolute -top-3 left-7 rounded-full bg-brand px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-white">
-                      Most requested
+                      {ui.landing.mostRequested}
                     </span>
                   ) : null}
                   <span className="grid size-11 place-items-center rounded-brand bg-[color:var(--brand-soft)] text-brand">
@@ -410,7 +434,7 @@ export function OfferSection() {
                     className="mt-7"
                     fullWidth
                   >
-                    See it working
+                    {ui.landing.seeItWorking}
                     <ButtonArrow />
                   </Button>
                 </div>
@@ -428,6 +452,9 @@ export function OfferSection() {
 /* ------------------------------------------------------------------ */
 
 export function CapabilityStrip() {
+  const { locale } = useLocale();
+  const siteConfig = getSite(locale);
+
   return (
     <section className="border-t border-line py-16 sm:py-20">
       <div className="container-x">
@@ -449,14 +476,17 @@ export function CapabilityStrip() {
 }
 
 export function ProcessSection() {
+  const { ui, locale } = useLocale();
+  const siteConfig = getSite(locale);
+
   return (
     <section id="how" className="scroll-mt-24 border-t border-line py-20 sm:py-24">
       <div className="container-x grid gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-4">
           <Reveal>
             <SectionHeading
-              eyebrow="How it works"
-              title="From demo to live in about a week"
+              eyebrow={ui.landing.howNav}
+              title={ui.landing.howNav}
             />
           </Reveal>
         </div>
@@ -484,6 +514,9 @@ export function ProcessSection() {
 /* ------------------------------------------------------------------ */
 
 export function LandingCta() {
+  const { ui, locale, rtl } = useLocale();
+  const siteConfig = getSite(locale);
+
   return (
     <section className="relative overflow-hidden border-t border-line py-24 sm:py-28">
       <div
@@ -493,23 +526,22 @@ export function LandingCta() {
       />
       <div className="container-x relative text-center">
         <Reveal>
-          <Eyebrow className="justify-center">Ready when you are</Eyebrow>
+          <Eyebrow className="justify-center">{ui.landing.readyWhen}</Eyebrow>
         </Reveal>
         <Reveal delay={0.06}>
           <h2 className="mx-auto mt-5 max-w-3xl font-display text-[clamp(2.2rem,5.4vw,4rem)] font-bold tracking-[-0.03em]">
-            Try the demo closest to your business.
+            {ui.landing.closingTitle}
           </h2>
         </Reveal>
         <Reveal delay={0.12}>
           <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted">
-            Book an appointment, reserve a table, check into a suite — then open the dashboard and
-            watch it appear.
+            {ui.landing.closingLead}
           </p>
         </Reveal>
         <Reveal delay={0.2} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button href="#demos" size="lg">
-            Choose your business
-            <ButtonArrow />
+            {ui.landing.chooseBusiness}
+            <ButtonArrow className={rtl ? 'rotate-180 group-hover/btn:-translate-x-1' : ''} />
           </Button>
           <Button href={`mailto:${siteConfig.email}`} variant="outline" size="lg" native>
             {siteConfig.email}
@@ -521,6 +553,9 @@ export function LandingCta() {
 }
 
 export function LandingFooter({ demos }: { demos: readonly DemoConfig[] }) {
+  const { ui, locale, href } = useLocale();
+  const siteConfig = getSite(locale);
+
   return (
     <footer className="border-t border-line bg-surface">
       <div className="container-x grid gap-10 py-14 lg:grid-cols-12">
@@ -530,12 +565,12 @@ export function LandingFooter({ demos }: { demos: readonly DemoConfig[] }) {
         </div>
 
         <div className="lg:col-span-4">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted">Demos</h2>
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted">{ui.landing.footerDemos}</h2>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
             {demos.map((demo) => (
               <li key={demo.slug}>
                 <Link
-                  href={`/${demo.slug}`}
+                  href={href(`/${demo.slug}`)}
                   className="text-sm text-ink/75 transition-colors hover:text-brand"
                 >
                   {demo.businessName}
@@ -546,7 +581,7 @@ export function LandingFooter({ demos }: { demos: readonly DemoConfig[] }) {
         </div>
 
         <div className="lg:col-span-3">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted">Contact</h2>
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted">{ui.landing.footerContact}</h2>
           <ul className="mt-5 space-y-3 text-sm text-ink/75">
             <li>
               <a href={`mailto:${siteConfig.email}`} className="hover:text-brand">
@@ -564,10 +599,9 @@ export function LandingFooter({ demos }: { demos: readonly DemoConfig[] }) {
 
       <div className="container-x flex flex-col gap-3 border-t border-line py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
         <p>
-          © {new Date().getFullYear()} {siteConfig.brandName}. All demo businesses are
-          fictional.
+          © {new Date().getFullYear()} {siteConfig.brandName}. {ui.landing.allFictional}
         </p>
-        <p>Photography: StockSnap (CC0)</p>
+        <p>{ui.common.photography}</p>
       </div>
     </footer>
   );

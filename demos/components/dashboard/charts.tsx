@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { EASE } from '@/components/animations/motion-primitives';
+import { useLocale } from '@/hooks/use-locale';
+import { weekdayShort } from '@/lib/date';
 import { cn } from '@/lib/cn';
 import { formatCompactMoney } from '@/lib/format';
 
@@ -20,10 +22,11 @@ export function BarChart({
   currencySymbol,
   height = 168,
 }: {
-  data: readonly { iso: string; label: string; value: number; bookings: number }[];
+  data: readonly { iso: string; weekday: number; value: number; bookings: number }[];
   currencySymbol: string;
   height?: number;
 }) {
+  const { ui, locale } = useLocale();
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(...data.map((point) => point.value), 1);
 
@@ -54,7 +57,9 @@ export function BarChart({
                   <p className="text-[12px] font-medium tabular-nums">
                     {formatCompactMoney(point.value, currencySymbol)}
                   </p>
-                  <p className="text-[10px] text-muted">{point.bookings} bookings</p>
+                  <p className="text-[10px] text-muted">
+                    {point.bookings} {ui.dashboard.overview.bookings}
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -70,7 +75,7 @@ export function BarChart({
               index === data.length - 1 ? 'font-medium text-ink' : 'text-muted',
             )}
           >
-            {point.label}
+            {weekdayShort(point.weekday, locale).charAt(0)}
           </span>
         ))}
       </div>

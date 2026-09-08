@@ -7,18 +7,19 @@ import { toISODate } from '@/lib/date';
 /** Every dashboard screen is relative to "today", so render per request. */
 export const dynamic = 'force-dynamic';
 
+const LOCALE = 'en' as const;
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ demo: string }>;
 }): Promise<Metadata> {
   const { demo } = await params;
-  const config = getDemo(demo);
+  const config = getDemo(demo, LOCALE);
   if (!config) return {};
 
   return {
-    title: `${config.businessName} · Operations dashboard`,
-    description: `Appointments, calendar, ${config.dashboard.customerLabelPlural.toLowerCase()} and revenue for ${config.businessName}.`,
+    title: `${config.businessName} · ${config.dashboard.customerLabelPlural}`,
     robots: { index: false, follow: false },
   };
 }
@@ -31,7 +32,7 @@ export default async function DashboardLayout({
   params: Promise<{ demo: string }>;
 }) {
   const { demo } = await params;
-  const config = getDemo(demo);
+  const config = getDemo(demo, LOCALE);
   if (!config) notFound();
 
   return (

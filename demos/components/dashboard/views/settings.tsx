@@ -6,14 +6,16 @@ import { PageHeader, Panel } from '@/components/dashboard/ui';
 import { Field, TextField } from '@/components/booking/field';
 import { Button } from '@/components/ui/button';
 import { useBookings } from '@/hooks/use-bookings';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
-import { formatTime, WEEKDAY_LONG } from '@/lib/date';
+import { formatTime, weekdayLong } from '@/lib/date';
 import { formatDuration } from '@/lib/format';
 import type { DemoConfig } from '@/types/demo';
 
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export function SettingsView({ config }: { config: DemoConfig }) {
+  const { ui, locale } = useLocale();
   const { bookings, clearBookings } = useBookings();
   const [saved, setSaved] = useState(false);
 
@@ -25,11 +27,11 @@ export function SettingsView({ config }: { config: DemoConfig }) {
   return (
     <>
       <PageHeader
-        title="Settings"
-        subtitle="Everything on this page is driven by the demo's config file."
+        title={ui.dashboard.settings.title}
+        subtitle={ui.dashboard.settings.subtitle}
         actions={
           <Button size="sm" onClick={save}>
-            {saved ? 'Saved' : 'Save changes'}
+            {saved ? ui.dashboard.settings.saved : ui.dashboard.settings.save}
           </Button>
         }
       />
@@ -37,28 +39,36 @@ export function SettingsView({ config }: { config: DemoConfig }) {
       <div className="mb-4 flex items-start gap-3 rounded-brand-lg border border-[color:var(--brand)]/35 bg-[color:var(--brand-soft)] px-4 py-3.5 text-[13px] text-brand">
         <Info className="mt-0.5 size-4 shrink-0" />
         <p>
-          In the live product these fields write to your database. In the demo they show how the
-          business is configured — <code className="font-mono text-[12px]">config/demos/{config.slug}.ts</code>{' '}
-          is the single source of truth for content, pricing, hours and booking rules.
+          {ui.dashboard.settings.configNote}{' '}
+          <code className="font-mono text-[12px]">config/demos/{config.slug}.ts</code>{' '}
+          {ui.dashboard.settings.isTruth}
         </p>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Panel title="Business details">
+        <Panel title={ui.dashboard.settings.businessDetails}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Business name" defaultValue={config.businessName} className="sm:col-span-2" />
-            <Field label="Phone" defaultValue={config.contact.phone} />
-            <Field label="Email" defaultValue={config.contact.email} />
+            <Field
+              label={ui.dashboard.settings.businessName}
+              defaultValue={config.businessName}
+              className="sm:col-span-2"
+            />
+            <Field label={ui.common.phone} defaultValue={config.contact.phone} />
+            <Field label={ui.common.email} defaultValue={config.contact.email} />
             <TextField
-              label="Address"
+              label={ui.common.address}
               defaultValue={config.contact.addressLines.join('\n')}
               className="sm:col-span-2"
             />
-            <Field label="Tagline" defaultValue={config.tagline} className="sm:col-span-2" />
+            <Field
+              label={ui.dashboard.settings.tagline}
+              defaultValue={config.tagline}
+              className="sm:col-span-2"
+            />
           </div>
         </Panel>
 
-        <Panel title="Opening hours">
+        <Panel title={ui.common.openingHours}>
           <ul className="divide-y divide-line">
             {DAY_ORDER.map((day) => {
               const hours = config.hours[day];
@@ -71,20 +81,21 @@ export function SettingsView({ config }: { config: DemoConfig }) {
                         hours ? 'bg-emerald-500' : 'bg-line',
                       )}
                     />
-                    {WEEKDAY_LONG[day]}
+                    {weekdayLong(day, locale)}
                   </span>
                   <span className="text-[13px] tabular-nums text-muted">
                     {hours ? (
                       <>
-                        {formatTime(hours.open)} – {formatTime(hours.close)}
+                        {formatTime(hours.open, locale)} – {formatTime(hours.close, locale)}
                         {hours.breakFrom ? (
                           <span className="ml-2 text-[11.5px]">
-                            (break {formatTime(hours.breakFrom)}–{formatTime(hours.breakTo ?? '')})
+                            ({ui.dashboard.settings.break} {formatTime(hours.breakFrom, locale)}–
+                            {formatTime(hours.breakTo ?? '', locale)})
                           </span>
                         ) : null}
                       </>
                     ) : (
-                      'Closed'
+                      ui.common.closed
                     )}
                   </span>
                 </li>
@@ -93,33 +104,42 @@ export function SettingsView({ config }: { config: DemoConfig }) {
           </ul>
         </Panel>
 
-        <Panel title="Booking rules">
+        <Panel title={ui.dashboard.settings.bookingRules}>
           <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-            <Row label="Mode" value={config.booking.mode} />
-            <Row label="Slot interval" value={formatDuration(config.booking.slotMinutes)} />
-            <Row label="Minimum notice" value={`${config.booking.leadTimeHours} hours`} />
-            <Row label="Booking window" value={`${config.booking.horizonDays} days ahead`} />
-            <Row label="Currency" value={config.booking.currency} />
-            <Row label="Steps" value={config.booking.steps.join(' → ')} />
+            <Row label={ui.dashboard.settings.mode} value={config.booking.mode} />
+            <Row
+              label={ui.dashboard.settings.slotInterval}
+              value={formatDuration(config.booking.slotMinutes, locale)}
+            />
+            <Row
+              label={ui.dashboard.settings.minNotice}
+              value={`${config.booking.leadTimeHours} ${ui.dashboard.settings.hours}`}
+            />
+            <Row
+              label={ui.dashboard.settings.bookingWindow}
+              value={`${config.booking.horizonDays} ${ui.dashboard.settings.daysAhead}`}
+            />
+            <Row label={ui.dashboard.settings.currency} value={config.booking.currency} />
+            <Row label={ui.dashboard.settings.steps} value={config.booking.steps.join(' → ')} />
             {config.booking.guests ? (
               <Row
-                label="Party size"
+                label={ui.dashboard.settings.partySize}
                 value={`${config.booking.guests.min}–${config.booking.guests.max}`}
               />
             ) : null}
-            <Row label="Services" value={String(config.services.length)} />
+            <Row label={ui.dashboard.settings.servicesCount} value={String(config.services.length)} />
           </dl>
         </Panel>
 
-        <Panel title="Brand tokens">
+        <Panel title={ui.dashboard.settings.brandTokens}>
           <div className="flex flex-wrap gap-3">
             {(
               [
-                ['Brand', config.theme.brand],
-                ['Accent', config.theme.accent],
-                ['Background', config.theme.bg],
-                ['Surface', config.theme.surface],
-                ['Ink', config.theme.ink],
+                [ui.dashboard.settings.brand, config.theme.brand],
+                [ui.dashboard.settings.accent, config.theme.accent],
+                [ui.dashboard.settings.background, config.theme.bg],
+                [ui.dashboard.settings.surface, config.theme.surface],
+                [ui.dashboard.settings.ink, config.theme.ink],
               ] as const
             ).map(([label, value]) => (
               <div key={label} className="flex items-center gap-2.5 rounded-brand border border-line px-3 py-2">
@@ -136,11 +156,11 @@ export function SettingsView({ config }: { config: DemoConfig }) {
           </div>
           <p className="mt-5 flex items-center gap-2 text-[12.5px] text-muted">
             <Palette className="size-4 text-brand" />
-            Change these five values and the entire site, booking flow and dashboard re-skin.
+            {ui.dashboard.settings.reskinNote}
           </p>
         </Panel>
 
-        <Panel title="Demo session" className="xl:col-span-2">
+        <Panel title={ui.dashboard.settings.demoSession} className="xl:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-brand bg-[color:var(--surface-alt)] text-muted">
@@ -148,19 +168,20 @@ export function SettingsView({ config }: { config: DemoConfig }) {
               </span>
               <div>
                 <p className="text-[13.5px]">
-                  {bookings.length} booking{bookings.length === 1 ? '' : 's'} made in this demo
-                  session
+                  {bookings.length}{' '}
+                  {bookings.length === 1
+                    ? ui.dashboard.settings.bookingMade
+                    : ui.dashboard.settings.bookingsMade}
                 </p>
                 <p className="mt-1 text-[12.5px] text-muted">
-                  Stored in your browser only. Clearing removes them from the dashboard and frees
-                  their time slots.
+                  {ui.dashboard.settings.storedNote}
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
               <Button href={`/${config.slug}/book`} variant="outline" size="sm">
                 <Clock className="size-4" />
-                New booking
+                {ui.dashboard.settings.newBooking}
               </Button>
               <Button
                 variant="outline"
@@ -169,7 +190,7 @@ export function SettingsView({ config }: { config: DemoConfig }) {
                 disabled={bookings.length === 0}
               >
                 <Trash2 className="size-4" />
-                Clear
+                {ui.dashboard.settings.clear}
               </Button>
             </div>
           </div>
@@ -179,7 +200,7 @@ export function SettingsView({ config }: { config: DemoConfig }) {
       {saved ? (
         <p className="mt-4 flex items-center gap-2 text-[13px] text-emerald-500">
           <RotateCcw className="size-4" />
-          Demo mode — changes are not persisted.
+          {ui.dashboard.settings.demoModeNote}
         </p>
       ) : null}
     </>

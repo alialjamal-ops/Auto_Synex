@@ -1,19 +1,24 @@
+'use client';
+
 import Link from 'next/link';
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { DemoLogo } from '@/components/site/logo';
+import { useLocale } from '@/hooks/use-locale';
 import { getIcon } from '@/lib/icons';
-import { formatTime, WEEKDAY_LONG } from '@/lib/date';
+import { formatTime, weekdayLong } from '@/lib/date';
 import type { DemoConfig } from '@/types/demo';
 
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export function Footer({ config }: { config: DemoConfig }) {
+  const { ui, locale, rtl, href } = useLocale();
+
   return (
     <footer className="border-t border-line bg-surface">
       <div className="container-x py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <DemoLogo config={config} href={`/${config.slug}`} />
+            <DemoLogo config={config} href={href(`/${config.slug}`)} />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">{config.tagline}</p>
             <div className="mt-6 flex gap-2">
               {config.contact.socials.map((social) => {
@@ -32,7 +37,7 @@ export function Footer({ config }: { config: DemoConfig }) {
           </div>
 
           <div className="lg:col-span-2">
-            <h3 className="text-[11px] uppercase tracking-[0.2em] text-muted">Explore</h3>
+            <h3 className="text-[11px] uppercase tracking-[0.2em] text-muted">{config.nav[0] ? ui.landing.demosNav : ui.landing.demosNav}</h3>
             <ul className="mt-5 space-y-3 text-sm">
               {config.nav.map((link) => (
                 <li key={link.href}>
@@ -45,15 +50,17 @@ export function Footer({ config }: { config: DemoConfig }) {
           </div>
 
           <div className="lg:col-span-3">
-            <h3 className="text-[11px] uppercase tracking-[0.2em] text-muted">Opening hours</h3>
+            <h3 className="text-[11px] uppercase tracking-[0.2em] text-muted">{ui.common.openingHours}</h3>
             <ul className="mt-5 space-y-2.5 text-sm">
               {DAY_ORDER.map((day) => {
                 const hours = config.hours[day];
                 return (
                   <li key={day} className="flex justify-between gap-4 text-ink/75">
-                    <span>{WEEKDAY_LONG[day]}</span>
+                    <span>{weekdayLong(day, locale)}</span>
                     <span className={hours ? 'text-ink' : 'text-muted'}>
-                      {hours ? `${formatTime(hours.open)} – ${formatTime(hours.close)}` : 'Closed'}
+                      {hours
+                        ? `${formatTime(hours.open, locale)} – ${formatTime(hours.close, locale)}`
+                        : ui.common.closed}
                     </span>
                   </li>
                 );
@@ -62,7 +69,7 @@ export function Footer({ config }: { config: DemoConfig }) {
           </div>
 
           <div className="lg:col-span-3">
-            <h3 className="text-[11px] uppercase tracking-[0.2em] text-muted">Contact</h3>
+            <h3 className="text-[11px] uppercase tracking-[0.2em] text-muted">{ui.landing.footerContact}</h3>
             <address className="mt-5 space-y-2 text-sm not-italic text-ink/75">
               {config.contact.addressLines.map((line) => (
                 <p key={line}>{line}</p>
@@ -78,9 +85,9 @@ export function Footer({ config }: { config: DemoConfig }) {
                 </a>
               </p>
             </address>
-            <Button href={`/${config.slug}/book`} size="sm" className="mt-6">
+            <Button href={href(`/${config.slug}/book`)} size="sm" className="mt-6">
               {config.cta.label}
-              <ButtonArrow />
+              <ButtonArrow className={rtl ? 'rotate-180' : ''} />
             </Button>
           </div>
         </div>
@@ -91,13 +98,13 @@ export function Footer({ config }: { config: DemoConfig }) {
             business.
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Link href={`/${config.slug}/dashboard`} className="hover:text-ink">
-              Business dashboard
+            <Link href={href(`/${config.slug}/dashboard`)} className="hover:text-ink">
+              {ui.common.dashboard}
             </Link>
-            <Link href="/" className="hover:text-ink">
-              All demos
+            <Link href={href('/')} className="hover:text-ink">
+              {ui.common.allDemos}
             </Link>
-            <span className="hidden sm:inline">Photography: StockSnap (CC0)</span>
+            <span className="hidden sm:inline">{ui.common.photography}</span>
           </div>
         </div>
       </div>

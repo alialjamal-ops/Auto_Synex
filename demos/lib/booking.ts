@@ -199,10 +199,20 @@ export function staffForService(config: DemoConfig, serviceId: string | null): r
 /* Validation                                                          */
 /* ------------------------------------------------------------------ */
 
+/** Error identifiers — the UI maps them to the active language. */
+export type FieldErrorKey =
+  | 'name'
+  | 'nameLetters'
+  | 'phoneRequired'
+  | 'phoneShort'
+  | 'phoneLong'
+  | 'emailRequired'
+  | 'emailInvalid';
+
 export interface FieldErrors {
-  name?: string;
-  phone?: string;
-  email?: string;
+  name?: FieldErrorKey;
+  phone?: FieldErrorKey;
+  email?: FieldErrorKey;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
@@ -213,16 +223,16 @@ export function validateDetails(draft: BookingDraft): FieldErrors {
   const phone = draft.phone.trim();
   const email = draft.email.trim();
 
-  if (name.length < 2) errors.name = 'Please enter your full name.';
-  else if (!/[a-z]/i.test(name)) errors.name = 'Names need at least one letter.';
+  if (name.length < 2) errors.name = 'name';
+  else if (!/[\p{L}]/u.test(name)) errors.name = 'nameLetters';
 
   const digits = phone.replace(/\D/g, '');
-  if (!phone) errors.phone = 'A phone number is required for confirmation.';
-  else if (digits.length < 7) errors.phone = 'That phone number looks too short.';
-  else if (digits.length > 15) errors.phone = 'That phone number looks too long.';
+  if (!phone) errors.phone = 'phoneRequired';
+  else if (digits.length < 7) errors.phone = 'phoneShort';
+  else if (digits.length > 15) errors.phone = 'phoneLong';
 
-  if (!email) errors.email = 'We send your confirmation by email.';
-  else if (!EMAIL_RE.test(email)) errors.email = 'Enter a valid email address.';
+  if (!email) errors.email = 'emailRequired';
+  else if (!EMAIL_RE.test(email)) errors.email = 'emailInvalid';
 
   return errors;
 }

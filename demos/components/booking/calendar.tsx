@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { EASE } from '@/components/animations/motion-primitives';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import {
   addDays,
@@ -13,12 +14,12 @@ import {
   fromISODate,
   monthMatrix,
   startOfMonth,
-  WEEKDAY_SHORT,
+  weekdayShort,
   weekdayOf,
 } from '@/lib/date';
 import type { WorkingHours } from '@/types/demo';
 
-const DAY_HEADS = [1, 2, 3, 4, 5, 6, 0].map((day) => WEEKDAY_SHORT[day]?.charAt(0));
+const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export interface CalendarProps {
   todayIso: string;
@@ -46,6 +47,7 @@ export function Calendar({
   fullDates = [],
   className,
 }: CalendarProps) {
+  const { ui, locale, rtl } = useLocale();
   const [cursor, setCursor] = useState(() => startOfMonth(value ?? todayIso));
   const [direction, setDirection] = useState(1);
 
@@ -63,36 +65,36 @@ export function Calendar({
   return (
     <div className={cn('select-none', className)}>
       <div className="mb-4 flex items-center justify-between">
-        <p className="font-display text-lg">{formatMonthYear(cursor)}</p>
+        <p className="font-display text-lg">{formatMonthYear(cursor, locale)}</p>
         <div className="flex gap-1.5">
           <button
             type="button"
             onClick={() => shift(-1)}
             disabled={!canGoBack}
             className="grid size-9 place-items-center rounded-brand border border-line text-ink transition-colors enabled:hover:border-[color:var(--brand)] enabled:hover:text-brand disabled:opacity-35"
-            aria-label="Previous month"
+            aria-label={ui.common.previous}
           >
-            <ChevronLeft className="size-4" />
+            <ChevronLeft className={cn('size-4', rtl && 'rotate-180')} />
           </button>
           <button
             type="button"
             onClick={() => shift(1)}
             disabled={!canGoForward}
             className="grid size-9 place-items-center rounded-brand border border-line text-ink transition-colors enabled:hover:border-[color:var(--brand)] enabled:hover:text-brand disabled:opacity-35"
-            aria-label="Next month"
+            aria-label={ui.common.next}
           >
-            <ChevronRight className="size-4" />
+            <ChevronRight className={cn('size-4', rtl && 'rotate-180')} />
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center">
-        {DAY_HEADS.map((head, index) => (
+        {DAY_ORDER.map((day, index) => (
           <span
-            key={`${head}-${index}`}
+            key={`${day}-${index}`}
             className="pb-2 text-[11px] uppercase tracking-[0.1em] text-muted"
           >
-            {head}
+            {weekdayShort(day, locale).charAt(0)}
           </span>
         ))}
       </div>
@@ -158,17 +160,18 @@ export function Calendar({
 
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-4 text-[11px] text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-brand" /> Selected
+          <span className="size-2.5 rounded-full bg-brand" /> {ui.booking.legendSelected}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-[color:var(--brand-soft)]" /> Available
+          <span className="size-2.5 rounded-full bg-[color:var(--brand-soft)]" /> {ui.booking.legendAvailable}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-line" /> Closed / full
+          <span className="size-2.5 rounded-full bg-line" /> {ui.booking.legendClosedFull}
         </span>
         {mode === 'range' && value && endValue ? (
           <span className="ml-auto text-brand">
-            {diffDays(value, endValue)} night{diffDays(value, endValue) > 1 ? 's' : ''}
+            {diffDays(value, endValue)}{' '}
+            {diffDays(value, endValue) > 1 ? ui.common.nights : ui.common.night}
           </span>
         ) : null}
       </div>

@@ -18,6 +18,7 @@ import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { EASE } from '@/components/animations/motion-primitives';
 import { DemoLogo } from '@/components/site/logo';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import { formatDayLong } from '@/lib/date';
 import { pluralize } from '@/lib/format';
@@ -34,16 +35,21 @@ export function DashboardShell({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const base = `/${config.slug}/dashboard`;
+  const { ui, locale, rtl, href } = useLocale();
+  const base = href(`/${config.slug}/dashboard`);
 
   const nav = [
-    { href: base, label: 'Dashboard', icon: LayoutDashboard },
-    { href: `${base}/appointments`, label: 'Appointments', icon: ListChecks },
-    { href: `${base}/calendar`, label: 'Calendar', icon: CalendarDays },
-    { href: `${base}/services`, label: 'Services', icon: Scissors },
-    { href: `${base}/staff`, label: pluralize(2, config.booking.labels.staff), icon: UserRound },
+    { href: base, label: ui.dashboard.nav.dashboard, icon: LayoutDashboard },
+    { href: `${base}/appointments`, label: ui.dashboard.nav.appointments, icon: ListChecks },
+    { href: `${base}/calendar`, label: ui.dashboard.nav.calendar, icon: CalendarDays },
+    { href: `${base}/services`, label: ui.dashboard.nav.services, icon: Scissors },
+    {
+      href: `${base}/staff`,
+      label: locale === 'ar' ? config.booking.labels.staff : pluralize(2, config.booking.labels.staff),
+      icon: UserRound,
+    },
     { href: `${base}/customers`, label: config.dashboard.customerLabelPlural, icon: Users },
-    { href: `${base}/settings`, label: 'Settings', icon: Settings },
+    { href: `${base}/settings`, label: ui.dashboard.nav.settings, icon: Settings },
   ];
 
   const navList = (
@@ -65,7 +71,7 @@ export function DashboardShell({
             {active ? (
               <motion.span
                 layoutId="dash-active"
-                className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-brand"
+                className={cn('absolute inset-y-1.5 w-0.5 rounded-full bg-brand', rtl ? 'right-0' : 'left-0')}
               />
             ) : null}
             <item.icon className="size-[18px] shrink-0" strokeWidth={1.7} />
@@ -81,19 +87,19 @@ export function DashboardShell({
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-line bg-surface lg:flex">
         <div className="flex h-[var(--nav-height)] items-center border-b border-line px-5">
-          <DemoLogo config={config} href={`/${config.slug}`} />
+          <DemoLogo config={config} href={href(`/${config.slug}`)} />
         </div>
         {navList}
         <div className="border-t border-line p-4">
           <Link
-            href={`/${config.slug}`}
+            href={href(`/${config.slug}`)}
             className="flex items-center gap-2 rounded-brand px-3 py-2 text-[13px] text-muted transition-colors hover:text-ink"
           >
-            <ChevronLeft className="size-4" />
-            Back to website
+            <ChevronLeft className={cn('size-4', rtl && 'rotate-180')} />
+            {ui.common.backToWebsite}
           </Link>
           <p className="mt-3 rounded-brand bg-[color:var(--brand-soft)] px-3 py-2.5 text-[11px] leading-relaxed text-brand">
-            Demo data. Bookings you make in the demo appear here instantly.
+            {ui.dashboard.demoNote}
           </p>
         </div>
       </aside>
@@ -104,16 +110,16 @@ export function DashboardShell({
           type="button"
           onClick={() => setOpen(true)}
           className="grid size-10 place-items-center rounded-brand border border-line"
-          aria-label="Open dashboard menu"
+          aria-label={ui.dashboard.openMenu}
         >
           <Menu className="size-5" />
         </button>
         <DemoLogo config={config} compact />
         <Link
-          href={`/${config.slug}`}
+          href={href(`/${config.slug}`)}
           className="rounded-brand border border-line px-3 py-2 text-[12px] text-muted"
         >
-          Site
+          {ui.dashboard.site}
         </Link>
       </header>
 
@@ -127,11 +133,14 @@ export function DashboardShell({
           >
             <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} aria-hidden />
             <motion.div
-              initial={{ x: '-100%' }}
+              initial={{ x: rtl ? '100%' : '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
+              exit={{ x: rtl ? '100%' : '-100%' }}
               transition={{ duration: 0.4, ease: EASE }}
-              className="absolute inset-y-0 left-0 flex w-[min(84vw,290px)] flex-col bg-surface"
+              className={cn(
+                'absolute inset-y-0 flex w-[min(84vw,290px)] flex-col bg-surface',
+                rtl ? 'right-0' : 'left-0',
+              )}
               role="dialog"
               aria-modal="true"
             >
@@ -141,15 +150,15 @@ export function DashboardShell({
                   type="button"
                   onClick={() => setOpen(false)}
                   className="grid size-9 place-items-center rounded-brand border border-line"
-                  aria-label="Close menu"
+                  aria-label={ui.common.closeMenu}
                 >
                   <X className="size-4" />
                 </button>
               </div>
               {navList}
               <div className="border-t border-line p-4">
-                <Link href={`/${config.slug}`} className="text-[13px] text-muted">
-                  ← Back to website
+                <Link href={href(`/${config.slug}`)} className="text-[13px] text-muted">
+                  {ui.common.backToWebsite}
                 </Link>
               </div>
             </motion.div>
@@ -161,14 +170,14 @@ export function DashboardShell({
         <div className="hidden h-[var(--nav-height)] items-center justify-between gap-4 border-b border-line px-8 lg:flex">
           <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted">
-              {config.businessName} · Operations
+              {config.businessName} · {ui.dashboard.operations}
             </p>
-            <p className="mt-0.5 text-[13px]">{formatDayLong(todayIso)}</p>
+            <p className="mt-0.5 text-[13px]">{formatDayLong(todayIso, locale)}</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[12px] text-muted">
               <span className="size-1.5 rounded-full bg-emerald-500" />
-              All systems normal
+              {ui.dashboard.allNormal}
             </span>
             <span className="grid size-9 place-items-center rounded-full bg-[color:var(--brand-soft)] text-[12px] font-medium text-brand">
               {config.staff[0]?.name.split(' ').map((part) => part.charAt(0)).slice(0, 2).join('')}

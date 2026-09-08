@@ -4,6 +4,7 @@ import { CalendarOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { EmptyState, PageHeader, Panel, StatusBadge } from '@/components/dashboard/ui';
 import { Button } from '@/components/ui/button';
+import { useLocale } from '@/hooks/use-locale';
 import { useAppointmentBook } from '@/hooks/use-appointment-book';
 import { appointmentEnd, type Appointment } from '@/lib/dashboard';
 import { cn } from '@/lib/cn';
@@ -15,7 +16,7 @@ import {
   minutesToTime,
   startOfWeek,
   timeToMinutes,
-  WEEKDAY_SHORT,
+  weekdayShort,
   weekdayOf,
 } from '@/lib/date';
 import { formatMoney } from '@/lib/format';
@@ -24,6 +25,7 @@ import type { DemoConfig } from '@/types/demo';
 const ROW_HEIGHT = 56;
 
 export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIso: string }) {
+  const { ui, locale, rtl } = useLocale();
   const { appointments } = useAppointmentBook(config, todayIso);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(todayIso));
   const [selectedDay, setSelectedDay] = useState(todayIso);
@@ -123,17 +125,17 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
   return (
     <>
       <PageHeader
-        title="Calendar"
-        subtitle={`${formatDayShort(days[0]!)} – ${formatDayShort(days[6]!)} · ${weekAppointments} bookings`}
+        title={ui.dashboard.nav.calendar}
+        subtitle={`${formatDayShort(days[0]!, locale)} – ${formatDayShort(days[6]!, locale)} · ${weekAppointments} ${ui.dashboard.overview.bookings}`}
         actions={
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setWeekStart((current) => addDays(current, -7))}
               className="grid size-9 place-items-center rounded-brand border border-line transition-colors hover:border-[color:var(--brand)]"
-              aria-label="Previous week"
+              aria-label={ui.dashboard.calendar.previousWeek}
             >
-              <ChevronLeft className="size-4" />
+              <ChevronLeft className={cn('size-4', rtl && 'rotate-180')} />
             </button>
             <Button
               size="sm"
@@ -143,15 +145,15 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
                 setSelectedDay(todayIso);
               }}
             >
-              This week
+              {ui.dashboard.calendar.thisWeek}
             </Button>
             <button
               type="button"
               onClick={() => setWeekStart((current) => addDays(current, 7))}
               className="grid size-9 place-items-center rounded-brand border border-line transition-colors hover:border-[color:var(--brand)]"
-              aria-label="Next week"
+              aria-label={ui.dashboard.calendar.nextWeek}
             >
-              <ChevronRight className="size-4" />
+              <ChevronRight className={cn('size-4', rtl && 'rotate-180')} />
             </button>
           </div>
         }
@@ -172,7 +174,7 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
                 )}
               >
                 <p className="text-[11px] uppercase tracking-[0.1em] text-muted">
-                  {WEEKDAY_SHORT[weekdayOf(iso)]}
+                  {weekdayShort(weekdayOf(iso), locale)}
                 </p>
                 <p
                   className={cn(
@@ -183,7 +185,9 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
                   {fromISODate(iso).getDate()}
                 </p>
                 <p className="text-[10.5px] text-muted">
-                  {closed ? 'Closed' : `${byDay.get(iso)?.length ?? 0} booked`}
+                  {closed
+                    ? ui.common.closed
+                    : `${byDay.get(iso)?.length ?? 0} ${ui.dashboard.calendar.booked}`}
                 </p>
               </div>
             );
@@ -198,7 +202,7 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
                 className="absolute right-2 -translate-y-1/2 text-[11px] tabular-nums text-muted"
                 style={{ top: ((minute - startMinutes) / 60) * ROW_HEIGHT }}
               >
-                {formatTime(minutesToTime(minute))}
+                {formatTime(minutesToTime(minute), locale)}
               </span>
             ))}
           </div>
@@ -237,7 +241,7 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
                   return (
                     <div
                       key={appointment.id}
-                      title={`${appointment.customer.name} · ${serviceName(appointment.serviceId)} · ${formatTime(appointment.time)}`}
+                      title={`${appointment.customer.name} · ${serviceName(appointment.serviceId)} · ${formatTime(appointment.time, locale)}`}
                       className={cn(
                         'absolute overflow-hidden rounded-[4px] border-l-2 px-1.5 py-1 text-[11px] leading-tight transition-transform duration-200 hover:z-20 hover:scale-[1.03]',
                         appointment.source === 'visitor'
@@ -282,7 +286,7 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
                 )}
               >
                 <span className="text-[10px] uppercase tracking-[0.1em]">
-                  {WEEKDAY_SHORT[weekdayOf(iso)]}
+                  {weekdayShort(weekdayOf(iso), locale)}
                 </span>
                 <span className="mt-0.5 font-display text-lg tabular-nums">
                   {fromISODate(iso).getDate()}
@@ -299,17 +303,17 @@ export function CalendarView({ config, todayIso }: { config: DemoConfig; todayIs
           {selected.length === 0 ? (
             <EmptyState
               icon={CalendarOff}
-              title="Nothing booked"
-              text="Pick another day, or create a booking from the public site to see it land here."
+              title={ui.dashboard.calendar.nothingBooked}
+              text={ui.dashboard.calendar.nothingBookedText}
             />
           ) : (
             <ul className="divide-y divide-line">
               {selected.map((appointment) => (
                 <li key={appointment.id} className="flex items-start gap-4 px-4 py-3.5">
                   <span className="w-[68px] shrink-0 text-[12.5px] tabular-nums text-muted">
-                    {appointment.time ? formatTime(appointment.time) : '—'}
+                    {appointment.time ? formatTime(appointment.time, locale) : '—'}
                     <span className="block text-[10.5px] text-muted/70">
-                      {appointment.time ? formatTime(appointmentEnd(appointment)) : ''}
+                      {appointment.time ? formatTime(appointmentEnd(appointment), locale) : ''}
                     </span>
                   </span>
                   <span className="min-w-0 flex-1">

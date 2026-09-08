@@ -6,6 +6,7 @@ import { ImageReveal, KenBurns, Parallax } from '@/components/animations/image-r
 import { Counter, EASE, TextReveal } from '@/components/animations/motion-primitives';
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { SmartImage } from '@/components/ui/smart-image';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import type { DemoConfig, HeroSection } from '@/types/demo';
 
@@ -51,6 +52,8 @@ function Kicker({ children, className }: { children: string; className?: string 
 }
 
 function HeroActions({ config, delay = 0.6 }: { config: DemoConfig; delay?: number }) {
+  const { rtl, href } = useLocale();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -58,13 +61,13 @@ function HeroActions({ config, delay = 0.6 }: { config: DemoConfig; delay?: numb
       transition={{ duration: 0.7, delay, ease: EASE }}
       className="flex flex-col gap-3 sm:flex-row sm:items-center"
     >
-      <Button href={`/${config.slug}/book`} size="lg">
+      <Button href={href(`/${config.slug}/book`)} size="lg">
         {config.cta.label}
-        <ButtonArrow />
+        <ButtonArrow className={rtl ? 'rotate-180 group-hover/btn:-translate-x-1' : ''} />
       </Button>
       <Button href={`tel:${config.contact.phone.replace(/\s/g, '')}`} variant="outline" size="lg" native>
         <Phone className="size-4" />
-        {config.contact.phone}
+        <span dir="ltr">{config.contact.phone}</span>
       </Button>
     </motion.div>
   );
@@ -140,6 +143,8 @@ function Glow() {
 /* ------------------------------------------------------------------ */
 
 function SplitHero({ section, config }: HeroProps) {
+  const { ui } = useLocale();
+
   return (
     <section className="relative overflow-hidden bg-page pt-[calc(var(--nav-height)+2.5rem)] pb-16 sm:pb-20 lg:pt-[calc(var(--nav-height)+4.5rem)] lg:pb-28">
       <Glow />
@@ -207,10 +212,8 @@ function SplitHero({ section, config }: HeroProps) {
               <Star className="size-4 fill-current text-brand" />
               <span className="font-display text-lg font-semibold">4.9</span>
             </div>
-            <p className="mt-1 text-[11px] leading-tight text-muted">
-              from 1,240
-              <br />
-              verified reviews
+            <p className="mt-1 max-w-[7rem] text-[11px] leading-tight text-muted">
+              {ui.common.verifiedReviews}
             </p>
           </motion.div>
         </div>
@@ -376,6 +379,8 @@ function EditorialHero({ section, config }: HeroProps) {
 /* ------------------------------------------------------------------ */
 
 function CinematicHero({ section, config }: HeroProps) {
+  const { ui } = useLocale();
+
   return (
     <section className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-page">
       <div className="absolute inset-0">
@@ -437,7 +442,7 @@ function CinematicHero({ section, config }: HeroProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6, duration: 0.8 }}
         className="absolute bottom-6 right-5 hidden size-12 place-items-center rounded-full border border-line text-muted transition-colors hover:border-[color:var(--brand)] hover:text-brand lg:grid"
-        aria-label="Scroll to content"
+        aria-label={ui.common.scrollToContent}
       >
         <ArrowDown className="size-4 animate-bounce" />
       </motion.a>

@@ -13,6 +13,7 @@ import {
   StatusBadge,
 } from '@/components/dashboard/ui';
 import { Button } from '@/components/ui/button';
+import { useLocale } from '@/hooks/use-locale';
 import { useAppointmentBook } from '@/hooks/use-appointment-book';
 import { appointmentEnd } from '@/lib/dashboard';
 import { diffDays, formatDayShort, formatTime, relativeDayLabel } from '@/lib/date';
@@ -23,24 +24,14 @@ import type { DemoConfig } from '@/types/demo';
 type RangeFilter = 'today' | 'upcoming' | 'past' | 'all';
 type StatusFilter = 'all' | BookingStatus;
 
-const RANGES: readonly { id: RangeFilter; label: string }[] = [
-  { id: 'today', label: 'Today' },
-  { id: 'upcoming', label: 'Upcoming' },
-  { id: 'past', label: 'Past' },
-  { id: 'all', label: 'All' },
-];
+const RANGE_IDS: readonly RangeFilter[] = ['today', 'upcoming', 'past', 'all'];
 
-const STATUSES: readonly { id: StatusFilter; label: string }[] = [
-  { id: 'all', label: 'Any status' },
-  { id: 'confirmed', label: 'Confirmed' },
-  { id: 'pending', label: 'Pending' },
-  { id: 'completed', label: 'Completed' },
-  { id: 'cancelled', label: 'Cancelled' },
-];
+const STATUS_IDS: readonly StatusFilter[] = ['all', 'confirmed', 'pending', 'completed', 'cancelled'];
 
 const PAGE_SIZE = 12;
 
 export function AppointmentsView({ config, todayIso }: { config: DemoConfig; todayIso: string }) {
+  const { ui, locale, href } = useLocale();
   const { appointments, ready } = useAppointmentBook(config, todayIso);
   const [range, setRange] = useState<RangeFilter>('today');
   const [status, setStatus] = useState<StatusFilter>('all');
@@ -51,7 +42,7 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
   const serviceName = (id: string) =>
     config.services.find((service) => service.id === id)?.name ?? '—';
   const staffName = (id: string | null) =>
-    config.staff.find((member) => member.id === id)?.name ?? 'Unassigned';
+    config.staff.find((member) => member.id === id)?.name ?? ui.dashboard.staff.noTeam;
 
   const byRange = useMemo(
     () => ({
@@ -110,19 +101,19 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
   return (
     <>
       <PageHeader
-        title="Appointments"
-        subtitle={`${filtered.length} of ${appointments.length} records`}
+        title={ui.dashboard.nav.appointments}
+        subtitle={`${filtered.length} ${ui.dashboard.table.recordsOf} ${appointments.length} ${ui.dashboard.table.records}`}
         actions={
           <Button variant="outline" size="sm" onClick={exportCsv}>
             <Download className="size-4" />
-            Export CSV
+            {ui.dashboard.table.exportCsv}
           </Button>
         }
       />
 
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <FilterTabs
-          options={RANGES}
+          options={RANGE_IDS.map((id) => ({ id, label: ui.dashboard.filters[id === 'all' ? 'all' : id] }))}
           value={range}
           onChange={(value) => {
             setRange(value);
@@ -142,7 +133,7 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
               setQuery(value);
               setPage(0);
             }}
-            placeholder={`Search ${config.dashboard.customerLabelPlural.toLowerCase()}, reference…`}
+            placeholder={ui.dashboard.filters.searchAppointments}
             className="sm:w-64"
           />
           <label className="sr-only" htmlFor="status-filter">
@@ -157,9 +148,9 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
             }}
             className="rounded-brand border border-line bg-surface px-3 py-2.5 text-[13px] outline-none focus:border-[color:var(--brand)]"
           >
-            {STATUSES.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
+            {STATUS_IDS.map((id) => (
+              <option key={id} value={id}>
+                {id === 'all' ? ui.dashboard.filters.anyStatus : ui.dashboard.filters[id]}
               </option>
             ))}
           </select>
@@ -171,8 +162,8 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
           query || status !== 'all' ? (
             <EmptyState
               icon={SearchX}
-              title="No matching appointments"
-              text="Try a different search term, status or date range."
+              title={ui.dashboard.filters.noMatches}
+              text={ui.dashboard.filters.noMatchesText}
               action={
                 <Button
                   size="sm"
@@ -182,18 +173,18 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
                     setStatus('all');
                   }}
                 >
-                  Clear filters
+                  {ui.dashboard.filters.clearFilters}
                 </Button>
               }
             />
           ) : (
             <EmptyState
               icon={CalendarX2}
-              title="Nothing in this range"
-              text="When bookings come in they appear here in real time."
+              title={ui.dashboard.filters.nothingInRange}
+              text={ui.dashboard.filters.nothingInRangeText}
               action={
-                <Button href={`/${config.slug}/book`} size="sm">
-                  Make a demo booking
+                <Button href={href(`/${config.slug}/book`)} size="sm">
+                  {ui.dashboard.filters.makeDemoBooking}
                 </Button>
               }
             />
@@ -205,10 +196,10 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
                 config.dashboard.customerLabel,
                 config.booking.labels.service,
                 config.booking.labels.staff,
-                'Date',
-                'Time',
-                'Status',
-                'Value',
+                ui.dashboard.table.date,
+                ui.dashboard.table.time,
+                ui.dashboard.table.status,
+                ui.dashboard.table.value,
               ]}
             >
               {!ready ? (
@@ -232,14 +223,15 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
                       {staffName(appointment.staffId)}
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px]">
-                      {relativeDayLabel(appointment.date, todayIso) ?? formatDayShort(appointment.date)}
+                      {relativeDayLabel(appointment.date, todayIso, locale) ??
+                        formatDayShort(appointment.date, locale)}
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px] tabular-nums text-muted">
                       {config.booking.mode === 'stay'
-                        ? `${appointment.endDate ? diffDays(appointment.date, appointment.endDate) : 1} nights · ${appointment.guests ?? 1} guests`
+                        ? `${appointment.endDate ? diffDays(appointment.date, appointment.endDate) : 1} ${ui.common.nights} · ${appointment.guests ?? 1} ${ui.common.guests}`
                         : appointment.time
-                          ? `${formatTime(appointment.time)} – ${formatTime(appointmentEnd(appointment))}`
-                          : `${appointment.guests ?? 1} guests`}
+                          ? `${formatTime(appointment.time, locale)} – ${formatTime(appointmentEnd(appointment), locale)}`
+                          : `${appointment.guests ?? 1} ${ui.common.guests}`}
                     </td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={appointment.status} />
@@ -255,7 +247,7 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
             {pages > 1 ? (
               <div className="flex items-center justify-between gap-4 border-t border-line px-5 py-3.5 text-[13px]">
                 <span className="text-muted">
-                  Page {current + 1} of {pages}
+                  {ui.dashboard.table.page} {current + 1} {ui.dashboard.table.pageOf} {pages}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -264,7 +256,7 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
                     disabled={current === 0}
                     className="rounded-brand border border-line px-3 py-1.5 transition-colors enabled:hover:border-[color:var(--brand)] disabled:opacity-40"
                   >
-                    Previous
+                    {ui.dashboard.table.previous}
                   </button>
                   <button
                     type="button"
@@ -272,7 +264,7 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
                     disabled={current >= pages - 1}
                     className="rounded-brand border border-line px-3 py-1.5 transition-colors enabled:hover:border-[color:var(--brand)] disabled:opacity-40"
                   >
-                    Next
+                    {ui.dashboard.table.next}
                   </button>
                 </div>
               </div>

@@ -95,6 +95,100 @@ export const siteConfig = {
     { title: 'We adapt it to you', text: 'Your brand, services, staff, hours and pricing — usually inside a week.' },
     { title: 'You go live', text: 'Deployed, measured and handed over with everything you need to run it.' },
   ],
-} as const;
+};
 
 export type SiteConfig = typeof siteConfig;
+
+/** Arabic copy for the demo selector. Structure mirrors `siteConfig`. */
+export const siteConfigAr: SiteConfig = {
+  brandName: 'Auto Synex',
+  tagline: 'مواقع وأنظمة حجز ولوحات تحكم للأنشطة التي تستقبل حجوزات.',
+  metaTitle: 'Auto Synex — قوالب مواقع وأنظمة حجز تفاعلية',
+  metaDescription:
+    'خمسة مواقع تجريبية كاملة بأنظمة حجز حقيقية ولوحات تحكم — للعيادات وعيادات الأسنان والصالونات والفنادق والمطاعم.',
+  email: 'hello@autosynex.com',
+  phone: '+1 (415) 555-0110',
+
+  hero: {
+    kicker: 'قوالب تفاعلية — لا صور',
+    headline: ['نشاطك،', 'مبنيٌّ سلفًا.'],
+    lead: 'خمسة مواقع كاملة تستطيع تصفّحها الآن. أنظمة حجز حقيقية، ومنطق توفّر فعلي، ولوحات تحكم تعمل. اختر الأقرب إلى نشاطك وجرّبه كأنه لك.',
+    stats: [
+      { value: '5', label: 'قوالب حيّة' },
+      { value: '3', label: 'منتجات لكل قالب' },
+      { value: '100%', label: 'تفاعلية بالكامل' },
+    ],
+  },
+
+  offers: [
+    {
+      id: 'website',
+      name: 'الموقع',
+      tagline: 'الواجهة',
+      description:
+        'موقع مخصّص متحرّك ومتجاوب بالكامل مبني حول هويتك — لا قالب جاهز وُضع عليه شعارك.',
+      points: [
+        'تصميم وإخراج بصري خاص',
+        'حركة مدمجة في البنية لا مضافة',
+        'يبدأ من الجوال، وسريع على الشبكات الفعلية',
+        'بنية وبيانات وصفية للـSEO',
+        'محتوى تستطيع تعديله بنفسك',
+      ],
+      icon: 'palette',
+    },
+    {
+      id: 'booking',
+      name: 'نظام الحجز',
+      tagline: 'المحرّك',
+      description:
+        'منطق توفّر حقيقي: ساعات العمل، ومناوبات الطاقم، ومدد الخدمات، ومنع الحجز المزدوج، والتأكيدات.',
+      points: [
+        'تدفق حجز متعدد الخطوات',
+        'ساعات عمل وفترات استراحة',
+        'توفّر لكل موظف على حدة',
+        'منع الحجز المزدوج',
+        'تأكيدات بالبريد والرسائل',
+      ],
+      icon: 'calendar',
+      featured: true,
+    },
+    {
+      id: 'complete',
+      name: 'موقع + حجز + لوحة تحكم',
+      tagline: 'المنظومة كاملة',
+      description:
+        'كل ما سبق مع مكتب الإدارة: المواعيد والتقويم والعملاء والطاقم والخدمات والإيرادات في مكان واحد.',
+      points: [
+        'كل ما في الموقع والحجز',
+        'لوحة تشغيل متكاملة',
+        'تقويم وجدول مواعيد',
+        'سجلات العملاء والطاقم',
+        'تقارير الإيرادات والإشغال',
+      ],
+      icon: 'building',
+    },
+  ] as readonly Offer[],
+
+  capabilities: [
+    { icon: 'zap', title: 'سريع بطبيعته', text: 'مُولَّد من الخادم، وصور محسّنة، ومضبوط لشبكات الجوال.' },
+    { icon: 'calendar', title: 'حجز يصمد', text: 'ساعات العمل والاستراحات والمهل والمناوبات — معالَجة كما يجب.' },
+    { icon: 'sparkles', title: 'حركة منضبطة', text: 'حركة تدلّ على الجودة دون أن تعترض الطريق.' },
+    { icon: 'shield', title: 'مبني ليُصان', text: 'محتوى مبني على ملفات إعداد، وأنواع صارمة، وتسليم سهل.' },
+  ],
+
+  process: [
+    { title: 'اختر الاتجاه', text: 'ابدأ من القالب الأقرب إلى نشاطك، أو من صفحة بيضاء.' },
+    { title: 'نكيّفه عليك', text: 'هويتك وخدماتك وطاقمك وساعاتك وأسعارك — عادة خلال أسبوع.' },
+    { title: 'تنطلق', text: 'منشور ومقيس ومُسلَّم إليك بكل ما تحتاجه لتشغيله.' },
+  ],
+};
+
+/**
+ * The main Auto Synex site. When the demos are proxied at `/demos` this is the
+ * parent origin's root, so a plain '/' takes the visitor back to the site.
+ */
+export const parentSiteUrl = process.env.NEXT_PUBLIC_PARENT_URL ?? '/';
+
+export function getSite(locale: 'en' | 'ar'): SiteConfig {
+  return locale === 'ar' ? siteConfigAr : siteConfig;
+}

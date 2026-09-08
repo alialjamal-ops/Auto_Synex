@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowDownRight, ArrowUpRight, Search, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { EASE } from '@/components/animations/motion-primitives';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import type { BookingStatus } from '@/lib/booking';
 
@@ -130,6 +131,8 @@ const statusStyles: Record<BookingStatus, string> = {
 };
 
 export function StatusBadge({ status }: { status: BookingStatus }) {
+  const { ui } = useLocale();
+
   return (
     <span
       className={cn(
@@ -138,7 +141,7 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
       )}
     >
       <span className="size-1.5 rounded-full bg-current" />
-      {status}
+      {ui.dashboard.status[status]}
     </span>
   );
 }
@@ -150,7 +153,7 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
 export function SearchInput({
   value,
   onChange,
-  placeholder = 'Search…',
+  placeholder,
   className,
 }: {
   value: string;
@@ -158,16 +161,23 @@ export function SearchInput({
   placeholder?: string;
   className?: string;
 }) {
+  const { rtl } = useLocale();
+
   return (
     <div className={cn('relative', className)}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+      <Search
+        className={cn(
+          'pointer-events-none absolute top-1/2 size-4 -translate-y-1/2 text-muted',
+          rtl ? 'right-3' : 'left-3',
+        )}
+      />
       <input
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full rounded-brand border border-line bg-surface py-2.5 pl-9 pr-3 text-[13px] outline-none transition-colors placeholder:text-muted/60 focus:border-[color:var(--brand)]"
+        className="w-full rounded-brand border border-line bg-surface py-2.5 ps-9 pe-3 text-[13px] outline-none transition-colors placeholder:text-muted/60 focus:border-[color:var(--brand)]"
       />
     </div>
   );

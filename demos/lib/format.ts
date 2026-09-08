@@ -1,3 +1,5 @@
+import type { Locale } from '@/config/i18n';
+
 /** Presentation helpers shared by the sites, the booking flow and the dashboard. */
 
 export function formatMoney(amount: number, symbol = '$', decimals = 0): string {
@@ -13,12 +15,18 @@ export function formatCompactMoney(amount: number, symbol = '$'): string {
   return formatMoney(amount, symbol);
 }
 
-export function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
+export function formatDuration(minutes: number, locale: Locale = 'en'): string {
+  const ar = locale === 'ar';
+  const min = ar ? 'دقيقة' : 'min';
+  const hr = (count: number) =>
+    ar ? (count === 1 ? 'ساعة' : count === 2 ? 'ساعتان' : 'ساعات') : count > 1 ? 'hrs' : 'hr';
+
+  if (minutes < 60) return `${minutes} ${min}`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  if (rest === 0) return `${hours} hr${hours > 1 ? 's' : ''}`;
-  return `${hours} hr ${rest} min`;
+  const hoursLabel = ar && hours <= 2 ? hr(hours) : `${hours} ${hr(hours)}`;
+  if (rest === 0) return hoursLabel;
+  return `${hoursLabel} ${rest} ${min}`;
 }
 
 export function initials(name: string): string {

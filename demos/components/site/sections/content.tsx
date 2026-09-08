@@ -6,6 +6,7 @@ import { Counter, Reveal, Stagger, StaggerItem } from '@/components/animations/m
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { Eyebrow, SectionHeading, SectionShell, Surface } from '@/components/ui/primitives';
 import { SmartImage } from '@/components/ui/smart-image';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import { getIcon } from '@/lib/icons';
 import type {
@@ -22,6 +23,7 @@ import type {
 /* ------------------------------------------------------------------ */
 
 export function Split({ section, config }: { section: SplitSection; config: DemoConfig }) {
+  const { href } = useLocale();
   const imageFirst = section.variant === 'image-left';
 
   return (
@@ -60,7 +62,7 @@ export function Split({ section, config }: { section: SplitSection; config: Demo
           ) : null}
 
           <Reveal delay={0.25}>
-            <Button href={`/${config.slug}/book`} variant="outline" className="mt-9">
+            <Button href={href(`/${config.slug}/book`)} variant="outline" className="mt-9">
               {config.cta.label}
               <ButtonArrow />
             </Button>
@@ -243,6 +245,8 @@ export function MarqueeBand({ section }: { section: MarqueeSection }) {
 /* ------------------------------------------------------------------ */
 
 export function CtaBand({ section, config }: { section: CtaSection; config: DemoConfig }) {
+  const { ui, href } = useLocale();
+
   return (
     <section id={section.id} className="relative scroll-mt-24 overflow-hidden bg-page py-20 sm:py-24">
       {section.image ? (
@@ -283,12 +287,12 @@ export function CtaBand({ section, config }: { section: CtaSection; config: Demo
             </Reveal>
           ) : null}
           <Reveal delay={0.2} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button href={`/${config.slug}/book`} size="lg">
+            <Button href={href(`/${config.slug}/book`)} size="lg">
               {config.cta.label}
               <ButtonArrow />
             </Button>
             <Button href="#contact" variant="outline" size="lg">
-              Contact us
+              {ui.common.contactUs}
             </Button>
           </Reveal>
           {section.note ? (

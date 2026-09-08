@@ -13,6 +13,7 @@ import {
   StatCard,
 } from '@/components/dashboard/ui';
 import { Button } from '@/components/ui/button';
+import { useLocale } from '@/hooks/use-locale';
 import { useAppointmentBook } from '@/hooks/use-appointment-book';
 import { cn } from '@/lib/cn';
 import { formatDayShort } from '@/lib/date';
@@ -22,12 +23,7 @@ import type { DemoConfig } from '@/types/demo';
 
 type Segment = 'all' | CustomerRecord['status'];
 
-const SEGMENTS: readonly { id: Segment; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'active', label: 'Active' },
-  { id: 'new', label: 'New' },
-  { id: 'lapsed', label: 'Lapsed' },
-];
+const SEGMENT_IDS: readonly Segment[] = ['all', 'active', 'new', 'lapsed'];
 
 const statusStyle: Record<CustomerRecord['status'], string> = {
   active: 'bg-emerald-500/12 text-emerald-500',
@@ -38,6 +34,7 @@ const statusStyle: Record<CustomerRecord['status'], string> = {
 const PAGE_SIZE = 12;
 
 export function CustomersView({ config, todayIso }: { config: DemoConfig; todayIso: string }) {
+  const { ui, locale } = useLocale();
   const { customers, ready } = useAppointmentBook(config, todayIso);
   const [segment, setSegment] = useState<Segment>('all');
   const [query, setQuery] = useState('');
@@ -66,20 +63,26 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
     <>
       <PageHeader
         title={config.dashboard.customerLabelPlural}
-        subtitle={`${customers.length} records built from the appointment book`}
+        subtitle={`${customers.length} ${ui.dashboard.customers.builtFrom}`}
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
           index={0}
-          label={`Total ${config.dashboard.customerLabelPlural.toLowerCase()}`}
+          label={`${ui.dashboard.customers.total} ${config.dashboard.customerLabelPlural}`}
           value={String(customers.length)}
           icon={Users}
         />
-        <StatCard index={1} label="New" value={String(newCount)} hint="first visit" icon={UserPlus} />
+        <StatCard
+          index={1}
+          label={ui.dashboard.customers.new}
+          value={String(newCount)}
+          hint={ui.dashboard.customers.firstVisit}
+          icon={UserPlus}
+        />
         <StatCard
           index={2}
-          label="Lifetime value"
+          label={ui.dashboard.customers.lifetimeValue}
           value={formatCompactMoney(totalSpend, symbol)}
           icon={Wallet}
         />
@@ -87,7 +90,10 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
 
       <div className="mb-4 mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <FilterTabs
-          options={SEGMENTS}
+          options={SEGMENT_IDS.map((id) => ({
+            id,
+            label: id === 'all' ? ui.dashboard.filters.all : ui.dashboard.status[id],
+          }))}
           value={segment}
           onChange={(value) => {
             setSegment(value);
@@ -106,7 +112,7 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
             setQuery(value);
             setPage(0);
           }}
-          placeholder="Search by name or email…"
+          placeholder={ui.dashboard.filters.searchCustomers}
           className="lg:w-72"
         />
       </div>
@@ -115,8 +121,8 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
         {ready && filtered.length === 0 ? (
           <EmptyState
             icon={SearchX}
-            title="No matches"
-            text="No records match this filter combination."
+            title={ui.dashboard.filters.noCustomerMatches}
+            text={ui.dashboard.filters.noCustomerMatchesText}
             action={
               <Button
                 size="sm"
@@ -126,7 +132,7 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
                   setSegment('all');
                 }}
               >
-                Clear filters
+                {ui.dashboard.filters.clearFilters}
               </Button>
             }
           />
@@ -135,13 +141,13 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
             <DataTable
               head={[
                 config.dashboard.customerLabel,
-                'Contact',
-                'Visits',
-                'Last visit',
-                'Next',
-                'Favourite',
-                'Spend',
-                'Status',
+                ui.dashboard.table.contact,
+                ui.dashboard.table.visits,
+                ui.dashboard.table.lastVisit,
+                ui.dashboard.table.nextVisit,
+                ui.dashboard.table.favourite,
+                ui.dashboard.table.spend,
+                ui.dashboard.table.status,
               ]}
             >
               {!ready ? (
@@ -166,11 +172,11 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
                     </td>
                     <td className="px-5 py-3.5 text-[13px] tabular-nums">{customer.visits}</td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px] text-muted">
-                      {customer.lastVisit ? formatDayShort(customer.lastVisit) : '—'}
+                      {customer.lastVisit ? formatDayShort(customer.lastVisit, locale) : '—'}
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px]">
                       {customer.nextVisit ? (
-                        <span className="text-brand">{formatDayShort(customer.nextVisit)}</span>
+                        <span className="text-brand">{formatDayShort(customer.nextVisit, locale)}</span>
                       ) : (
                         <span className="text-muted">—</span>
                       )}
@@ -189,7 +195,7 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
                         )}
                       >
                         <span className="size-1.5 rounded-full bg-current" />
-                        {customer.status}
+                        {ui.dashboard.status[customer.status]}
                       </span>
                     </td>
                   </tr>
@@ -200,7 +206,7 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
             {pages > 1 ? (
               <div className="flex items-center justify-between gap-4 border-t border-line px-5 py-3.5 text-[13px]">
                 <span className="text-muted">
-                  Page {current + 1} of {pages}
+                  {ui.dashboard.table.page} {current + 1} {ui.dashboard.table.pageOf} {pages}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -209,7 +215,7 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
                     disabled={current === 0}
                     className="rounded-brand border border-line px-3 py-1.5 transition-colors enabled:hover:border-[color:var(--brand)] disabled:opacity-40"
                   >
-                    Previous
+                    {ui.dashboard.table.previous}
                   </button>
                   <button
                     type="button"
@@ -217,7 +223,7 @@ export function CustomersView({ config, todayIso }: { config: DemoConfig; todayI
                     disabled={current >= pages - 1}
                     className="rounded-brand border border-line px-3 py-1.5 transition-colors enabled:hover:border-[color:var(--brand)] disabled:opacity-40"
                   >
-                    Next
+                    {ui.dashboard.table.next}
                   </button>
                 </div>
               </div>

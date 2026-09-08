@@ -7,7 +7,8 @@ import { EASE, Reveal, Stagger, StaggerItem } from '@/components/animations/moti
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { Rating, SectionHeading, SectionShell, Surface } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
-import { formatTime, WEEKDAY_LONG } from '@/lib/date';
+import { useLocale } from '@/hooks/use-locale';
+import { formatTime, weekdayLong } from '@/lib/date';
 import type { ContactSection, DemoConfig, FaqSection, TestimonialsSection } from '@/types/demo';
 
 /* ------------------------------------------------------------------ */
@@ -15,6 +16,7 @@ import type { ContactSection, DemoConfig, FaqSection, TestimonialsSection } from
 /* ------------------------------------------------------------------ */
 
 export function Testimonials({ section }: { section: TestimonialsSection }) {
+  const { ui, rtl } = useLocale();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -66,17 +68,17 @@ export function Testimonials({ section }: { section: TestimonialsSection }) {
               type="button"
               onClick={() => move(-1)}
               className="grid size-11 place-items-center rounded-full border border-line text-ink transition-colors hover:border-[color:var(--brand)] hover:text-brand"
-              aria-label="Previous review"
+              aria-label={ui.common.previousReview}
             >
-              <ChevronLeft className="size-4" />
+              <ChevronLeft className={cn('size-4', rtl && 'rotate-180')} />
             </button>
             <button
               type="button"
               onClick={() => move(1)}
               className="grid size-11 place-items-center rounded-full border border-line text-ink transition-colors hover:border-[color:var(--brand)] hover:text-brand"
-              aria-label="Next review"
+              aria-label={ui.common.nextReview}
             >
-              <ChevronRight className="size-4" />
+              <ChevronRight className={cn('size-4', rtl && 'rotate-180')} />
             </button>
             <span className="ml-2 text-[13px] text-muted">
               {String(index + 1).padStart(2, '0')} / {String(section.items.length).padStart(2, '0')}
@@ -123,7 +125,7 @@ export function Testimonials({ section }: { section: TestimonialsSection }) {
                   setDirection(itemIndex > index ? 1 : -1);
                   setIndex(itemIndex);
                 }}
-                aria-label={`Review ${itemIndex + 1}`}
+                aria-label={`${ui.common.review} ${itemIndex + 1}`}
                 className={cn(
                   'h-0.5 flex-1 transition-colors duration-500',
                   itemIndex === index ? 'bg-brand' : 'bg-line',
@@ -208,6 +210,7 @@ export function Faq({ section }: { section: FaqSection }) {
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export function Contact({ section, config }: { section: ContactSection; config: DemoConfig }) {
+  const { ui, locale } = useLocale();
   const query = encodeURIComponent(config.contact.addressLines.join(', '));
   // Client-only value: the server has no business knowing the visitor's day.
   const todayIndex = useSyncExternalStore(
@@ -230,7 +233,7 @@ export function Contact({ section, config }: { section: ContactSection; config: 
                 <MapPin className="size-4" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Address</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">{ui.common.address}</p>
                 <address className="mt-1.5 text-sm not-italic leading-relaxed">
                   {config.contact.addressLines.map((line) => (
                     <span key={line} className="block">
@@ -247,7 +250,7 @@ export function Contact({ section, config }: { section: ContactSection; config: 
                 <Phone className="size-4" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Phone</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">{ui.common.phone}</p>
                 <a
                   href={`tel:${config.contact.phone.replace(/\s/g, '')}`}
                   className="mt-1.5 block text-sm hover:text-brand"
@@ -262,7 +265,7 @@ export function Contact({ section, config }: { section: ContactSection; config: 
                 <Mail className="size-4" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Email</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted">{ui.common.email}</p>
                 <a
                   href={`mailto:${config.contact.email}`}
                   className="mt-1.5 block text-sm hover:text-brand"
@@ -286,7 +289,7 @@ export function Contact({ section, config }: { section: ContactSection; config: 
               native
             >
               <Navigation className="size-4" />
-              Directions
+              {ui.common.directions}
             </Button>
           </Reveal>
         </div>
@@ -298,7 +301,7 @@ export function Contact({ section, config }: { section: ContactSection; config: 
 
           <Reveal delay={0.18}>
             <Surface className="mt-4 p-6">
-              <h3 className="text-[11px] uppercase tracking-[0.16em] text-muted">Opening hours</h3>
+              <h3 className="text-[11px] uppercase tracking-[0.16em] text-muted">{ui.common.openingHours}</h3>
               <ul className="mt-4 grid gap-x-10 gap-y-2.5 sm:grid-cols-2">
                 {DAY_ORDER.map((day) => {
                   const hours = config.hours[day];
@@ -311,11 +314,11 @@ export function Contact({ section, config }: { section: ContactSection; config: 
                         isToday && 'font-medium text-brand',
                       )}
                     >
-                      <span>{WEEKDAY_LONG[day]}</span>
+                      <span>{weekdayLong(day, locale)}</span>
                       <span className={cn(!hours && 'text-muted')}>
                         {hours
-                          ? `${formatTime(hours.open)} – ${formatTime(hours.close)}`
-                          : 'Closed'}
+                          ? `${formatTime(hours.open, locale)} – ${formatTime(hours.close, locale)}`
+                          : ui.common.closed}
                       </span>
                     </li>
                   );

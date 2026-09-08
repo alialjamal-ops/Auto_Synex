@@ -9,9 +9,11 @@ import { EASE, Reveal, Stagger, StaggerItem } from '@/components/animations/moti
 import { Button, ButtonArrow } from '@/components/ui/button';
 import { Badge, Rating, SectionHeading, SectionShell, Surface } from '@/components/ui/primitives';
 import { SmartImage } from '@/components/ui/smart-image';
+import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
 import { formatDuration, formatMoney } from '@/lib/format';
 import { getIcon } from '@/lib/icons';
+import type { Ui } from '@/config/i18n';
 import type {
   DemoConfig,
   MembershipSection,
@@ -28,11 +30,11 @@ function selectServices(config: DemoConfig, include?: readonly string[]): readon
     .filter((service): service is ServiceItem => Boolean(service));
 }
 
-function priceLabel(service: ServiceItem, config: DemoConfig): string {
-  if (service.price === 0) return 'No deposit';
+function priceLabel(service: ServiceItem, config: DemoConfig, ui: Ui): string {
+  if (service.price === 0) return ui.common.noDeposit;
   const value = formatMoney(service.price, config.booking.currencySymbol);
-  const suffix = config.booking.mode === 'stay' ? ' / night' : '';
-  return `${service.priceFrom ? 'from ' : ''}${value}${suffix}`;
+  const suffix = config.booking.mode === 'stay' ? ui.common.perNight : '';
+  return `${service.priceFrom ? `${ui.common.from} ` : ''}${value}${suffix}`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -40,8 +42,9 @@ function priceLabel(service: ServiceItem, config: DemoConfig): string {
 /* ------------------------------------------------------------------ */
 
 export function Services({ section, config }: { section: ServicesSection; config: DemoConfig }) {
+  const { ui, locale, href } = useLocale();
   const services = selectServices(config, section.include);
-  const bookHref = `/${config.slug}/book`;
+  const bookHref = href(`/${config.slug}/book`);
 
   if (section.variant === 'rooms') {
     return (
@@ -89,8 +92,8 @@ export function Services({ section, config }: { section: ServicesSection; config
                   </ul>
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
                     <p className="font-display text-xl">
-                      {priceLabel(service, config)}
-                      <span className="ml-2 text-xs font-normal text-muted">incl. breakfast</span>
+                      {priceLabel(service, config, ui)}
+                      <span className="mx-2 text-xs font-normal text-muted">{ui.common.inclBreakfast}</span>
                     </p>
                     <Button href={`${bookHref}?service=${service.id}`} size="sm">
                       {config.cta.short}
@@ -129,10 +132,10 @@ export function Services({ section, config }: { section: ServicesSection; config
                   {service.description}
                 </p>
                 <span className="text-[13px] text-muted sm:col-span-1">
-                  {formatDuration(service.durationMin)}
+                  {formatDuration(service.durationMin, locale)}
                 </span>
                 <span className="flex items-center justify-between gap-3 font-display text-lg sm:col-span-2 sm:justify-end">
-                  {priceLabel(service, config)}
+                  {priceLabel(service, config, ui)}
                   <ArrowUpRight className="size-4 text-brand transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </Link>
@@ -173,7 +176,7 @@ export function Services({ section, config }: { section: ServicesSection; config
                       ) : null}
                       <h3 className="font-display text-2xl text-white">{service.name}</h3>
                       <p className="mt-1 text-[13px] text-white/70">
-                        {formatDuration(service.durationMin)} · {priceLabel(service, config)}
+                        {formatDuration(service.durationMin, locale)} · {priceLabel(service, config, ui)}
                       </p>
                     </div>
                     <span className="grid size-10 shrink-0 place-items-center rounded-full border border-white/30 text-white transition-all duration-500 group-hover:bg-brand group-hover:text-[color:var(--brand-contrast)]">
@@ -224,11 +227,11 @@ export function Services({ section, config }: { section: ServicesSection; config
                 <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
                   <span className="flex items-center gap-1.5 text-[12px] text-muted">
                     <Clock className="size-3.5" />
-                    {formatDuration(service.durationMin)}
+                    {formatDuration(service.durationMin, locale)}
                   </span>
                   {section.showPrice !== false ? (
                     <span className="font-display text-[15px] font-semibold">
-                      {priceLabel(service, config)}
+                      {priceLabel(service, config, ui)}
                     </span>
                   ) : null}
                 </div>
@@ -236,7 +239,7 @@ export function Services({ section, config }: { section: ServicesSection; config
                   href={`${bookHref}?service=${service.id}`}
                   className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-brand"
                 >
-                  {config.cta.short} this
+                  {ui.common.bookThis}
                   <ArrowUpRight className="size-3.5 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
               </Surface>
@@ -253,6 +256,7 @@ export function Services({ section, config }: { section: ServicesSection; config
 /* ------------------------------------------------------------------ */
 
 export function Staff({ section, config }: { section: StaffSection; config: DemoConfig }) {
+  const { ui, href } = useLocale();
   if (section.variant === 'editorial') {
     return (
       <SectionShell id={section.id} tone={section.tone}>
@@ -285,8 +289,8 @@ export function Staff({ section, config }: { section: StaffSection; config: Demo
                   {member.bio}
                 </p>
                 <div className="sm:col-span-12 lg:col-span-2 lg:text-right">
-                  <Button href={`/${config.slug}/book?staff=${member.id}`} variant="outline" size="sm">
-                    Book {member.name.split(' ')[0]}
+                  <Button href={href(`/${config.slug}/book?staff=${member.id}`)} variant="outline" size="sm">
+                    {ui.common.book} {member.name.split(' ')[0]}
                   </Button>
                 </div>
               </div>
@@ -324,12 +328,12 @@ export function Staff({ section, config }: { section: StaffSection; config: Demo
                 <Rating value={member.rating} className="mt-4 justify-center" showValue />
               ) : null}
               <Button
-                href={`/${config.slug}/book?staff=${member.id}`}
+                href={href(`/${config.slug}/book?staff=${member.id}`)}
                 variant="ghost"
                 size="sm"
                 className="mt-4"
               >
-                Book {member.name.split(' ').slice(-1)[0]}
+                {ui.common.book} {member.name.split(' ').slice(-1)[0]}
                 <ButtonArrow />
               </Button>
             </StaggerItem>
@@ -369,10 +373,10 @@ export function Staff({ section, config }: { section: StaffSection; config: Demo
                 <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
                   {member.rating ? <Rating value={member.rating} size={13} showValue /> : <span />}
                   <Link
-                    href={`/${config.slug}/book?staff=${member.id}`}
+                    href={href(`/${config.slug}/book?staff=${member.id}`)}
                     className="inline-flex items-center gap-1 text-[13px] font-medium text-brand"
                   >
-                    Book
+                    {ui.common.book}
                     <ArrowUpRight className="size-3.5 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                 </div>
@@ -390,6 +394,7 @@ export function Staff({ section, config }: { section: StaffSection; config: Demo
 /* ------------------------------------------------------------------ */
 
 export function MenuBoard({ section, config }: { section: MenuSection; config: DemoConfig }) {
+  const { ui } = useLocale();
   const [active, setActive] = useState(section.groups[0]?.id ?? '');
   const group = section.groups.find((item) => item.id === active) ?? section.groups[0];
 
@@ -399,7 +404,7 @@ export function MenuBoard({ section, config }: { section: MenuSection; config: D
         <SectionHeading eyebrow={section.eyebrow} title={section.title} text={section.text} />
       </Reveal>
 
-      <div className="mt-10 flex flex-wrap gap-2" role="tablist" aria-label="Menu sections">
+      <div className="mt-10 flex flex-wrap gap-2" role="tablist" aria-label={ui.common.menuSections}>
         {section.groups.map((item) => (
           <button
             key={item.id}
@@ -481,6 +486,8 @@ export function Membership({
   section: MembershipSection;
   config: DemoConfig;
 }) {
+  const { ui, href } = useLocale();
+
   return (
     <SectionShell id={section.id} tone={section.tone ?? 'contrast'}>
       <Reveal>
@@ -505,7 +512,7 @@ export function Membership({
             >
               {tier.featured ? (
                 <span className="absolute -top-3 left-7 rounded-full bg-brand px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-[color:var(--brand-contrast)]">
-                  Most chosen
+                  {ui.common.mostChosen}
                 </span>
               ) : null}
               <h3 className="font-display text-xl">{tier.name}</h3>
@@ -525,12 +532,12 @@ export function Membership({
                 ))}
               </ul>
               <Button
-                href={`/${config.slug}/book`}
+                href={href(`/${config.slug}/book`)}
                 variant={tier.featured ? 'primary' : 'outline'}
                 className="mt-7"
                 fullWidth
               >
-                Join {tier.name}
+                {ui.common.join} {tier.name}
               </Button>
             </div>
           </StaggerItem>

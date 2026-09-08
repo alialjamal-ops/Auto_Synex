@@ -1,20 +1,26 @@
 /**
  * Auto Synex — "Live Templates" section for the main marketing site.
  *
- * Drop-in for the Vite + Tailwind site at auto-synex-final.vercel.app.
- * Matches that site's design system: #0a1628 canvas, blue-500 → cyan-400
- * gradients, rounded-xl surfaces, white/10 glass, Poppins/Inter/Cairo.
+ * Drop-in for the Vite + React + Tailwind site at autosynex.com. Matches that
+ * site's design system: #0a1628 canvas, blue-500 → cyan-400 gradients,
+ * rounded-xl surfaces, white/10 glass, Poppins/Inter/Cairo.
  *
- * Usage — inside your page, after the Services section:
+ * Usage — after the Services section:
  *
  *   import TemplatesSection from './components/TemplatesSection';
  *   ...
  *   <TemplatesSection lang={lang} />        // lang: 'en' | 'ar'
  *
- * After the demos are deployed, set DEMOS_URL below to the live origin.
+ * The demos are served from this same domain under /demos (see the rewrite in
+ * vercel.json at the repository root), so the links below are relative and the
+ * visitor never leaves the site.
  */
 
-const DEMOS_URL = 'https://auto-synex-demos.vercel.app';
+const BASE = '/demos';
+
+/** Arabic pages live under /demos/ar/… , English at /demos/… */
+const demoPath = (lang, slug, page = '') =>
+  `${BASE}${lang === 'ar' ? '/ar' : ''}/${slug}${page}`;
 
 const COPY = {
   en: {
@@ -44,31 +50,31 @@ const TEMPLATES = [
     slug: 'clinic',
     accent: 'from-emerald-500 to-teal-400',
     en: { kind: 'Medical Clinic', name: 'Vita Medical', text: 'Specialty pages, doctor profiles and consultant-level appointment booking.' },
-    ar: { kind: 'عيادة طبية', name: 'Vita Medical', text: 'صفحات تخصصات وملفات أطباء ونظام حجز مواعيد كامل.' },
+    ar: { kind: 'عيادة طبية', name: 'ڤيتا الطبية', text: 'صفحات تخصصات وملفات أطباء ونظام حجز مواعيد كامل.' },
   },
   {
     slug: 'dental',
     accent: 'from-sky-500 to-cyan-400',
     en: { kind: 'Dental Clinic', name: 'Smileora Dental', text: 'Treatment pricing, a before/after comparison slider and instant booking.' },
-    ar: { kind: 'عيادة أسنان', name: 'Smileora Dental', text: 'أسعار العلاجات، مقارنة قبل/بعد تفاعلية، وحجز فوري.' },
+    ar: { kind: 'عيادة أسنان', name: 'سمايلورا للأسنان', text: 'أسعار العلاجات، مقارنة قبل/بعد تفاعلية، وحجز فوري.' },
   },
   {
     slug: 'salon',
     accent: 'from-amber-500 to-orange-400',
     en: { kind: 'Beauty Salon', name: 'Lumé Beauty', text: 'Editorial layout, treatment menu, membership tiers and artist booking.' },
-    ar: { kind: 'صالون تجميل', name: 'Lumé Beauty', text: 'تصميم تحريري، قائمة خدمات، باقات عضوية، وحجز حسب الفنانة.' },
+    ar: { kind: 'صالون تجميل', name: 'لومي بيوتي', text: 'تصميم تحريري، قائمة خدمات، باقات عضوية، وحجز حسب الفنانة.' },
   },
   {
     slug: 'hotel',
     accent: 'from-yellow-500 to-amber-300',
     en: { kind: 'Luxury Hotel', name: 'Noiré', text: 'Cinematic hero, room pricing and a check-in / check-out reservation flow.' },
-    ar: { kind: 'فندق فاخر', name: 'Noiré', text: 'واجهة سينمائية، أسعار الغرف، وحجز بتاريخي الوصول والمغادرة.' },
+    ar: { kind: 'فندق فاخر', name: 'نوارِيه', text: 'واجهة سينمائية، أسعار الغرف، وحجز بتاريخي الوصول والمغادرة.' },
   },
   {
     slug: 'restaurant',
     accent: 'from-orange-500 to-red-400',
     en: { kind: 'Restaurant', name: 'Ember & Stone', text: 'Full menu system, signature dishes and table reservations by party size.' },
-    ar: { kind: 'مطعم', name: 'Ember & Stone', text: 'قائمة طعام كاملة، أطباق مميزة، وحجز طاولات حسب عدد الأشخاص.' },
+    ar: { kind: 'مطعم', name: 'إمبر آند ستون', text: 'قائمة طعام كاملة، أطباق مميّزة، وحجز طاولات حسب عدد الأشخاص.' },
   },
 ];
 
@@ -96,9 +102,7 @@ export default function TemplatesSection({ lang = 'en' }) {
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
             {t.eyebrow}
           </span>
-          <h2 className="mt-5 text-4xl md:text-5xl font-bold text-white">
-            {t.title}
-          </h2>
+          <h2 className="mt-5 text-4xl md:text-5xl font-bold text-white">{t.title}</h2>
           <p className="mt-5 max-w-2xl mx-auto text-gray-400 leading-relaxed">{t.lead}</p>
         </div>
 
@@ -119,26 +123,20 @@ export default function TemplatesSection({ lang = 'en' }) {
 
                 <div className="mt-6 flex flex-wrap gap-2">
                   <a
-                    href={`${DEMOS_URL}/${tpl.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={demoPath(lang, tpl.slug)}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 text-white text-sm font-semibold transition-transform hover:scale-[1.03]"
                   >
                     {t.site}
                     <ArrowIcon className={`w-4 h-4 ${isAr ? 'rotate-180' : ''}`} />
                   </a>
                   <a
-                    href={`${DEMOS_URL}/${tpl.slug}/book`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={demoPath(lang, tpl.slug, '/book')}
                     className="inline-flex items-center px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-sm font-medium transition-colors"
                   >
                     {t.booking}
                   </a>
                   <a
-                    href={`${DEMOS_URL}/${tpl.slug}/dashboard`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={demoPath(lang, tpl.slug, '/dashboard')}
                     className="inline-flex items-center px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 text-sm font-medium transition-colors"
                   >
                     {t.dashboard}
@@ -150,9 +148,7 @@ export default function TemplatesSection({ lang = 'en' }) {
 
           {/* Browse-all card */}
           <a
-            href={DEMOS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`${BASE}${isAr ? '/ar' : ''}`}
             className="group relative rounded-2xl border border-dashed border-white/20 p-6 flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-blue-500/50 hover:bg-white/5"
           >
             <span className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 grid place-items-center">

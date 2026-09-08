@@ -6,6 +6,8 @@
  * drift, no hydration mismatches).
  */
 
+import type { Locale } from '@/config/i18n';
+
 export const WEEKDAY_LONG = [
   'Sunday',
   'Monday',
@@ -32,6 +34,49 @@ export const MONTH_LONG = [
   'November',
   'December',
 ] as const;
+
+const WEEKDAY_LONG_AR = [
+  'الأحد',
+  'الإثنين',
+  'الثلاثاء',
+  'الأربعاء',
+  'الخميس',
+  'الجمعة',
+  'السبت',
+] as const;
+
+const WEEKDAY_SHORT_AR = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'] as const;
+
+const MONTH_LONG_AR = [
+  'يناير',
+  'فبراير',
+  'مارس',
+  'أبريل',
+  'مايو',
+  'يونيو',
+  'يوليو',
+  'أغسطس',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
+] as const;
+
+/**
+ * Locale-aware name tables. Latin digits are kept in both languages so the
+ * server and the browser always render the same string.
+ */
+export function weekdayLong(day: number, locale: Locale = 'en'): string {
+  return (locale === 'ar' ? WEEKDAY_LONG_AR : WEEKDAY_LONG)[day] ?? '';
+}
+
+export function weekdayShort(day: number, locale: Locale = 'en'): string {
+  return (locale === 'ar' ? WEEKDAY_SHORT_AR : WEEKDAY_SHORT)[day] ?? '';
+}
+
+export function monthLong(month: number, locale: Locale = 'en'): string {
+  return (locale === 'ar' ? MONTH_LONG_AR : MONTH_LONG)[month] ?? '';
+}
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
@@ -70,27 +115,33 @@ export function isBefore(a: string, b: string): boolean {
 }
 
 /** "Mon, 14 Apr" style label. */
-export function formatDayShort(iso: string): string {
+export function formatDayShort(iso: string, locale: Locale = 'en'): string {
   const date = fromISODate(iso);
-  return `${WEEKDAY_SHORT[date.getDay()]}, ${date.getDate()} ${MONTH_LONG[date.getMonth()]?.slice(0, 3)}`;
+  const month =
+    locale === 'ar' ? monthLong(date.getMonth(), 'ar') : MONTH_LONG[date.getMonth()]?.slice(0, 3);
+  return `${weekdayShort(date.getDay(), locale)}، ${date.getDate()} ${month}`.replace(
+    '،',
+    locale === 'ar' ? '،' : ',',
+  );
 }
 
 /** "Monday, 14 April 2026". */
-export function formatDayLong(iso: string): string {
+export function formatDayLong(iso: string, locale: Locale = 'en'): string {
   const date = fromISODate(iso);
-  return `${WEEKDAY_LONG[date.getDay()]}, ${date.getDate()} ${MONTH_LONG[date.getMonth()]} ${date.getFullYear()}`;
+  const separator = locale === 'ar' ? '،' : ',';
+  return `${weekdayLong(date.getDay(), locale)}${separator} ${date.getDate()} ${monthLong(date.getMonth(), locale)} ${date.getFullYear()}`;
 }
 
-export function formatMonthYear(iso: string): string {
+export function formatMonthYear(iso: string, locale: Locale = 'en'): string {
   const date = fromISODate(iso);
-  return `${MONTH_LONG[date.getMonth()]} ${date.getFullYear()}`;
+  return `${monthLong(date.getMonth(), locale)} ${date.getFullYear()}`;
 }
 
-/** "09:30" → "9:30 AM". */
-export function formatTime(hhmm: string): string {
+/** "09:30" → "9:30 AM" / "9:30 ص". */
+export function formatTime(hhmm: string, locale: Locale = 'en'): string {
   const [h, m] = hhmm.split(':').map(Number);
   const hour = h ?? 0;
-  const suffix = hour >= 12 ? 'PM' : 'AM';
+  const suffix = locale === 'ar' ? (hour >= 12 ? 'م' : 'ص') : hour >= 12 ? 'PM' : 'AM';
   const display = hour % 12 === 0 ? 12 : hour % 12;
   return `${display}:${pad(m ?? 0)} ${suffix}`;
 }
@@ -148,10 +199,15 @@ export function monthMatrix(iso: string): { iso: string; inMonth: boolean }[] {
   return cells;
 }
 
-export function relativeDayLabel(iso: string, todayIso: string): string | null {
+export function relativeDayLabel(
+  iso: string,
+  todayIso: string,
+  locale: Locale = 'en',
+): string | null {
   const delta = diffDays(todayIso, iso);
-  if (delta === 0) return 'Today';
-  if (delta === 1) return 'Tomorrow';
-  if (delta === -1) return 'Yesterday';
+  const ar = locale === 'ar';
+  if (delta === 0) return ar ? 'اليوم' : 'Today';
+  if (delta === 1) return ar ? 'غدًا' : 'Tomorrow';
+  if (delta === -1) return ar ? 'أمس' : 'Yesterday';
   return null;
 }

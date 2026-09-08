@@ -2,6 +2,7 @@
 
 import { Check, Clock, Minus, Plus, Sunrise, Sun, Sunset, UserRound } from 'lucide-react';
 import { SmartImage } from '@/components/ui/smart-image';
+import { useLocale } from '@/hooks/use-locale';
 import { Rating } from '@/components/ui/primitives';
 import { cn } from '@/lib/cn';
 import { formatDuration, formatMoney } from '@/lib/format';
@@ -25,6 +26,8 @@ export function ServiceStep({
   value: string | null;
   onChange: (id: string) => void;
 }) {
+  const { ui, locale } = useLocale();
+
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {services.map((service) => {
@@ -80,14 +83,14 @@ export function ServiceStep({
                 {config.booking.mode !== 'stay' ? (
                   <span className="flex items-center gap-1">
                     <Clock className="size-3.5" />
-                    {formatDuration(service.durationMin)}
+                    {formatDuration(service.durationMin, locale)}
                   </span>
                 ) : null}
                 <span className="font-medium text-ink">
                   {service.price === 0
-                    ? 'No deposit'
-                    : `${service.priceFrom ? 'from ' : ''}${formatMoney(service.price, config.booking.currencySymbol)}${
-                        config.booking.mode === 'stay' ? ' / night' : ''
+                    ? ui.booking.noCard
+                    : `${service.priceFrom ? `${ui.common.from} ` : ''}${formatMoney(service.price, config.booking.currencySymbol)}${
+                        config.booking.mode === 'stay' ? ui.common.perNight : ''
                       }`}
                 </span>
               </span>
@@ -116,6 +119,8 @@ export function StaffStep({
   allowAny?: boolean;
   anyLabel: string;
 }) {
+  const { ui } = useLocale();
+
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {allowAny ? (
@@ -136,7 +141,7 @@ export function StaffStep({
           <span>
             <span className="block font-display text-[15px] font-semibold">{anyLabel}</span>
             <span className="mt-1 block text-[13px] text-muted">
-              Fastest availability — we assign the best match.
+              {ui.booking.fastestAvailability}
             </span>
           </span>
         </button>
@@ -190,9 +195,9 @@ export function StaffStep({
 /* ------------------------------------------------------------------ */
 
 const PARTS = [
-  { id: 'morning', label: 'Morning', icon: Sunrise, from: 0, to: 719 },
-  { id: 'afternoon', label: 'Afternoon', icon: Sun, from: 720, to: 1019 },
-  { id: 'evening', label: 'Evening', icon: Sunset, from: 1020, to: 1440 },
+  { id: 'morning', icon: Sunrise, from: 0, to: 719 },
+  { id: 'afternoon', icon: Sun, from: 720, to: 1019 },
+  { id: 'evening', icon: Sunset, from: 1020, to: 1440 },
 ] as const;
 
 export function TimeStep({
@@ -204,22 +209,18 @@ export function TimeStep({
   value: string | null;
   onChange: (time: string) => void;
 }) {
+  const { ui } = useLocale();
+
   if (availability.closed) {
     return (
-      <EmptyState
-        title="Closed on this date"
-        text="Pick another day from the calendar — closed days are greyed out."
-      />
+      <EmptyState title={ui.booking.closedOnDate} text={ui.booking.closedOnDateText} />
     );
   }
 
   const usable = availability.slots.filter((slot) => slot.state !== 'break');
   if (usable.length === 0) {
     return (
-      <EmptyState
-        title="No slots left on this date"
-        text="This day is fully booked. Try the next available day."
-      />
+      <EmptyState title={ui.booking.noSlots} text={ui.booking.noSlotsText} />
     );
   }
 
@@ -236,9 +237,9 @@ export function TimeStep({
           <div key={part.id}>
             <p className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-muted">
               <part.icon className="size-3.5" />
-              {part.label}
-              <span className="ml-1 text-muted/60">
-                {slots.filter((slot) => slot.state === 'open').length} open
+              {ui.booking[part.id]}
+              <span className="mx-1 text-muted/60">
+                {slots.filter((slot) => slot.state === 'open').length} {ui.booking.open}
               </span>
             </p>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
@@ -257,13 +258,13 @@ export function TimeStep({
 
       <p className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-4 text-[11px] text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-brand" /> Selected
+          <span className="size-2.5 rounded-full bg-brand" /> {ui.booking.legendSelected}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full border border-line" /> Available
+          <span className="size-2.5 rounded-full border border-line" /> {ui.booking.legendAvailable}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-line" /> Taken
+          <span className="size-2.5 rounded-full bg-line" /> {ui.booking.legendTaken}
         </span>
       </p>
     </div>
@@ -279,6 +280,7 @@ function SlotButton({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { ui, locale } = useLocale();
   const disabled = slot.state !== 'open';
 
   return (
@@ -287,7 +289,13 @@ function SlotButton({
       disabled={disabled}
       onClick={onSelect}
       aria-pressed={selected}
-      title={slot.state === 'booked' ? 'Already booked' : slot.state === 'past' ? 'Too soon' : undefined}
+      title={
+        slot.state === 'booked'
+          ? ui.booking.alreadyBooked
+          : slot.state === 'past'
+            ? ui.booking.tooSoon
+            : undefined
+      }
       className={cn(
         'rounded-brand border px-2 py-2.5 text-[13px] tabular-nums transition-all duration-200',
         disabled && 'cursor-not-allowed border-transparent bg-[color:var(--surface-alt)] text-muted/45 line-through',
@@ -295,7 +303,7 @@ function SlotButton({
         selected && 'border-transparent bg-brand text-[color:var(--brand-contrast)]',
       )}
     >
-      {formatTime(slot.time)}
+      {formatTime(slot.time, locale)}
     </button>
   );
 }
@@ -319,6 +327,8 @@ export function GuestsStep({
   value: number;
   onChange: (value: number) => void;
 }) {
+  const { ui } = useLocale();
+
   return (
     <div className="max-w-md">
       <div className="flex items-center justify-between rounded-brand-lg border border-line bg-surface p-6">
@@ -332,7 +342,7 @@ export function GuestsStep({
             onClick={() => onChange(Math.max(min, value - 1))}
             disabled={value <= min}
             className="grid size-10 place-items-center rounded-full border border-line transition-colors enabled:hover:border-[color:var(--brand)] enabled:hover:text-brand disabled:opacity-35"
-            aria-label="Fewer"
+            aria-label={ui.booking.fewer}
           >
             <Minus className="size-4" />
           </button>
@@ -342,7 +352,7 @@ export function GuestsStep({
             onClick={() => onChange(Math.min(max, value + 1))}
             disabled={value >= max}
             className="grid size-10 place-items-center rounded-full border border-line transition-colors enabled:hover:border-[color:var(--brand)] enabled:hover:text-brand disabled:opacity-35"
-            aria-label="More"
+            aria-label={ui.booking.more}
           >
             <Plus className="size-4" />
           </button>
