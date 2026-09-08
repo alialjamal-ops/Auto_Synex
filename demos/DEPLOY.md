@@ -129,6 +129,7 @@ which restores any missing photo or font and skips whatever is already on disk.
 
 2. **`public/assets/logo.svg` is broken.** It draws the S as two overlapping
    paths (which renders as a solid blue blob) and the A as an inverted V that
-   all but disappears. `demos/public/brand/logo.svg` is a clean rebuild of the
-   real mark using the same gradient stops — copy it over
-   `public/assets/logo.svg` to fix the header logo on the main site.
+   all but disappears — which is why the demos use the PNG instead.
+   `public/assets/logo_transparent.png` is the good artwork; the demos load it
+   from `demos/public/brand/logo.png`. Pointing the main site's header at the
+   PNG, or redrawing the SVG from it, would fix the logo there too.
