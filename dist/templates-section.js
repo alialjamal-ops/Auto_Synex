@@ -24,7 +24,8 @@
       booking: 'Booking',
       dashboard: 'Dashboard',
       viewAll: 'Browse all templates',
-      note: 'All demo businesses are fictional.'
+      note: 'All demo businesses are fictional.',
+      nav: 'Templates'
     },
     ar: {
       eyebrow: 'قوالب حيّة',
@@ -34,7 +35,8 @@
       booking: 'الحجز',
       dashboard: 'لوحة التحكّم',
       viewAll: 'تصفّح كل القوالب',
-      note: 'جميع الأنشطة في القوالب افتراضية.'
+      note: 'جميع الأنشطة في القوالب افتراضية.',
+      nav: 'القوالب'
     }
   };
 
@@ -174,6 +176,65 @@
     document.head.appendChild(el);
   }
 
+  /** The site labels its Services entry in whichever language is active. */
+  var SERVICES_LABELS = ['Services', 'خدماتنا'];
+
+  /**
+   * Adds a Templates entry beside Services in every nav the site renders —
+   * the header, the footer list and the mobile menu — reusing that nav's own
+   * classes so it inherits the site's styling wherever it lands.
+   */
+  function mountNav(lang) {
+    var label = COPY[lang].nav;
+
+    // React can replace a nav without replacing our entry, which would leave a
+    // stale one behind — in the previous language, or beside nothing at all.
+    // Relabel every entry we own and drop any that is no longer next to a
+    // Services item, before considering where to add one.
+    var owned = document.querySelectorAll('[data-as-nav="1"]');
+    for (var k = 0; k < owned.length; k += 1) {
+      var entry = owned[k];
+      var anchor = entry.tagName === 'LI' ? entry.firstElementChild : entry;
+      var prev = entry.previousElementSibling;
+      var attached = prev && SERVICES_LABELS.indexOf((prev.textContent || '').trim()) !== -1;
+      if (!attached || !anchor) {
+        if (entry.parentNode) entry.parentNode.removeChild(entry);
+      } else if (anchor.textContent !== label) {
+        anchor.textContent = label;
+      }
+    }
+
+    var nodes = document.querySelectorAll('#root button, #root a');
+    for (var i = 0; i < nodes.length; i += 1) {
+      var node = nodes[i];
+      if (SERVICES_LABELS.indexOf((node.textContent || '').trim()) === -1) continue;
+
+      var host = node.parentElement && node.parentElement.tagName === 'LI' ? node.parentElement : node;
+      if (!host.parentNode) continue;
+
+      var next = host.nextElementSibling;
+      if (next && next.getAttribute && next.getAttribute('data-as-nav') === '1') continue;
+
+      var link = document.createElement('a');
+      link.href = '#' + MOUNT_ID;
+      link.textContent = label;
+      link.className = node.className;
+      link.addEventListener('click', function (event) {
+        event.preventDefault();
+        var target = document.getElementById(MOUNT_ID);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      var inserted = link;
+      if (host.tagName === 'LI') {
+        inserted = document.createElement('li');
+        inserted.appendChild(link);
+      }
+      inserted.setAttribute('data-as-nav', '1');
+      host.parentNode.insertBefore(inserted, host.nextSibling);
+    }
+  }
+
   function mount() {
     var anchor = document.getElementById('services');
     if (!anchor || !anchor.parentNode) return false;
@@ -189,6 +250,7 @@
     }
     var lang = isArabic() ? 'ar' : 'en';
     if (section.getAttribute('data-lang') !== lang || !section.firstChild) render(section);
+    mountNav(lang);
     return true;
   }
 

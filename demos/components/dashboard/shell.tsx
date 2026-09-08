@@ -114,7 +114,7 @@ export function DashboardShell({
         >
           <Menu className="size-5" />
         </button>
-        <DemoLogo config={config} compact />
+        <DemoLogo config={config} compact href={href(`/${config.slug}`)} />
         <Link
           href={href(`/${config.slug}`)}
           className="rounded-brand border border-line px-3 py-2 text-[12px] text-muted"
@@ -145,7 +145,7 @@ export function DashboardShell({
               aria-modal="true"
             >
               <div className="flex h-[var(--nav-height)] items-center justify-between border-b border-line px-4">
-                <DemoLogo config={config} compact />
+                <DemoLogo config={config} compact href={href(`/${config.slug}`)} />
                 <button
                   type="button"
                   onClick={() => setOpen(false)}

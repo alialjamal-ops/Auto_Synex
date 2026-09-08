@@ -88,21 +88,32 @@ export function DemoBar({ config }: { config: DemoConfig }) {
               </button>
             </motion.div>
           ) : (
-            <motion.button
+            <motion.div
               key="collapsed"
-              type="button"
-              onClick={() => setOpen(true)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="flex items-center gap-2.5 px-4 py-2.5 text-[12px] font-medium tracking-wide"
+              className="flex items-center"
             >
-              <AutoSynexMark className="h-6" />
+              {/* The mark is a way home from any demo page, not just decoration. */}
+              <Link
+                href={href('/')}
+                aria-label={ui.common.allDemos}
+                className="flex items-center py-2.5 ps-4 pe-2.5 transition-opacity hover:opacity-70"
+              >
+                <AutoSynexMark className="h-6" />
+              </Link>
               <span aria-hidden className="h-4 w-px bg-line" />
-              {ui.common.interactiveDemo}
-              <ChevronUp className="size-3.5 text-muted" />
-            </motion.button>
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="flex items-center gap-2.5 py-2.5 pe-4 ps-2.5 text-[12px] font-medium tracking-wide"
+              >
+                {ui.common.interactiveDemo}
+                <ChevronUp className="size-3.5 text-muted" />
+              </button>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
