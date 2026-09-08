@@ -92,9 +92,17 @@
     '#' + MOUNT_ID + ' .ast-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);',
     'border-radius:24px;padding:2rem;transition:transform .3s,border-color .3s,background-color .3s}',
     '#' + MOUNT_ID + ' .ast-card:hover{transform:translateY(-4px);border-color:rgba(59,130,246,.4);background:rgba(255,255,255,.07)}',
-    '#' + MOUNT_ID + ' .ast-kind{display:inline-block;padding:.25rem .75rem;border-radius:.5rem;color:#fff;',
+    '#' + MOUNT_ID + ' .ast-media{position:relative;aspect-ratio:16/10;border-radius:16px;overflow:hidden;',
+    'background:rgba(255,255,255,.06);margin-bottom:1.5rem}',
+    '#' + MOUNT_ID + ' .ast-media img{width:100%;height:100%;object-fit:cover;display:block;',
+    'transition:transform .6s ease}',
+    '#' + MOUNT_ID + ' .ast-card:hover .ast-media img{transform:scale(1.05)}',
+    '#' + MOUNT_ID + ' .ast-media::after{content:"";position:absolute;inset:0;',
+    'background:linear-gradient(to top,rgba(10,22,40,.85),rgba(10,22,40,0) 55%)}',
+    '#' + MOUNT_ID + ' .ast-kind{position:absolute;z-index:1;bottom:.75rem;inset-inline-start:.75rem;',
+    'display:inline-block;padding:.25rem .75rem;border-radius:.5rem;color:#fff;',
     'font-size:.75rem;font-weight:600;letter-spacing:.02em}',
-    '#' + MOUNT_ID + ' h3{margin:1.25rem 0 0;font-size:1.5rem;font-weight:700;color:#fff}',
+    '#' + MOUNT_ID + ' h3{margin:0;font-size:1.5rem;font-weight:700;color:#fff}',
     '#' + MOUNT_ID + ' .ast-text{margin:.75rem 0 0;color:#9ca3af;font-size:.875rem;line-height:1.7;min-height:3.5rem}',
     '#' + MOUNT_ID + ' .ast-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem}',
     '#' + MOUNT_ID + ' .ast-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1rem;border-radius:.75rem;',
@@ -139,7 +147,11 @@
     var cards = TEMPLATES.map(function (tpl) {
       var c = tpl[lang];
       return '<article class="ast-card">' +
-        '<span class="ast-kind" style="background:' + tpl.accent + '">' + c.kind + '</span>' +
+        '<div class="ast-media">' +
+          '<img src="' + BASE + '/media/' + tpl.slug + '/hero.jpg" alt="' + c.name + '" ' +
+          'loading="lazy" decoding="async" width="640" height="400">' +
+          '<span class="ast-kind" style="background:' + tpl.accent + '">' + c.kind + '</span>' +
+        '</div>' +
         '<h3>' + c.name + '</h3>' +
         '<p class="ast-text">' + c.text + '</p>' +
         '<div class="ast-actions">' +
