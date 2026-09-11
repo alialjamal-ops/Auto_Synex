@@ -3,7 +3,7 @@
  *
  * The site's `src/` is not in this repository, so the page cannot be rebuilt
  * from source (see DEPLOY.md). This script adds the section to the served
- * build instead: it mounts after #services, styles itself in the site's own
+ * build instead: it mounts after #home, styles itself in the site's own
  * design system, and re-mounts if React re-renders that part of the tree.
  *
  * When `src/` is restored, delete this file and its <script> tag, and render
@@ -188,8 +188,8 @@
     document.head.appendChild(el);
   }
 
-  /** The site labels its Services entry in whichever language is active. */
-  var SERVICES_LABELS = ['Services', 'خدماتنا'];
+  /** The site labels its Home entry in whichever language is active. */
+  var ANCHOR_LABELS = ['Home', 'الرئيسية'];
 
   /**
    * Adds a Templates entry beside Services in every nav the site renders —
@@ -208,7 +208,7 @@
       var entry = owned[k];
       var anchor = entry.tagName === 'LI' ? entry.firstElementChild : entry;
       var prev = entry.previousElementSibling;
-      var attached = prev && SERVICES_LABELS.indexOf((prev.textContent || '').trim()) !== -1;
+      var attached = prev && ANCHOR_LABELS.indexOf((prev.textContent || '').trim()) !== -1;
       if (!attached || !anchor) {
         if (entry.parentNode) entry.parentNode.removeChild(entry);
       } else if (anchor.textContent !== label) {
@@ -219,7 +219,7 @@
     var nodes = document.querySelectorAll('#root button, #root a');
     for (var i = 0; i < nodes.length; i += 1) {
       var node = nodes[i];
-      if (SERVICES_LABELS.indexOf((node.textContent || '').trim()) === -1) continue;
+      if (ANCHOR_LABELS.indexOf((node.textContent || '').trim()) === -1) continue;
 
       var host = node.parentElement && node.parentElement.tagName === 'LI' ? node.parentElement : node;
       if (!host.parentNode) continue;
@@ -248,7 +248,7 @@
   }
 
   function mount() {
-    var anchor = document.getElementById('services');
+    var anchor = document.getElementById('home');
     if (!anchor || !anchor.parentNode) return false;
 
     var section = document.getElementById(MOUNT_ID);
@@ -256,7 +256,7 @@
       section = document.createElement('section');
       section.id = MOUNT_ID;
     }
-    // Keep it directly after Services even if React re-orders the page.
+    // Keep it directly after the hero even if React re-orders the page.
     if (section.previousElementSibling !== anchor) {
       anchor.parentNode.insertBefore(section, anchor.nextSibling);
     }
