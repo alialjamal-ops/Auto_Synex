@@ -22,6 +22,9 @@ export async function createRobot(canvas, opts = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setClearAlpha(0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.08;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
@@ -29,7 +32,25 @@ export async function createRobot(canvas, opts = {}) {
 
   // Lighting: soft fill, a key from the upper front, and a brand-coloured rim
   // so the silhouette reads against a dark page.
-  scene.add(new THREE.HemisphereLight(0xdceaff, 0x0a1220, 1.05));
+  // A tiny studio, baked into an environment map: the shell and visor pick up
+  // real reflections — a softbox overhead and brand-coloured walls — which is
+  // most of what makes it read as a premium object instead of flat plastic.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const studio = new THREE.Scene();
+  studio.add(new THREE.Mesh(new THREE.BoxGeometry(20, 20, 20),
+    new THREE.MeshBasicMaterial({ color: 0x0b1424, side: THREE.BackSide })));
+  const panel = (w, h, color, pos, rot) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
+    m.position.set(...pos); if (rot) m.rotation.set(...rot); studio.add(m);
+  };
+  panel(9, 3, 0xffffff, [0, 9.5, 2], [Math.PI / 2, 0, 0]);
+  panel(3, 8, glow.getHex(), [-9.5, 1, 0], [0, Math.PI / 2, 0]);
+  panel(3, 8, 0x3b82f6, [9.5, 0, -2], [0, -Math.PI / 2, 0]);
+  panel(6, 2, 0xcfe6ff, [0, 2, 9.5]);
+  const envMap = pmrem.fromScene(studio, 0.035).texture;
+  scene.environment = envMap;
+
+  scene.add(new THREE.HemisphereLight(0xdceaff, 0x0a1220, 0.55));
   const key = new THREE.DirectionalLight(0xffffff, 1.9);
   key.position.set(2.5, 3.4, 4);
   scene.add(key);
@@ -37,13 +58,20 @@ export async function createRobot(canvas, opts = {}) {
   rim.position.set(-3, 1.2, -2.5);
   scene.add(rim);
 
-  const shell = new THREE.MeshStandardMaterial({ color: 0xeaf2fb, metalness: 0.42, roughness: 0.3 });
-  const shellDark = new THREE.MeshStandardMaterial({ color: 0x9fb4cc, metalness: 0.7, roughness: 0.35 });
-  const glass = new THREE.MeshStandardMaterial({ color: 0x0a1626, metalness: 0.35, roughness: 0.12 });
+  const shell = new THREE.MeshPhysicalMaterial({
+    color: 0xf3f7fc, metalness: 0.12, roughness: 0.24, clearcoat: 1, clearcoatRoughness: 0.07, envMapIntensity: 1.15,
+  });
+  const shellDark = new THREE.MeshPhysicalMaterial({
+    color: 0x8aa3c1, metalness: 0.9, roughness: 0.26, clearcoat: 0.6, envMapIntensity: 1.2,
+  });
+  const glass = new THREE.MeshPhysicalMaterial({
+    color: 0x040a14, metalness: 0.25, roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.02,
+    iridescence: 0.7, iridescenceIOR: 1.45, iridescenceThicknessRange: [180, 520], envMapIntensity: 1.4,
+  });
   const lit = new THREE.MeshStandardMaterial({
     color: glow, emissive: glow, emissiveIntensity: 2.1, roughness: 0.35,
   });
-  const brand = new THREE.MeshStandardMaterial({ color: accent, metalness: 0.55, roughness: 0.35 });
+  const brand = new THREE.MeshPhysicalMaterial({ color: accent, metalness: 0.6, roughness: 0.22, clearcoat: 1 });
 
   const robot = new THREE.Group();
   scene.add(robot);
@@ -149,6 +177,41 @@ export async function createRobot(canvas, opts = {}) {
   pad.rotation.x = -Math.PI / 2;
   robot.add(pad);
 
+  // Halo: two thin rings orbiting at different tilts and speeds.
+  const ringMat = new THREE.MeshBasicMaterial({ color: glow, transparent: true, opacity: 0.55,
+    blending: THREE.AdditiveBlending, depthWrite: false });
+  const rings = [0, 1].map((i) => {
+    const r = new THREE.Mesh(new THREE.TorusGeometry(1.62 + i * 0.16, 0.011, 8, 120), ringMat);
+    r.rotation.set(Math.PI / 2 + (i ? -0.42 : 0.3), i ? 0.5 : -0.2, 0);
+    r.position.y = -0.05;
+    robot.add(r);
+    return r;
+  });
+
+  // Thruster: a soft additive flame under the torso that flickers and stretches in flight.
+  const flameTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d'); const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.35, 'rgba(125,227,255,.8)');
+    grad.addColorStop(1, 'rgba(59,130,246,0)'); g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  })();
+  const flame = new THREE.Sprite(new THREE.SpriteMaterial({ map: flameTex, blending: THREE.AdditiveBlending,
+    depthWrite: false, transparent: true, opacity: 0.9 }));
+  flame.position.set(0, -1.72, 0.1);
+  flame.scale.set(0.9, 1.1, 1);
+  robot.add(flame);
+
+  // Sparks drifting up around the body.
+  const sparkCount = 26;
+  const sparkGeo = new THREE.BufferGeometry();
+  const sparkPos = new Float32Array(sparkCount * 3);
+  const sparkSeed = Array.from({ length: sparkCount }, () => [Math.random() * Math.PI * 2, 1.2 + Math.random() * 0.7, Math.random()]);
+  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+  const sparks = new THREE.Points(sparkGeo, new THREE.PointsMaterial({ map: flameTex, size: 0.16, color: glow,
+    transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+  robot.add(sparks);
+
   robot.scale.setScalar(0.96);
 
   /* ----------------------------------------------------------- animation -- */
@@ -215,6 +278,21 @@ export async function createRobot(canvas, opts = {}) {
       ears[1].rotation.x = Math.sin(t * 1.2 + 0.7) * 0.12;
       bulb.material.emissiveIntensity = 1.6 + Math.sin(t * 3) * 0.7;
       core.rotation.z = t * 0.8;
+      rings[0].rotation.z = t * 0.5;
+      rings[1].rotation.z = -t * 0.35;
+      ringMat.opacity = 0.4 + Math.sin(t * 2) * 0.12 + (state.hover ? 0.25 : 0);
+      const flick = 0.85 + Math.sin(t * 31) * 0.08 + Math.sin(t * 17) * 0.06;
+      flame.scale.set(0.75 * flick, (1 + Math.abs(f) * 0.9) * flick, 1);
+      flame.material.opacity = 0.75 + Math.abs(f) * 0.25;
+      for (let i = 0; i < sparkCount; i++) {
+        const [a, r, o] = sparkSeed[i];
+        const life = (t * 0.25 + o) % 1;
+        sparkPos[i * 3] = Math.cos(a + t * 0.2) * r;
+        sparkPos[i * 3 + 1] = -1.6 + life * 3.6;
+        sparkPos[i * 3 + 2] = Math.sin(a + t * 0.2) * r * 0.6;
+      }
+      sparkGeo.attributes.position.needsUpdate = true;
+      sparks.material.opacity = 0.7;
     }
 
     // Blink: a quick vertical squash on both eyes.
@@ -287,6 +365,9 @@ export async function createRobot(canvas, opts = {}) {
       ro.disconnect();
       io.disconnect();
       document.removeEventListener('visibilitychange', onVis);
+      envMap.dispose();
+      pmrem.dispose();
+      flameTex.dispose();
       scene.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); });
       renderer.dispose();
     },

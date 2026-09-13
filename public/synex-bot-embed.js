@@ -43,9 +43,18 @@ const DEFAULTS = {
     en: { tag: 'About', title: 'How we work', body: 'Small team, direct contact, and a running demo before you commit to anything.', cta: 'See the demos', href: '/demos' },
     ar: { tag: 'من نحن', title: 'كيف نعمل', body: 'فريق صغير، تواصل مباشر، ونموذج يعمل أمامك قبل أي التزام.', cta: 'شاهد النماذج', href: '/demos' },
   },
+  'why-us': {
+    en: { tag: 'Why us', title: 'Fast, measurable, secure', body: 'Quick delivery, work judged by the bookings it brings in, and security built in from day one.', cta: 'Start a project', href: '#contact' },
+    ar: { tag: 'لماذا نحن', title: 'سرعة، نتائج، وأمان', body: 'تسليم سريع، وعمل يُقاس بالحجوزات التي يجلبها، وأمان مدمج من اليوم الأول.', cta: 'ابدأ مشروعك', href: '#contact' },
+  },
   contact: {
-    en: { tag: 'Contact', title: 'Tell us what you need', body: 'Send the business type and what you want it to do. You get a scoped answer, not a brochure.' },
-    ar: { tag: 'تواصل', title: 'أخبرنا بما تحتاجه', body: 'أرسل نوع النشاط وما تريده أن يفعله، وتصلك إجابة محدّدة لا كتيّب تعريفي.' },
+    en: { tag: 'Contact', title: 'Tell us what you need', body: 'Send the business type and what you want it to do. You get a scoped answer, not a brochure.', cta: 'Ask me first', href: '#chat' },
+    ar: { tag: 'تواصل', title: 'أخبرنا بما تحتاجه', body: 'أرسل نوع النشاط وما تريده أن يفعله، وتصلك إجابة محدّدة لا كتيّب تعريفي.', cta: 'اسألني أولًا', href: '#chat' },
+  },
+  // Keys starting with @ are CSS selectors, for blocks the build renders without an id.
+  '@#root footer': {
+    en: { tag: 'Before you go', title: 'Still deciding?', body: 'Open a live demo and book something — it takes a minute and shows exactly what your customers would get.', cta: 'Open the demos', href: '/demos' },
+    ar: { tag: 'قبل أن تغادر', title: 'ما زلت متردّدًا؟', body: 'افتح نموذجًا حيًّا واحجز فيه — دقيقة واحدة تريك بالضبط ما سيحصل عليه عملاؤك.', cta: 'افتح النماذج', href: '/demos' },
   },
 };
 
@@ -54,10 +63,12 @@ const UI = {
   en: { ask: 'Ask me anything', title: 'Ask Auto Synex', ph: 'Type your question…',
         send: 'Send', back: 'Back', offline: 'Answering from what I know about Auto Synex.',
         err: 'That did not go through. Try again, or use the contact form on this page.',
+        online: 'Online · replies instantly',
         chips: ['What do you build?', 'How does the booking work?', 'Can I see a demo?', 'What does it cost?'] },
   ar: { ask: 'اسألني أي شيء', title: 'اسأل أوتو سينكس', ph: 'اكتب سؤالك…',
         send: 'إرسال', back: 'رجوع', offline: 'أجيب مما أعرفه عن أوتو سينكس.',
         err: 'لم تصل الرسالة. أعد المحاولة أو استخدم نموذج التواصل في الصفحة.',
+        online: 'متصل · يرد فورًا',
         chips: ['ماذا تبنون؟', 'كيف يعمل نظام الحجز؟', 'أريد رؤية نموذج', 'كم التكلفة؟'] },
 };
 
@@ -93,14 +104,84 @@ const KB = [
     en: 'The fastest route is the contact form on this page — say what your business is and what you want the system to do, and you get a specific answer.' },
 ];
 
-/** Matches a visitor question against KB; falls back to the overview answer. */
-function localAnswer(text, lang) {
-  const q = (text || '').toLowerCase();
-  for (const item of KB) if (item.k.some((k) => q.includes(k))) return item[lang];
-  return lang === 'ar'
-    ? 'أوتو سينكس تبني ثلاثة أشياء معًا: موقعًا مخصّصًا، نظام حجز حقيقي، ولوحة تحكم — إضافة إلى الأتمتة ووكلاء الذكاء الاصطناعي. جرّب النماذج على autosynex.com/demos أو اترك رسالة في نموذج التواصل.'
-    : 'Auto Synex builds three things together: a custom website, a real booking system and the dashboard behind it — plus automation and AI agents. Try the demos at autosynex.com/demos, or leave a note in the contact form.';
+/** Arabic-insensitive matching: drop diacritics and fold letter variants. */
+function norm(text) {
+  return (text || '').toLowerCase()
+    .replace(/[ً-ْـ]/g, '')
+    .replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي');
 }
+
+/** Trades map to the closest live demo, so "I run a salon" gets a link, not a brochure. */
+const TRADES = [
+  // Most specific first: a tie ("dental clinic") goes to the earlier, narrower trade.
+  { k: ['اسنان', 'سن ', 'dental', 'dentist', 'teeth'], slug: 'dental', en: 'Smileora Dental', ar: 'سمايلورا لطب الأسنان' },
+  { k: ['عياد', 'طبيب', 'دكتور', 'مستشفي', 'clinic', 'doctor', 'medical', 'physio'], slug: 'clinic', en: 'Vita Medical (clinic)', ar: 'ڤيتا الطبية (عيادة)' },
+  { k: ['صالون', 'تجميل', 'حلاق', 'سبا', 'مكياج', 'salon', 'beauty', 'barber', 'spa', 'nails'], slug: 'salon', en: 'Lumé Beauty (salon)', ar: 'لومي بيوتي (صالون)' },
+  { k: ['فندق', 'شاليه', 'منتجع', 'غرف', 'hotel', 'resort', 'rooms', 'chalet'], slug: 'hotel', en: 'Noiré (hotel)', ar: 'نواريه (فندق)' },
+  { k: ['مطعم', 'كافيه', 'مقهي', 'طاولات', 'restaurant', 'cafe', 'table', 'dining'], slug: 'restaurant', en: 'Ember & Stone (restaurant)', ar: 'إمبر آند ستون (مطعم)' },
+];
+
+const FOLLOW = {
+  en: { booking: ['Show me the dashboard', 'Can customers pay online?'], demo: ['How does the booking work?', 'What does it cost?'],
+        price: ['What is included?', 'Talk to the team'], dashboard: ['How does the booking work?', 'Can I see a demo?'],
+        site: ['Is it bilingual?', 'Can I see a demo?'], lang: ['Can I see a demo?', 'What do you build?'],
+        ai: ['Can it answer on WhatsApp?', 'What do you build?'], contact: ['What does it cost?', 'Can I see a demo?'],
+        hello: ['What do you build?', 'Can I see a demo?'], trade: ['How does the booking work?', 'What does it cost?'] },
+  ar: { booking: ['أرني لوحة التحكم', 'هل يمكن الدفع أونلاين؟'], demo: ['كيف يعمل الحجز؟', 'كم التكلفة؟'],
+        price: ['ماذا يشمل؟', 'تواصل مع الفريق'], dashboard: ['كيف يعمل الحجز؟', 'أريد رؤية نموذج'],
+        site: ['هل الموقع بلغتين؟', 'أريد رؤية نموذج'], lang: ['أريد رؤية نموذج', 'ماذا تبنون؟'],
+        ai: ['هل يرد على واتساب؟', 'ماذا تبنون؟'], contact: ['كم التكلفة؟', 'أريد رؤية نموذج'],
+        hello: ['ماذا تبنون؟', 'أريد رؤية نموذج'], trade: ['كيف يعمل الحجز؟', 'كم التكلفة؟'] },
+};
+
+const INTENTS = ['booking', 'demo', 'price', 'dashboard', 'site', 'lang', 'ai', 'contact'];
+const EXTRA = [
+  { id: 'hello', k: ['مرحب', 'اهلا', 'السلام', 'هاي', 'hello', 'hi ', 'hey', 'good morning'],
+    ar: 'أهلًا بك! أنا مساعد أوتو سينكس. أخبرني بنوع نشاطك وأريك النموذج الأقرب له، أو اسألني عن الحجز والمواقع والأتمتة.',
+    en: 'Hi! I am the Auto Synex assistant. Tell me what kind of business you run and I will show you the closest demo — or ask about booking, websites or automation.' },
+  { id: 'pay', k: ['دفع', 'بطاق', 'اونلاين', 'pay', 'payment', 'stripe', 'card'],
+    ar: 'الحجز في النماذج لا يطلب بطاقة حتى يبقى سريعًا، ويمكن إضافة الدفع الإلكتروني أو العربون حسب نشاطك — اذكر ذلك في نموذج التواصل.',
+    en: 'The demos book without a card to keep it fast; online payment or deposits can be added for your business — mention it in the contact form.' },
+  { id: 'whatsapp', k: ['واتس', 'انستا', 'whatsapp', 'instagram', 'messenger'],
+    ar: 'نعم، نبني ردودًا آلية بالذكاء الاصطناعي على واتساب وإنستغرام، مع تحويل المحادثة لموظف عند الحاجة.',
+    en: 'Yes — we build AI replies for WhatsApp and Instagram, with a hand-off to a person when a conversation needs one.' },
+];
+
+/**
+ * The offline brain: scores every intent instead of taking the first keyword
+ * hit, recognises the visitor's trade, and returns follow-up questions.
+ */
+function think(text, lang) {
+  const q = ' ' + norm(text) + ' ';
+  const hit = (keys) => keys.reduce((n, k) => n + (q.includes(norm(k)) ? 1 : 0), 0);
+
+  const trade = TRADES.map((t) => ({ t, n: hit(t.k) })).sort((x, y) => y.n - x.n)[0];
+  let best = null;
+  let score = 0;
+  KB.forEach((item, i) => { const n = hit(item.k); if (n > score) { score = n; best = { ...item, id: INTENTS[i] }; } });
+  for (const item of EXTRA) { const n = hit(item.k); if (n > score) { score = n; best = item; } }
+
+  const alias = { pay: 'booking', whatsapp: 'ai' };
+  // Never suggest the question the visitor just asked.
+  const asked = norm(text).replace(/[؟?!.\s]+/g, '');
+  const key = (c) => norm(c).replace(/[؟?!.\s]+/g, '');
+  const fresh = (list) => list.filter((c, i) => key(c) !== asked && list.findIndex((d) => key(d) === key(c)) === i);
+  const chips = (id) => fresh([...(FOLLOW[lang][alias[id] || id] || []), ...UI[lang].chips]).slice(0, 2);
+  if (trade.n > 0 && (!best || ['demo', 'booking', 'site'].includes(best.id) || trade.n >= score)) {
+    const { t } = trade;
+    const text = lang === 'ar'
+      ? `لنشاط مثل نشاطك، أقرب نموذج هو ${t.ar}. افتحه، احجز فيه كزبون، ثم افتح لوحة التحكم وشاهد الحجز يصل: /demos/ar/${t.slug}`
+      : `For a business like yours, the closest demo is ${t.en}. Open it, book as a customer, then open its dashboard and watch the booking arrive: /demos/${t.slug}`;
+    return { text, chips: chips('trade') };
+  }
+  if (best) return { text: best[lang], chips: chips(best.id) };
+  return { text: lang === 'ar'
+    ? 'أوتو سينكس تبني ثلاثة أشياء معًا: موقعًا مخصّصًا، نظام حجز حقيقي، ولوحة تحكم — إضافة إلى الأتمتة ووكلاء الذكاء الاصطناعي. أخبرني بنوع نشاطك لأريك النموذج الأقرب.'
+    : 'Auto Synex builds three things together: a custom website, a real booking system and its dashboard — plus automation and AI agents. Tell me your type of business and I will point you to the closest demo.',
+    chips: fresh(UI[lang].chips).slice(0, 3) };
+}
+
+function localAnswer(text, lang) { return think(text, lang).text; }
 
 const ICON_CLOSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const ICON_ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
@@ -253,7 +334,7 @@ class SynexBot extends HTMLElement {
         .stage{position:absolute;inset:0;width:100%;height:100%;display:none}
         .is3d .stage{display:block}
         /* With the character on screen the disc would only box it in. */
-        .is3d .avatar{background:none;box-shadow:none;width:154px;height:154px}
+        .is3d .avatar{background:none;box-shadow:none;width:188px;height:188px}
         .is3d .avatar:hover{transform:none}
         .is3d svg.bot,.is3d .ping{display:none}
         .avatar{position:relative;width:66px;height:66px;flex:none;border:0;padding:0;cursor:pointer;border-radius:50%;
@@ -286,26 +367,44 @@ class SynexBot extends HTMLElement {
         .wake .ping{animation:ping 2.2s ease-out 2}
         @keyframes ping{0%{transform:scale(.9);opacity:.75}100%{transform:scale(1.7);opacity:0}}
 
-        .bubble{position:relative;width:min(19rem,calc(100vw - 2 * var(--m,20px) - 176px));
-          background:linear-gradient(180deg,#101a29,#0a1220);
-          border:1px solid rgba(255,255,255,.12);border-radius:18px;
-          padding:15px 17px 15px;box-shadow:0 22px 52px -22px rgba(0,0,0,.85);
-          opacity:0;transform:translateY(8px) scale(.97);transform-origin:center var(--origin,right);
-          transition:opacity .22s ease,transform .22s ease;pointer-events:none}
+        .bubble{position:relative;width:min(21rem,calc(100vw - 2 * var(--m,20px) - 210px));
+          background:
+            linear-gradient(160deg,rgba(22,36,58,.92),rgba(8,15,28,.94)) padding-box,
+            linear-gradient(140deg,rgba(125,211,252,.55),rgba(255,255,255,.08) 38%,color-mix(in srgb,var(--c) 70%,#3b82f6)) border-box;
+          border:1px solid transparent;border-radius:22px;padding:18px 20px 18px;overflow:hidden;
+          backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+          box-shadow:0 30px 60px -28px rgba(0,0,0,.9),0 0 0 1px rgba(0,0,0,.2),
+                     0 0 48px -18px color-mix(in srgb,var(--c) 60%,#38bdf8);
+          opacity:0;transform:translateY(10px) scale(.94);transform-origin:center var(--origin,right);
+          transition:opacity .28s ease,transform .45s cubic-bezier(.2,1.4,.4,1);pointer-events:none}
+        .bubble::before{content:"";position:absolute;inset:0 0 auto;height:90px;pointer-events:none;
+          background:radial-gradient(120% 90% at 20% 0%,rgba(56,189,248,.16),transparent 70%)}
+        .bar{position:absolute;inset:auto 0 0;height:2px;transform-origin:left;transform:scaleX(0);
+          background:linear-gradient(90deg,#3b82f6,#22d3ee)}
+        :host([dir="rtl"]) .bar{transform-origin:right}
+        .open.timed .bar{animation:drain var(--t,5s) linear forwards}
+        @keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+        .open .bubble > *:not(.bar):not(.close){animation:rise .5s cubic-bezier(.2,.9,.3,1) both}
+        .open .bubble h3{animation-delay:.05s}.open .bubble p{animation-delay:.1s}
+        .open .bubble .cta,.open .bubble .ask{animation-delay:.16s}
+        @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
         .open .bubble{opacity:1;transform:none;pointer-events:auto}
 
-        .tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
-          letter-spacing:.06em;text-transform:uppercase;
-          color:color-mix(in srgb,var(--c) 35%,#9ecbff)}
+        .tag{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;
+          letter-spacing:.09em;text-transform:uppercase;color:#7dd3fc;
+          background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.22);
+          border-radius:999px;padding:4px 10px 4px 8px}
         .tag i{width:5px;height:5px;border-radius:50%;background:currentColor;
           box-shadow:0 0 8px currentColor}
-        h3{margin:7px 0 0;font-size:16.5px;font-weight:800;color:#f2f6fc;line-height:1.35}
-        p{margin:6px 0 0;font-size:13.5px;line-height:1.72;color:#a9b5c6}
+        h3{margin:11px 0 0;font-size:19px;font-weight:800;color:#f5f9ff;line-height:1.3;letter-spacing:-.01em}
+        p{margin:7px 0 0;font-size:14px;line-height:1.75;color:#b3c0d2}
         .cta{display:inline-flex;align-items:center;gap:7px;margin-top:12px;
           font-size:13px;font-weight:700;text-decoration:none;color:#fff;
-          background:color-mix(in srgb,var(--c) 82%,#4d8ff0);
-          border-radius:999px;padding:8px 15px;transition:filter .2s ease}
-        .cta:hover{filter:brightness(1.15)}
+          background:linear-gradient(135deg,#3b82f6,#06b6d4);
+          box-shadow:0 8px 22px -10px rgba(34,211,238,.8);
+          border-radius:999px;padding:9px 16px;transition:transform .2s ease,box-shadow .2s ease}
+        .cta:hover{transform:translateY(-1px);box-shadow:0 12px 28px -10px rgba(34,211,238,.95)}
+        .cta:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
         .cta svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;
           stroke-linecap:round;stroke-linejoin:round}
         :host([dir="rtl"]) .cta svg{transform:scaleX(-1)}
@@ -325,12 +424,16 @@ class SynexBot extends HTMLElement {
         .ask:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
 
         .chat{position:absolute;inset-block-start:50%;translate:0 -50%;inset-inline-start:0;
-          width:min(23rem,calc(100vw - 2 * var(--m,20px)));
-          height:min(30rem,calc(100vh - 2 * var(--m,20px) - 20px));
+          width:min(25rem,calc(100vw - 2 * var(--m,20px)));
+          height:min(35rem,calc(100vh - 2 * var(--m,20px) - 20px));
           display:flex;flex-direction:column;
-          background:linear-gradient(180deg,#101a29,#080f1b);
-          border:1px solid rgba(255,255,255,.14);border-radius:20px;overflow:hidden;
-          box-shadow:0 30px 70px -26px rgba(0,0,0,.9);
+          background:
+            radial-gradient(120% 60% at 10% 0%,rgba(56,189,248,.14),transparent 60%) padding-box,
+            linear-gradient(180deg,rgba(15,26,44,.96),rgba(6,12,22,.97)) padding-box,
+            linear-gradient(150deg,rgba(125,211,252,.5),rgba(255,255,255,.07) 40%,color-mix(in srgb,var(--c) 70%,#3b82f6)) border-box;
+          border:1px solid transparent;border-radius:24px;overflow:hidden;
+          backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+          box-shadow:0 40px 80px -30px rgba(0,0,0,.95),0 0 60px -24px rgba(56,189,248,.55);
           opacity:0;transform:translateY(10px) scale(.98);pointer-events:none;
           transition:opacity .2s ease,transform .2s ease}
         :host([dir="rtl"]) .chat{direction:rtl}
@@ -339,15 +442,24 @@ class SynexBot extends HTMLElement {
 
         .chat header{display:flex;align-items:center;gap:10px;padding:13px 15px;
           border-bottom:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03)}
-        .chat header .nm{font-size:14.5px;font-weight:800;color:#eff4fb;flex:1}
-        .chat header .st{font-size:11.5px;font-weight:600;color:#78899e}
+        .chat header .nm{font-size:15px;font-weight:800;color:#f3f7fd;display:block}
+        .chat header .who{flex:1;min-width:0}
+        .chat header .face{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;
+          background:linear-gradient(135deg,#3b82f6,#06b6d4);box-shadow:0 6px 18px -8px rgba(34,211,238,.9)}
+        .chat header .face svg{width:24px;height:24px}
+        .chat header .st{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#86efac}
+        .chat header .st::before{content:"";width:7px;height:7px;border-radius:50%;background:#22c55e;
+          box-shadow:0 0 0 3px rgba(34,197,94,.2);animation:blip 2s ease-in-out infinite}
         .chat .log{flex:1;overflow-y:auto;padding:14px 15px;display:flex;flex-direction:column;gap:10px;
           scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
         .msg{max-width:86%;font-size:13.5px;line-height:1.7;padding:9px 13px;border-radius:14px;
           white-space:pre-wrap;overflow-wrap:anywhere}
         .msg.bot{display:block;width:auto;height:auto;align-self:flex-start;background:rgba(255,255,255,.07);color:#dfe7f2;
           border:1px solid rgba(255,255,255,.09);border-start-start-radius:5px}
-        .msg.me{align-self:flex-end;background:color-mix(in srgb,var(--c) 80%,#4d8ff0);color:#fff;
+        .msg{animation:rise .35s cubic-bezier(.2,.9,.3,1) both}
+        .msg.bot a{color:#7dd3fc;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+        .msg.me{align-self:flex-end;background:linear-gradient(135deg,#2563eb,#0891b2);color:#fff;
+          box-shadow:0 8px 20px -12px rgba(34,211,238,.8);
           border-end-end-radius:5px}
         .msg.note{align-self:center;background:none;border:0;color:#6d7c90;font-size:11.5px;
           text-align:center;padding:0}
@@ -360,8 +472,10 @@ class SynexBot extends HTMLElement {
         .chips{display:flex;flex-wrap:wrap;gap:7px;padding:0 15px 10px}
         .chips button{font:inherit;font-size:12px;font-weight:600;cursor:pointer;color:#b9c8da;
           background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.13);
-          border-radius:999px;padding:6px 12px}
-        .chips button:hover{background:rgba(255,255,255,.12);color:#fff}
+          border-radius:999px;padding:7px 13px;animation:rise .4s cubic-bezier(.2,.9,.3,1) both;
+          transition:background .2s ease,border-color .2s ease,color .2s ease}
+        .chips button:hover{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.45);color:#fff}
+        .chips button:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
 
         .compose{display:flex;gap:8px;padding:11px 12px;border-top:1px solid rgba(255,255,255,.10);
           background:rgba(255,255,255,.03)}
@@ -371,23 +485,25 @@ class SynexBot extends HTMLElement {
         .compose input::placeholder{color:#6f7e92}
         .compose input:focus{outline:2px solid color-mix(in srgb,var(--c) 60%,#7fb6ff);outline-offset:0}
         .compose button{flex:none;width:40px;height:40px;border:0;border-radius:50%;cursor:pointer;
-          background:color-mix(in srgb,var(--c) 82%,#4d8ff0);color:#fff;display:grid;place-items:center}
+          background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;display:grid;place-items:center;
+          box-shadow:0 8px 20px -10px rgba(34,211,238,.9);transition:transform .2s ease}
+        .compose button:not(:disabled):hover{transform:scale(1.06)}
         .compose button:disabled{opacity:.45;cursor:default}
         .compose button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.3;
           stroke-linecap:round;stroke-linejoin:round}
         :host([dir="rtl"]) .compose button svg{transform:scaleX(-1)}
 
         @media (max-width:520px){
-          .chat{width:min(21rem,calc(100vw - 2 * var(--m,20px)));height:min(26rem,calc(100vh - 120px))}
+          .chat{width:min(22rem,calc(100vw - 2 * var(--m,20px)));height:min(30rem,calc(100vh - 120px))}
           .avatar,.ping{width:58px;height:58px}
           svg.bot{width:38px;height:38px}
-          .is3d .avatar{width:116px;height:116px}
-          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 136px));padding:13px 15px}
+          .is3d .avatar{width:138px;height:138px}
+          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 156px));padding:13px 15px}
           h3{font-size:15px} p{font-size:12.8px}
         }
         @media (prefers-reduced-motion:reduce){
           .avatar,.bubble{transition:none}
-          .wake .ping,.bot .float,.bot .bulb,.bot .eyes circle{animation:none}
+          .wake .ping,.bot .float,.bot .bulb,.bot .eyes circle,.bubble > *,.msg,.chips button,.bar{animation:none!important}
         }
       </style>
       <div class="stack" part="stack">
@@ -425,11 +541,12 @@ class SynexBot extends HTMLElement {
           <p></p>
           <a class="cta" hidden></a>
           <button class="ask" type="button"></button>
+          <span class="bar" aria-hidden="true"></span>
         </div>
         <div class="chat" role="dialog" aria-modal="false" hidden>
           <header>
-            <span class="nm"></span>
-            <span class="st"></span>
+            <span class="face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="7" width="16" height="12" rx="4"/><path d="M12 7V4"/><circle cx="12" cy="3" r="1"/><circle cx="9" cy="13" r="1.2" fill="#fff"/><circle cx="15" cy="13" r="1.2" fill="#fff"/></svg></span>
+            <span class="who"><span class="nm"></span><span class="st"></span></span>
             <button class="close chat-x" type="button"></button>
           </header>
           <div class="log"></div>
@@ -475,7 +592,10 @@ class SynexBot extends HTMLElement {
       this._show(true);
     });
     this._el.close.addEventListener('click', () => this._hide(true));
-    this._el.cta.addEventListener('click', () => this._hide(false));
+    this._el.cta.addEventListener('click', (e) => {
+      if (this._el.cta.getAttribute('href') === '#chat') { e.preventDefault(); this._openChat(); return; }
+      this._hide(false);
+    });
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       if (this._chatOpen) this._closeChat();
@@ -501,6 +621,7 @@ class SynexBot extends HTMLElement {
     this._el.ask.textContent = t.ask;
     this._el.ask.hidden = this.getAttribute('chat') === 'off';
     this._el.chatName.textContent = t.title;
+    this._el.chatState.textContent = t.online;
     this._el.chatX.setAttribute('aria-label', rtl ? 'إغلاق المحادثة' : 'Close chat');
     this._el.input.placeholder = t.ph;
     this._el.send.setAttribute('aria-label', t.send);
@@ -515,7 +636,7 @@ class SynexBot extends HTMLElement {
     const switched = this._lang !== undefined && this._lang !== lang;
     this._lang = lang;
     for (const [id, copy] of Object.entries(DEFAULTS)) {
-      const el = document.getElementById(id);
+      const el = id[0] === '@' ? document.querySelector(id.slice(1)) : document.getElementById(id);
       if (!el) continue;
       const c = copy[lang];
       if (el.dataset.botLang === lang && el.dataset.botTag) continue;
@@ -620,23 +741,57 @@ class SynexBot extends HTMLElement {
     setTimeout(() => { if (!this._chatOpen) this._el.chat.hidden = true; }, 220);
   }
 
-  _renderChips() {
+  _renderChips(list) {
     const lang = isArabic() ? 'ar' : 'en';
     this._chips = lang;
     this._el.chips.innerHTML = '';
-    for (const q of UI[lang].chips) {
+    for (const [i, q] of (list || UI[lang].chips).entries()) {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = q;
+      b.style.animationDelay = (i * 60) + 'ms';
       b.addEventListener('click', () => this._send(q));
       this._el.chips.appendChild(b);
     }
   }
 
+  /** Demo paths and #contact in a reply become real links; everything else stays text. */
+  _linkify(el, text) {
+    el.textContent = '';
+    for (const part of text.split(/((?:https?:\/\/)?(?:autosynex\.com)?\/demos[\w\/-]*|#contact)/g)) {
+      if (!part) continue;
+      if (/\/demos|#contact/.test(part)) {
+        const a = document.createElement('a');
+        a.href = part.replace(/^(?:https?:\/\/)?autosynex\.com/, '');
+        a.textContent = part.replace(/^https?:\/\//, '');
+        el.appendChild(a);
+      } else el.appendChild(document.createTextNode(part));
+    }
+  }
+
+  /** Types the reply out, fast enough to never feel like waiting. */
+  _reveal(el, text) {
+    el.classList.remove('typing');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return Promise.resolve(this._linkify(el, text));
+    return new Promise((done) => {
+      const step = Math.max(2, Math.ceil(text.length / 70));
+      let i = 0;
+      const tick = () => {
+        i = Math.min(text.length, i + step);
+        el.textContent = text.slice(0, i);
+        this._el.log.scrollTop = this._el.log.scrollHeight;
+        if (i < text.length) this._typeRaf = setTimeout(tick, 16);
+        else { this._linkify(el, text); done(); }
+      };
+      tick();
+    });
+  }
+
   _addMsg(who, text) {
     const el = document.createElement('div');
     el.className = 'msg ' + who;
-    if (text === null) el.innerHTML = '<span class="dots"><i></i><i></i><i></i></span>';
+    if (text === null) { el.classList.add('typing'); el.innerHTML = '<span class="dots"><i></i><i></i><i></i></span>'; }
+    else if (who === 'bot') this._linkify(el, text);
     else el.textContent = text;
     this._el.log.appendChild(el);
     this._el.log.scrollTop = this._el.log.scrollHeight;
@@ -657,24 +812,34 @@ class SynexBot extends HTMLElement {
     this._robot?.react('talk');
 
     let reply = null;
+    let chips = null;
     let offline = false;
     try {
       const res = await fetch(this.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: this._history.slice(-12), lang }),
+        body: JSON.stringify({
+          messages: this._history.slice(-12),
+          lang,
+          section: this._current ? { tag: this._current.dataset.botTag, title: this._current.dataset.botTitle } : null,
+        }),
       });
       if (res.ok) {
-        reply = (await res.json()).reply || null;
+        const data = await res.json();
+        reply = data.reply || null;
+        if (Array.isArray(data.suggestions)) chips = data.suggestions.slice(0, 3);
       } else {
         offline = true; // no key on the deployment, rate limited, or upstream error
       }
     } catch {
       offline = true;
     }
-    if (!reply) { reply = localAnswer(q, lang); offline = true; }
+    const local = think(q, lang);
+    if (!reply) { reply = local.text; offline = true; }
 
-    typing.textContent = reply;
+    this._robot?.react('talk');
+    await this._reveal(typing, reply);
+    this._renderChips(chips || local.chips);
     this._history.push({ role: 'assistant', content: reply });
     if (offline && !this._noted) {
       this._noted = true;
@@ -697,7 +862,13 @@ class SynexBot extends HTMLElement {
     this._robot?.react('talk');
     setTimeout(() => this._el.stack.classList.remove('talking'), 1000);
     clearTimeout(this._timer);
-    if (!this.sticky && !byUser) {
+    const timed = !this.sticky && !byUser;
+    // Restart the countdown bar so it always matches the time left.
+    this._el.stack.classList.remove('timed');
+    void this._el.stack.offsetWidth;
+    this._el.stack.style.setProperty('--t', this.collapseAfter + 'ms');
+    this._el.stack.classList.toggle('timed', timed);
+    if (timed) {
       this._timer = setTimeout(() => this._hide(false), this.collapseAfter);
     }
   }
