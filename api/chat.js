@@ -11,7 +11,6 @@
  * to turn the AI answers on. Nothing else is needed — the widget probes this
  * endpoint on its own.
  */
-import Anthropic from '@anthropic-ai/sdk';
 
 const MODEL = 'claude-opus-5';
 const MAX_TURNS = 12; // visitor + bot messages kept per conversation
@@ -112,6 +111,9 @@ export default async function handler(req, res) {
 The visitor is currently viewing the "${String(s.tag || '').slice(0, 40)} — ${s.title.slice(0, 80)}" section of the page.`
     : '';
 
+  // Loaded only once there is a key to use it with, so a deployment without
+  // one answers 503 without paying for the SDK on a cold start.
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
   const client = new Anthropic();
   const params = {
     model: MODEL,

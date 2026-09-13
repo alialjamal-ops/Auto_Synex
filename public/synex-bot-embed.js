@@ -838,6 +838,7 @@ class SynexBot extends HTMLElement {
         this._renderChips();
       }
     }
+    if (first) this._probeApi();
     this._robot?.react(first ? 'wave' : 'nod');
     setTimeout(() => this._el.input.focus({ preventScroll: true }), 60);
   }
@@ -957,25 +958,41 @@ class SynexBot extends HTMLElement {
     let reply = null;
     let chips = null;
     let offline = false;
-    try {
-      const res = await fetch(this.endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: this._history.slice(-12),
-          lang,
-          section: this._current ? { tag: this._current.dataset.botTag, title: this._current.dataset.botTitle } : null,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        reply = data.reply || null;
-        if (Array.isArray(data.suggestions)) chips = data.suggestions.slice(0, 3);
-      } else {
-        offline = true; // no key on the deployment, rate limited, or upstream error
-      }
-    } catch {
+    // Without a key the endpoint answers 503 — but after a cold start that took
+    // 18 seconds, with the robot "thinking" the whole time over an answer the
+    // offline brain already had. Remember an absent endpoint for the session,
+    // and never let a slow network hold a reply longer than a few seconds.
+    const api = this._apiState();
+    if (api === 'off') {
       offline = true;
+    } else {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), api === 'on' ? 12000 : 4000);
+      try {
+        const res = await fetch(this.endpoint, {
+          method: 'POST',
+          signal: ctrl.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: this._history.slice(-12),
+            lang,
+            section: this._current ? { tag: this._current.dataset.botTag, title: this._current.dataset.botTitle } : null,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          reply = data.reply || null;
+          if (Array.isArray(data.suggestions)) chips = data.suggestions.slice(0, 3);
+          if (reply) this._apiState('on');
+        } else {
+          offline = true; // no key, no endpoint, rate limited, or upstream error
+          if ([404, 405, 503].includes(res.status)) this._apiState('off');
+        }
+      } catch {
+        offline = true; // network failure or timed out
+      } finally {
+        clearTimeout(timer);
+      }
     }
     const local = think(q, lang);
     if (!reply) { reply = local.text; offline = true; }
@@ -1046,7 +1063,7 @@ class SynexBot extends HTMLElement {
     ph.href = base;
     const img = document.createElement('img');
     img.alt = '';
-    img.loading = 'lazy';
+    img.decoding = 'async'; // shown the moment the card appears, so not lazy
     img.src = '/demos/media/' + slug + '/hero.jpg';
     img.addEventListener('error', () => img.remove());
     const hint = document.createElement('span');
@@ -1079,6 +1096,32 @@ class SynexBot extends HTMLElement {
     const asked = (this._history || []).filter((m) => m.role === 'user').slice(-3).map((m) => '• ' + m.content);
     const text = [UI[lang].waIntro, ...asked].join('\n');
     window.open('https://wa.me/' + number + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  }
+
+  /* ------------------------------------------------------------------ api */
+  /** '' until known, then 'on' (the AI answered) or 'off' (no endpoint or no key) for the session. */
+  _apiState(set) {
+    if (set) {
+      this._api = set;
+      try { sessionStorage.setItem('synex-bot-api', set); } catch { /* storage blocked */ }
+    }
+    if (this._api) return this._api;
+    try { this._api = sessionStorage.getItem('synex-bot-api') || ''; } catch { this._api = ''; }
+    return this._api;
+  }
+
+  /**
+   * Asked once, when the chat first opens: an empty POST gets 503 without a key
+   * and 400 with one, so by the time the visitor has typed a question the
+   * answer path is known — and the function is already warm.
+   */
+  _probeApi() {
+    if (this._apiState() || this._probing) return;
+    this._probing = true;
+    fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+      .then((r) => { if ([404, 405, 503].includes(r.status)) this._apiState('off'); })
+      .catch(() => {})
+      .finally(() => { this._probing = false; });
   }
 
   /* --------------------------------------------------------------- memory */
