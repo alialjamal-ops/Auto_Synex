@@ -10,6 +10,7 @@
     "build:vite": "vite build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "clsx": "2.1.1",
     "framer-motion": "^12.38.0",
     "jimp": "^1.6.1",

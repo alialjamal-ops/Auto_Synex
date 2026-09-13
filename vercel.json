@@ -10,7 +10,7 @@
       "destination": "https://auto-synex-demos.vercel.app/demos/:path*"
     },
     {
-      "source": "/((?!assets/|templates-section.js|synex-bot-embed.js).*)",
+      "source": "/((?!api/|assets/|templates-section.js|synex-bot-embed.js|synex-bot-3d.js).*)",
       "destination": "/index.html"
     }
   ]
