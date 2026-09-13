@@ -608,6 +608,7 @@ class SynexBot extends HTMLElement {
       this._addMsg('bot', section || localAnswer('', lang));
       this._renderChips();
     }
+    this._robot?.react('nod');
     setTimeout(() => this._el.input.focus({ preventScroll: true }), 60);
   }
 
@@ -708,7 +709,6 @@ class SynexBot extends HTMLElement {
     this._el.stack.classList.remove('open');
     this._el.avatar.setAttribute('aria-expanded', 'false');
     this._el.avatar.classList.add('wake');
-    this._robot?.react('nod');
     clearTimeout(this._timer);
   }
 }
