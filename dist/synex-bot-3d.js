@@ -230,14 +230,14 @@ export async function createRobot(canvas, opts = {}) {
 
     // Reactions.
     const since = t - state.actAt;
-    if (state.act && since < 1.1) {
+    if (state.act && since >= 0 && since < 1.1) {
       const e = Math.sin(since * Math.PI / 1.1);
       if (state.act === 'talk') {
         eyeL.scale.setScalar(1 + e * 0.32);
         eyeR.scale.setScalar(1 + e * 0.32);
         head.position.y += Math.sin(since * 26) * 0.012;
       } else if (state.act === 'nod') {
-        head.rotation.x += Math.sin(since * 9) * 0.22 * (1 - since / 1.1);
+        head.rotation.x += Math.sin(since * 9) * 0.22 * Math.max(0, 1 - since / 1.1);
       } else if (state.act === 'wave') {
         hands[1].position.y = -0.1 + Math.abs(Math.sin(since * 8)) * 0.55;
         hands[1].rotation.z = Math.sin(since * 8) * 0.6;
@@ -268,10 +268,19 @@ export async function createRobot(canvas, opts = {}) {
 
   return {
     look(x, y) { target.x = clamp(x); target.y = clamp(y); },
+    /** Current pose, for debugging the character from the page console. */
+    get pose() {
+      return { hx: +head.rotation.x.toFixed(3), hy: +head.rotation.y.toFixed(3),
+               rx: +robot.rotation.x.toFixed(3), act: state.act, blink: +state.blink.toFixed(3) };
+    },
     /** -1 (flying down) .. 1 (flying up); driven by scroll velocity. */
     fly(v) { state.fly = clamp(v); },
     setHover(on) { state.hover = !!on; },
-    react(kind) { state.act = kind; state.actAt = clock.getElapsedTime(); },
+    // Same clock the frame loop runs on. Reading Three's own elapsed time here
+    // let the two drift apart across every pause, which turned `since` negative
+    // and made the fade-out factor amplify the reaction instead of ending it —
+    // the robot then shook its head forever.
+    react(kind) { state.act = kind; state.actAt = elapsed; },
     dispose() {
       alive = false;
       pause();
