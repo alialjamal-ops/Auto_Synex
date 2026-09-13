@@ -67,7 +67,7 @@ export async function createRobot(canvas, opts = {}) {
   const eyes = new THREE.Group();
   eyes.position.set(0, 0.06, 0.82);
   head.add(eyes);
-  const eyeGeo = new THREE.SphereGeometry(0.19, 24, 24);
+  const eyeGeo = new THREE.SphereGeometry(0.215, 24, 24);
   const eyeL = new THREE.Mesh(eyeGeo, lit);
   const eyeR = new THREE.Mesh(eyeGeo, lit);
   eyeL.position.x = -0.36;
@@ -141,7 +141,7 @@ export async function createRobot(canvas, opts = {}) {
 
   /* ----------------------------------------------------------- animation -- */
   const target = { x: 0, y: 0 };
-  const state = { hover: false, act: '', actAt: 0, blinkAt: 1.6, blink: 0 };
+  const state = { hover: false, act: '', actAt: 0, blinkAt: 1.6, blink: 0, fly: 0, flyNow: 0 };
   const clock = new THREE.Clock();
   let raf = 0;
   let alive = true;
@@ -165,17 +165,27 @@ export async function createRobot(canvas, opts = {}) {
     const dt = Math.min(clock.getDelta(), 0.05);
 
     // Follow the pointer with a lag, so it reads as looking rather than tracking.
-    const yaw = target.x * 0.5;
-    const pitch = -target.y * 0.32;
+    const yaw = target.x * 0.55;
+    const pitch = target.y * 0.34 - 0.07;
     head.rotation.y += (yaw - head.rotation.y) * Math.min(1, dt * 6);
     head.rotation.x += (pitch - head.rotation.x) * Math.min(1, dt * 6);
     robot.rotation.y += (yaw * 0.42 - robot.rotation.y) * Math.min(1, dt * 4);
 
+    // Scrolling makes it fly: lean into the direction of travel, roll a little,
+    // and let the hands stream behind. It settles back when the page stops.
+    state.flyNow += (state.fly - state.flyNow) * Math.min(1, dt * 7);
+    const f = state.flyNow;
+    robot.rotation.x += (f * 0.5 - robot.rotation.x) * Math.min(1, dt * 7);
+    robot.rotation.z += (-f * 0.22 - robot.rotation.z) * Math.min(1, dt * 7);
+    pad.material.opacity = 0.16 * Math.max(0, 1 - Math.abs(f) * 1.4);
+
     if (!REDUCED) {
       robot.position.y = Math.sin(t * 1.5) * 0.075;
       head.position.y = 0.62 + Math.sin(t * 1.5 + 0.5) * 0.03;
-      hands[0].position.y = -0.1 + Math.sin(t * 1.7) * 0.07;
-      hands[1].position.y = -0.1 + Math.sin(t * 1.7 + 1.1) * 0.07;
+      hands[0].position.y = -0.1 + Math.sin(t * 1.7) * 0.07 + f * 0.5;
+      hands[1].position.y = -0.1 + Math.sin(t * 1.7 + 1.1) * 0.07 + f * 0.5;
+      hands[0].position.z = 0.2 - Math.abs(f) * 0.45;
+      hands[1].position.z = 0.2 - Math.abs(f) * 0.45;
       ears[0].rotation.x = Math.sin(t * 1.2) * 0.12;
       ears[1].rotation.x = Math.sin(t * 1.2 + 0.7) * 0.12;
       bulb.material.emissiveIntensity = 1.6 + Math.sin(t * 3) * 0.7;
@@ -233,6 +243,8 @@ export async function createRobot(canvas, opts = {}) {
 
   return {
     look(x, y) { target.x = clamp(x); target.y = clamp(y); },
+    /** -1 (flying down) .. 1 (flying up); driven by scroll velocity. */
+    fly(v) { state.fly = clamp(v); },
     setHover(on) { state.hover = !!on; },
     react(kind) { state.act = kind; state.actAt = clock.getElapsedTime(); },
     dispose() {

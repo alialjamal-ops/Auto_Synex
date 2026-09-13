@@ -146,8 +146,55 @@ class SynexBot extends HTMLElement {
     this._collect();
     this._observeDom();
     this._boot3d();
+    this._flight();
     // Let the hero settle before the bot announces itself.
     this._hello = setTimeout(() => this._pick(true), 1100);
+  }
+
+  /**
+   * Scroll flight. The page's scroll velocity becomes an impulse; a spring
+   * carries the character a little way with it and lets it settle back, and the
+   * same value tips the 3D model so it leans into the travel. Pointer-driven
+   * "look" keeps working throughout.
+   */
+  _flight() {
+    let last = window.scrollY;
+    let impulse = 0;
+    let offset = 0;
+    let vel = 0;
+    let idle = 0;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      impulse = Math.max(-120, Math.min(120, impulse + (y - last)));
+      last = y;
+      idle = 0;
+      if (!this._flyRaf) step();
+    };
+
+    const step = () => {
+      // Critically-damped-ish spring toward the impulse, which itself decays.
+      impulse *= 0.90;
+      const target = Math.max(-70, Math.min(70, impulse * 0.8));
+      vel = vel * 0.72 + (target - offset) * 0.22;
+      offset += vel;
+      this._el.flyer.style.translate = '0 ' + offset.toFixed(2) + 'px';
+      this._robot?.fly(Math.max(-1, Math.min(1, offset / 55)));
+
+      const settled = Math.abs(offset) < 0.3 && Math.abs(vel) < 0.3 && Math.abs(impulse) < 0.5;
+      if (settled && ++idle > 8) {
+        this._el.flyer.style.translate = '0 0';
+        this._robot?.fly(0);
+        this._flyRaf = 0;
+        return;
+      }
+      this._flyRaf = requestAnimationFrame(step);
+    };
+
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this._onScroll = onScroll;
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
   }
 
   /**
@@ -182,6 +229,8 @@ class SynexBot extends HTMLElement {
 
   disconnectedCallback() {
     if (this._onMove) window.removeEventListener('pointermove', this._onMove);
+    if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
+    if (this._flyRaf) cancelAnimationFrame(this._flyRaf);
     this._robot?.dispose();
     clearTimeout(this._timer);
     clearTimeout(this._hello);
@@ -193,18 +242,18 @@ class SynexBot extends HTMLElement {
   _render() {
     this._root.innerHTML = `
       <style>
-        :host{position:fixed;z-index:2147483000;inset-block-end:var(--m,20px);
+        :host{position:fixed;z-index:2147483000;inset-block-start:50%;translate:0 -50%;
               font-family:'Cairo',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
               color-scheme:dark}
         :host([hidden]){display:none}
-        .stack{display:flex;align-items:flex-end;gap:10px;flex-direction:var(--dir,row-reverse);
+        .stack{display:flex;align-items:center;gap:12px;flex-direction:var(--dir,row-reverse);
           direction:ltr}  /* placement is physical: RTL must not swap the robot and the bubble */
         :host([dir="rtl"]) .bubble{direction:rtl}
 
         .stage{position:absolute;inset:0;width:100%;height:100%;display:none}
         .is3d .stage{display:block}
         /* With the character on screen the disc would only box it in. */
-        .is3d .avatar{background:none;box-shadow:none;width:118px;height:118px}
+        .is3d .avatar{background:none;box-shadow:none;width:154px;height:154px}
         .is3d .avatar:hover{transform:none}
         .is3d svg.bot,.is3d .ping{display:none}
         .avatar{position:relative;width:66px;height:66px;flex:none;border:0;padding:0;cursor:pointer;border-radius:50%;
@@ -237,11 +286,11 @@ class SynexBot extends HTMLElement {
         .wake .ping{animation:ping 2.2s ease-out 2}
         @keyframes ping{0%{transform:scale(.9);opacity:.75}100%{transform:scale(1.7);opacity:0}}
 
-        .bubble{position:relative;width:min(19rem,calc(100vw - 2 * var(--m,20px) - 128px));
+        .bubble{position:relative;width:min(19rem,calc(100vw - 2 * var(--m,20px) - 176px));
           background:linear-gradient(180deg,#101a29,#0a1220);
           border:1px solid rgba(255,255,255,.12);border-radius:18px;
           padding:15px 17px 15px;box-shadow:0 22px 52px -22px rgba(0,0,0,.85);
-          opacity:0;transform:translateY(8px) scale(.97);transform-origin:bottom var(--origin,right);
+          opacity:0;transform:translateY(8px) scale(.97);transform-origin:center var(--origin,right);
           transition:opacity .22s ease,transform .22s ease;pointer-events:none}
         .open .bubble{opacity:1;transform:none;pointer-events:auto}
 
@@ -275,7 +324,7 @@ class SynexBot extends HTMLElement {
         .ask:hover{background:rgba(255,255,255,.16);color:#fff}
         .ask:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
 
-        .chat{position:absolute;inset-block-end:0;inset-inline-start:0;
+        .chat{position:absolute;inset-block-start:50%;translate:0 -50%;inset-inline-start:0;
           width:min(23rem,calc(100vw - 2 * var(--m,20px)));
           height:min(30rem,calc(100vh - 2 * var(--m,20px) - 20px));
           display:flex;flex-direction:column;
@@ -332,8 +381,8 @@ class SynexBot extends HTMLElement {
           .chat{width:min(21rem,calc(100vw - 2 * var(--m,20px)));height:min(26rem,calc(100vh - 120px))}
           .avatar,.ping{width:58px;height:58px}
           svg.bot{width:38px;height:38px}
-          .is3d .avatar{width:96px;height:96px}
-          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 106px));padding:13px 15px}
+          .is3d .avatar{width:116px;height:116px}
+          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 136px));padding:13px 15px}
           h3{font-size:15px} p{font-size:12.8px}
         }
         @media (prefers-reduced-motion:reduce){
@@ -402,6 +451,7 @@ class SynexBot extends HTMLElement {
       cta: this._root.querySelector('.cta'),
       close: this._root.querySelector('.close'),
       stage: this._root.querySelector('.stage'),
+      flyer: this._root.querySelector('.stack'),
       ask: this._root.querySelector('.ask'),
       chat: this._root.querySelector('.chat'),
       chatName: this._root.querySelector('.chat .nm'),
