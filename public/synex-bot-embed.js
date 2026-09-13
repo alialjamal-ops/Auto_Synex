@@ -64,11 +64,17 @@ const UI = {
         send: 'Send', back: 'Back', offline: 'Answering from what I know about Auto Synex.',
         err: 'That did not go through. Try again, or use the contact form on this page.',
         online: 'Online · replies instantly',
+        hello: 'Hi! Want a quick tour?', wa: 'Continue on WhatsApp',
+        waIntro: 'Hi Auto Synex, I was talking to the assistant on your site:',
+        card: ['Website', 'Booking', 'Dashboard'], cardHint: 'Live demo',
         chips: ['What do you build?', 'How does the booking work?', 'Can I see a demo?', 'What does it cost?'] },
   ar: { ask: 'اسألني أي شيء', title: 'اسأل أوتو سينكس', ph: 'اكتب سؤالك…',
         send: 'إرسال', back: 'رجوع', offline: 'أجيب مما أعرفه عن أوتو سينكس.',
         err: 'لم تصل الرسالة. أعد المحاولة أو استخدم نموذج التواصل في الصفحة.',
         online: 'متصل · يرد فورًا',
+        hello: 'أهلًا! تحب جولة سريعة؟', wa: 'أكمل على واتساب',
+        waIntro: 'مرحبًا أوتو سينكس، كنت أتحدث مع مساعد موقعكم:',
+        card: ['الموقع', 'الحجز', 'لوحة التحكم'], cardHint: 'نموذج حيّ',
         chips: ['ماذا تبنون؟', 'كيف يعمل نظام الحجز؟', 'أريد رؤية نموذج', 'كم التكلفة؟'] },
 };
 
@@ -172,19 +178,22 @@ function think(text, lang) {
     const text = lang === 'ar'
       ? `لنشاط مثل نشاطك، أقرب نموذج هو ${t.ar}. افتحه، احجز فيه كزبون، ثم افتح لوحة التحكم وشاهد الحجز يصل: /demos/ar/${t.slug}`
       : `For a business like yours, the closest demo is ${t.en}. Open it, book as a customer, then open its dashboard and watch the booking arrive: /demos/${t.slug}`;
-    return { text, chips: chips('trade') };
+    return { text, chips: chips('trade'), intent: 'trade', slug: t.slug };
   }
-  if (best) return { text: best[lang], chips: chips(best.id) };
+  if (best) return { text: best[lang], chips: chips(best.id), intent: best.id };
   return { text: lang === 'ar'
     ? 'أوتو سينكس تبني ثلاثة أشياء معًا: موقعًا مخصّصًا، نظام حجز حقيقي، ولوحة تحكم — إضافة إلى الأتمتة ووكلاء الذكاء الاصطناعي. أخبرني بنوع نشاطك لأريك النموذج الأقرب.'
     : 'Auto Synex builds three things together: a custom website, a real booking system and its dashboard — plus automation and AI agents. Tell me your type of business and I will point you to the closest demo.',
-    chips: fresh(UI[lang].chips).slice(0, 3) };
+    chips: fresh(UI[lang].chips).slice(0, 3), intent: 'fallback' };
 }
 
 function localAnswer(text, lang) { return think(text, lang).text; }
 
 const ICON_CLOSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const ICON_ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const ICON_WA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.3 20.7l4.4-1.1A8.8 8.8 0 1 0 12 3.2Z"/><path d="M9 8.6c.2-.4.5-.4.7-.4h.5c.2 0 .4 0 .5.4l.7 1.6c.1.2 0 .4-.1.6l-.5.6c.6 1.2 1.6 2.1 2.8 2.7l.6-.6c.2-.2.4-.2.6-.1l1.6.7c.3.1.4.3.4.5v.5c0 .3-.1.6-.4.8-.5.4-1.2.6-1.9.5-2.9-.5-5.5-3.1-6-6-.1-.7.1-1.4.5-1.8Z"/></svg>';
+const WA_FALLBACK = '96181373496';
+const SAVE_KEY = 'synex-bot-chat';
 const ICON_SEND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
 
 function isArabic() {
@@ -194,6 +203,26 @@ function isArabic() {
   const probe = document.getElementById('services') || document.getElementById('root');
   return probe ? ARABIC.test(probe.textContent || '') : false;
 }
+
+/** True when `rect` overlaps any text or control inside `root`. */
+function collides(rect, root) {
+  if (!root) return false;
+  const hit = (r) => r.width > 2 && r.height > 2 &&
+    !(rect.right <= r.left || rect.left >= r.right || rect.bottom <= r.top || rect.top >= r.bottom);
+  for (const el of root.querySelectorAll('a,button,input,textarea,select')) {
+    if (hit(el.getBoundingClientRect())) return true;
+  }
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (!n.textContent.trim()) continue;
+    range.selectNodeContents(n);
+    for (const r of range.getClientRects()) if (hit(r)) return true;
+  }
+  return false;
+}
+
+const PHONE = '(max-width:640px)';
 
 class SynexBot extends HTMLElement {
   static observedAttributes = ['side', 'color', 'margin', 'collapse-after', 'sticky'];
@@ -222,6 +251,8 @@ class SynexBot extends HTMLElement {
   attributeChangedCallback() { if (this._root.firstChild) this._applyVars(); }
 
   connectedCallback() {
+    // Start in the corner: the page opens on the hero, and the centre is its headline.
+    this.toggleAttribute('docked', true);
     this._render();
     this._applyVars();
     this._collect();
@@ -229,7 +260,7 @@ class SynexBot extends HTMLElement {
     this._boot3d();
     this._flight();
     // Let the hero settle before the bot announces itself.
-    this._hello = setTimeout(() => this._pick(true), 1100);
+    this._hello = setTimeout(() => { this._mini = true; this._pick(true); }, 1600);
   }
 
   /**
@@ -323,10 +354,20 @@ class SynexBot extends HTMLElement {
   _render() {
     this._root.innerHTML = `
       <style>
-        :host{position:fixed;z-index:2147483000;inset-block-start:50%;translate:0 -50%;
+        /* Centred on the left while reading, docked in the corner on the hero —
+           where the centre is the headline — and always docked on phones. top and
+           translate both animate, so the move is a glide rather than a jump. */
+        :host{position:fixed;z-index:2147483000;top:50%;translate:0 -50%;
+              transition:top .9s cubic-bezier(.2,.9,.3,1),translate .9s cubic-bezier(.2,.9,.3,1);
               font-family:'Cairo',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
               color-scheme:dark}
         :host([hidden]){display:none}
+        :host([docked]){top:100%;translate:0 calc(-100% - var(--m,20px))}
+        /* Docked, the chat grows upward from the robot instead of centring on it. */
+        :host([docked]) .chat{inset-block-start:auto;inset-block-end:0;translate:none}
+        /* Set when the docked character would otherwise sit on the page's text. */
+        :host([compact]) .is3d .avatar{width:120px;height:120px}
+        :host([compact]) .bubble{width:min(21rem,calc(100vw - 2 * var(--m,20px) - 142px))}
         .stack{display:flex;align-items:center;gap:12px;flex-direction:var(--dir,row-reverse);
           direction:ltr}  /* placement is physical: RTL must not swap the robot and the bubble */
         :host([dir="rtl"]) .bubble{direction:rtl}
@@ -415,6 +456,13 @@ class SynexBot extends HTMLElement {
         .close svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
         .close:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
 
+        /* First hello on the hero: a compact line, so it never covers the headline. */
+        .mini .bubble{width:auto;max-width:min(16rem,calc(100vw - 2 * var(--m,20px) - 210px));padding:13px 42px 13px 16px}
+        :host([dir="rtl"]) .mini .bubble{padding:13px 16px 13px 42px}
+        .mini .bubble .tag,.mini .bubble p,.mini .bubble .cta{display:none}
+        .mini .bubble h3{margin:0;font-size:15px}
+        .mini .bubble .ask{margin:8px 0 0}
+
         /* ---------- chat ---------- */
         .ask{display:inline-flex;align-items:center;gap:7px;margin-top:10px;margin-inline-start:8px;
           font-size:13px;font-weight:700;cursor:pointer;color:#cfe0f5;
@@ -477,6 +525,31 @@ class SynexBot extends HTMLElement {
         .chips button:hover{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.45);color:#fff}
         .chips button:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
 
+        .card{display:block;align-self:flex-start;width:86%;border-radius:16px;overflow:hidden;text-decoration:none;
+          background:rgba(255,255,255,.05);border:1px solid rgba(125,211,252,.25);
+          box-shadow:0 14px 30px -18px rgba(0,0,0,.9);animation:rise .45s cubic-bezier(.2,.9,.3,1) both}
+        .card .ph{position:relative;display:block;aspect-ratio:16/8;overflow:hidden;background:#0d1b2e}
+        .card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease}
+        .card:hover img{transform:scale(1.05)}
+        .card .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(5,10,20,.85))}
+        .card .hint{position:absolute;z-index:1;inset-block-end:8px;inset-inline-start:10px;font-size:10.5px;font-weight:800;
+          letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}
+        .card .nm2{display:block;padding:9px 12px 2px;font-size:14px;font-weight:800;color:#f3f7fd}
+        .card .go{display:flex;gap:6px;padding:8px 10px 11px;flex-wrap:wrap}
+        .card .go a{font-size:11.5px;font-weight:700;color:#cfe6fb;text-decoration:none;border-radius:999px;padding:5px 10px;
+          background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.28)}
+        .card .go a:hover{background:rgba(56,189,248,.24);color:#fff}
+        .wa{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:13px;font-weight:700;
+          color:#fff;cursor:pointer;border:0;border-radius:999px;padding:9px 15px;
+          background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 8px 20px -10px rgba(34,197,94,.9);
+          animation:rise .45s cubic-bezier(.2,.9,.3,1) both}
+        .wa:hover{filter:brightness(1.08)}
+        .wa svg,.wa-top svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round}
+        .wa-top{width:30px;height:30px;border:0;border-radius:50%;cursor:pointer;display:grid;place-items:center;
+          color:#4ade80;background:rgba(34,197,94,.12)}
+        .wa-top:hover{background:rgba(34,197,94,.24);color:#86efac}
+        .wa:focus-visible,.wa-top:focus-visible,.card:focus-visible,.card .go a:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
+        .chat header .close{position:static}
         .compose{display:flex;gap:8px;padding:11px 12px;border-top:1px solid rgba(255,255,255,.10);
           background:rgba(255,255,255,.03)}
         .compose input{flex:1;min-width:0;font:inherit;font-size:13.5px;color:#eef3fa;
@@ -493,16 +566,22 @@ class SynexBot extends HTMLElement {
           stroke-linecap:round;stroke-linejoin:round}
         :host([dir="rtl"]) .compose button svg{transform:scaleX(-1)}
 
+        @media (max-width:640px){
+          :host{top:100%;translate:0 calc(-100% - var(--m,20px))}
+          .chat{inset-block-start:auto;inset-block-end:0;translate:none}
+          :host([compact]) .is3d .avatar{width:84px;height:84px}
+          :host([compact]) .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 100px))}
+        }
         @media (max-width:520px){
           .chat{width:min(22rem,calc(100vw - 2 * var(--m,20px)));height:min(30rem,calc(100vh - 120px))}
           .avatar,.ping{width:58px;height:58px}
           svg.bot{width:38px;height:38px}
-          .is3d .avatar{width:138px;height:138px}
-          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 156px));padding:13px 15px}
+          .is3d .avatar{width:104px;height:104px}
+          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 122px));padding:13px 15px}
           h3{font-size:15px} p{font-size:12.8px}
         }
         @media (prefers-reduced-motion:reduce){
-          .avatar,.bubble{transition:none}
+          :host,.avatar,.bubble{transition:none}
           .wake .ping,.bot .float,.bot .bulb,.bot .eyes circle,.bubble > *,.msg,.chips button,.bar{animation:none!important}
         }
       </style>
@@ -547,6 +626,7 @@ class SynexBot extends HTMLElement {
           <header>
             <span class="face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="7" width="16" height="12" rx="4"/><path d="M12 7V4"/><circle cx="12" cy="3" r="1"/><circle cx="9" cy="13" r="1.2" fill="#fff"/><circle cx="15" cy="13" r="1.2" fill="#fff"/></svg></span>
             <span class="who"><span class="nm"></span><span class="st"></span></span>
+            <button class="wa-top" type="button"></button>
             <button class="close chat-x" type="button"></button>
           </header>
           <div class="log"></div>
@@ -574,6 +654,7 @@ class SynexBot extends HTMLElement {
       chatName: this._root.querySelector('.chat .nm'),
       chatState: this._root.querySelector('.chat .st'),
       chatX: this._root.querySelector('.chat-x'),
+      waTop: this._root.querySelector('.wa-top'),
       log: this._root.querySelector('.log'),
       chips: this._root.querySelector('.chips'),
       form: this._root.querySelector('.compose'),
@@ -585,6 +666,8 @@ class SynexBot extends HTMLElement {
     this._el.send.innerHTML = ICON_SEND;
     this._el.ask.addEventListener('click', () => this._openChat());
     this._el.chatX.addEventListener('click', () => this._closeChat());
+    this._el.waTop.innerHTML = ICON_WA;
+    this._el.waTop.addEventListener('click', () => this._whatsapp());
     this._el.form.addEventListener('submit', (e) => { e.preventDefault(); this._send(this._el.input.value); });
     this._el.avatar.addEventListener('click', () => {
       if (this._chatOpen) return this._closeChat();
@@ -622,6 +705,8 @@ class SynexBot extends HTMLElement {
     this._el.ask.hidden = this.getAttribute('chat') === 'off';
     this._el.chatName.textContent = t.title;
     this._el.chatState.textContent = t.online;
+    this._el.waTop.setAttribute('aria-label', t.wa);
+    this._el.waTop.title = t.wa;
     this._el.chatX.setAttribute('aria-label', rtl ? 'إغلاق المحادثة' : 'Close chat');
     this._el.input.placeholder = t.ph;
     this._el.send.setAttribute('aria-label', t.send);
@@ -651,7 +736,10 @@ class SynexBot extends HTMLElement {
 
   _collect() {
     // The site switches language in place — re-say the current section in the new one.
-    if (this._applyDefaults() && this._current) this._fill(this._current);
+    if (this._applyDefaults() && this._current) {
+      this._el.stack.classList.remove('mini');
+      this._fill(this._current);
+    }
     const found = Array.from(document.querySelectorAll('[data-bot-tag]'));
     const added = found.filter((el) => !this._sections.includes(el));
     if (!added.length && found.length === this._sections.length) return;
@@ -689,10 +777,21 @@ class SynexBot extends HTMLElement {
     if (!best) return;
     const changed = best !== this._current;
     this._current = best;
+    const moved = this._dock();
     if (!changed && !force) return;
     if (this._chatOpen) return;
+    // Only the very first greeting, and only on the hero, is the compact one.
+    const mini = !!this._mini && best.id === 'home';
+    this._mini = false;
+    this._el.stack.classList.toggle('mini', mini);
     this._fill(best);
-    if (!this._dismissed || force) this._show(false);
+    if (mini) this._el.title.textContent = UI[isArabic() ? 'ar' : 'en'].hello;
+    if (!this._dismissed || force) {
+      this._show(false);
+      // Measure once the character has finished gliding into place.
+      clearTimeout(this._guardTimer);
+      this._guardTimer = setTimeout(() => this._guardDock(), moved ? 950 : 60);
+    }
   }
 
   _fill(el) {
@@ -722,19 +821,62 @@ class SynexBot extends HTMLElement {
     this._el.chat.hidden = false;
     this._el.stack.classList.add('chatting');
     this._el.avatar.setAttribute('aria-expanded', 'true');
-    if (!this._history) {
-      this._history = [];
+    const first = !this._history;
+    if (first) {
       const lang = isArabic() ? 'ar' : 'en';
-      const section = this._current && this._current.dataset.botBody;
-      this._addMsg('bot', section || localAnswer('', lang));
-      this._renderChips();
+      this._history = this._restore();
+      if (this._history.length) {
+        // Picking up where the visitor left off, on this page or the last one.
+        for (const m of this._history) {
+          const el = this._addMsg(m.role === 'user' ? 'me' : 'bot', m.content);
+          if (m.role === 'assistant') this._extras(m.content, think('', lang), lang, el, true);
+        }
+        this._renderChips(think(this._history[this._history.length - 1].content, lang).chips);
+      } else {
+        const section = this._current && this._current.dataset.botBody;
+        this._addMsg('bot', section || localAnswer('', lang));
+        this._renderChips();
+      }
     }
-    this._robot?.react('nod');
+    this._robot?.react(first ? 'wave' : 'nod');
     setTimeout(() => this._el.input.focus({ preventScroll: true }), 60);
+  }
+
+  /** Docked on the hero; centred everywhere else. Held still while the chat is open. */
+  _dock() {
+    if (this._chatOpen) return false;
+    const hero = !this._current || this._current.id === 'home';
+    const was = this.hasAttribute('docked');
+    this.toggleAttribute('docked', hero);
+    if (!hero && !matchMedia(PHONE).matches) this.removeAttribute('compact');
+    // Phones stay docked whatever the section, so nothing visibly moves there.
+    return !matchMedia(PHONE).matches && was !== hero;
+  }
+
+  /**
+   * Docked, the robot shares a corner with the page. If the character covers
+   * text or a button there it shrinks; if the bubble it just opened would sit on
+   * content, the bubble closes and the next section speaks instead. Measured on
+   * the real page, so it holds at every screen size, in both languages.
+   */
+  _guardDock() {
+    const docked = this.hasAttribute('docked') || matchMedia(PHONE).matches;
+    if (!docked || this._chatOpen) return;
+    const section = this._current;
+    const a = this._el.avatar.getBoundingClientRect();
+    // The canvas is square; the character fills its middle, not its corners.
+    const body = { left: a.left + a.width * 0.22, right: a.right - a.width * 0.22,
+      top: a.top + a.height * 0.04, bottom: a.bottom - a.height * 0.04 };
+    if (collides(body, section)) this.toggleAttribute('compact', true);
+    if (!this._open) return;
+    const b = this._el.bubble.getBoundingClientRect();
+    const pad = { left: b.left - 8, right: b.right + 8, top: b.top - 8, bottom: b.bottom + 8 };
+    if (collides(pad, section)) this._hide(false);
   }
 
   _closeChat() {
     this._chatOpen = false;
+    this._dock();
     this._el.stack.classList.remove('chatting');
     this._el.avatar.setAttribute('aria-expanded', 'false');
     this._el.avatar.classList.add('wake');
@@ -810,6 +952,7 @@ class SynexBot extends HTMLElement {
     this._history.push({ role: 'user', content: q });
     const typing = this._addMsg('bot', null);
     this._robot?.react('talk');
+    this._robot?.mood('think');
 
     let reply = null;
     let chips = null;
@@ -837,10 +980,13 @@ class SynexBot extends HTMLElement {
     const local = think(q, lang);
     if (!reply) { reply = local.text; offline = true; }
 
+    this._robot?.mood('');
     this._robot?.react('talk');
     await this._reveal(typing, reply);
+    this._extras(reply, local, lang, typing, false);
     this._renderChips(chips || local.chips);
     this._history.push({ role: 'assistant', content: reply });
+    this._save();
     if (offline && !this._noted) {
       this._noted = true;
       this._addMsg('note', UI[lang].offline);
@@ -851,6 +997,104 @@ class SynexBot extends HTMLElement {
     this._el.input.focus({ preventScroll: true });
   }
 
+  /* --------------------------------------------------------------- extras */
+  /**
+   * What goes under a reply: a live-demo card for every demo it names, and a
+   * WhatsApp hand-off when the visitor is asking about price or contact.
+   * Works the same for AI answers and offline ones, because it reads the reply.
+   */
+  _extras(reply, local, lang, after, restoring) {
+    const t = UI[lang];
+    let anchor = after;
+    const place = (node) => { anchor.after(node); anchor = node; };
+
+    const seen = new Set();
+    for (const m of reply.matchAll(/\/demos(\/ar)?\/(clinic|dental|salon|hotel|restaurant)\b/g)) {
+      const slug = m[2];
+      if (seen.has(slug)) continue;
+      seen.add(slug);
+      place(this._card(slug, lang, t));
+    }
+
+    if (!restoring && ['price', 'contact'].includes(local.intent)) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wa';
+      b.innerHTML = ICON_WA;
+      b.append(t.wa);
+      b.addEventListener('click', () => this._whatsapp());
+      place(b);
+    }
+
+    if (!restoring) {
+      if (local.intent === 'trade') { this._robot?.react('jump'); this._robot?.mood('happy'); }
+      else this._robot?.mood('happy');
+      clearTimeout(this._moodTimer);
+      this._moodTimer = setTimeout(() => this._robot?.mood(''), 2600);
+    }
+    this._el.log.scrollTop = this._el.log.scrollHeight;
+  }
+
+  _card(slug, lang, t) {
+    const trade = TRADES.find((x) => x.slug === slug);
+    const base = '/demos' + (lang === 'ar' ? '/ar' : '') + '/' + slug;
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const ph = document.createElement('a');
+    ph.className = 'ph';
+    ph.href = base;
+    const img = document.createElement('img');
+    img.alt = '';
+    img.loading = 'lazy';
+    img.src = '/demos/media/' + slug + '/hero.jpg';
+    img.addEventListener('error', () => img.remove());
+    const hint = document.createElement('span');
+    hint.className = 'hint';
+    hint.textContent = t.cardHint;
+    ph.append(img, hint);
+
+    const name = document.createElement('span');
+    name.className = 'nm2';
+    name.textContent = trade ? trade[lang].replace(/\s*\(.*\)\s*$/, '') : slug;
+
+    const go = document.createElement('span');
+    go.className = 'go';
+    ['', '/book', '/dashboard'].forEach((page, i) => {
+      const a = document.createElement('a');
+      a.href = base + page;
+      a.textContent = t.card[i];
+      go.appendChild(a);
+    });
+
+    card.append(ph, name, go);
+    return card;
+  }
+
+  /** Opens WhatsApp with the visitor's questions already written, ready for them to send. */
+  _whatsapp() {
+    const lang = isArabic() ? 'ar' : 'en';
+    const link = document.querySelector('a[href*="wa.me/"]');
+    const number = (link && (link.getAttribute('href').match(/wa\.me\/(\d+)/) || [])[1]) || WA_FALLBACK;
+    const asked = (this._history || []).filter((m) => m.role === 'user').slice(-3).map((m) => '• ' + m.content);
+    const text = [UI[lang].waIntro, ...asked].join('\n');
+    window.open('https://wa.me/' + number + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  }
+
+  /* --------------------------------------------------------------- memory */
+  _save() {
+    try { sessionStorage.setItem(SAVE_KEY, JSON.stringify(this._history.slice(-20))); } catch { /* storage blocked */ }
+  }
+
+  _restore() {
+    try {
+      const v = JSON.parse(sessionStorage.getItem(SAVE_KEY) || '[]');
+      return Array.isArray(v)
+        ? v.filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string').slice(-20)
+        : [];
+    } catch { return []; }
+  }
+
   _show(byUser) {
     if (this._chatOpen) return;
     if (byUser) this._dismissed = false;
@@ -859,7 +1103,9 @@ class SynexBot extends HTMLElement {
     this._el.avatar.setAttribute('aria-expanded', 'true');
     this._el.avatar.classList.remove('wake');
     this._el.stack.classList.add('talking');
-    this._robot?.react('talk');
+    if (byUser) this._el.stack.classList.remove('mini');
+    // Point at the bubble it just opened; a click gets a plain "talk".
+    this._robot?.react(byUser ? 'talk' : 'point');
     setTimeout(() => this._el.stack.classList.remove('talking'), 1000);
     clearTimeout(this._timer);
     const timed = !this.sticky && !byUser;

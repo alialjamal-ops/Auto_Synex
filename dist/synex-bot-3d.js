@@ -7,7 +7,8 @@
  *
  *   const robot = await createRobot(canvas, { color: '#17567f' });
  *   robot.look(x, y);        // -1..1, where the pointer is relative to the page
- *   robot.react('talk');     // 'talk' | 'nod' | 'wave'
+ *   robot.react('talk');     // one-shot: 'talk' | 'nod' | 'wave' | 'point' | 'jump'
+ *   robot.mood('think');     // held until changed: 'think' | 'happy' | ''
  *   robot.setHover(true);
  *   robot.dispose();
  */
@@ -222,7 +223,8 @@ export async function createRobot(canvas, opts = {}) {
   const aim = new THREE.Vector3(0, 0.78, 9);
   const want = new THREE.Vector3();
   const hp = new THREE.Vector3();
-  const state = { hover: false, act: '', actAt: 0, blinkAt: 1.6, blink: 0, fly: 0, flyNow: 0 };
+  const state = { hover: false, act: '', actAt: 0, blinkAt: 1.6, blink: 0, fly: 0, flyNow: 0,
+    mood: '', thinkW: 0, happyW: 0 };
   const clock = new THREE.Clock();
   let elapsed = 0;
   let raf = 0;
@@ -295,37 +297,78 @@ export async function createRobot(canvas, opts = {}) {
       sparks.material.opacity = 0.7;
     }
 
-    // Blink: a quick vertical squash on both eyes.
+    // Blink, talk and mood all shape the same two eyes. Each used to write the
+    // scale directly, so whichever ran last won; compute the parts, apply once.
+    let blinkK = 1;
     if (!REDUCED) {
       if (t > state.blinkAt) {
         state.blink = 0.16;
         state.blinkAt = t + 3 + Math.random() * 3.5;
       }
-      const k = state.blink > 0 ? Math.max(0.08, 1 - state.blink / 0.08) : 1;
-      eyeL.scale.y = eyeR.scale.y = k;
+      blinkK = state.blink > 0 ? Math.max(0.08, 1 - state.blink / 0.08) : 1;
       state.blink = Math.max(0, state.blink - dt);
     }
 
-    // Reactions.
+    // Moods ease in and out rather than snapping.
+    const ease = Math.min(1, dt * 6);
+    state.thinkW += ((state.mood === 'think' ? 1 : 0) - state.thinkW) * ease;
+    state.happyW += ((state.mood === 'happy' ? 1 : 0) - state.happyW) * ease;
+    const think = state.thinkW;
+    const happy = state.happyW;
+
+    // One-shot reactions.
+    let talkK = 1;
+    const HAND_X = 0.966;
     const since = t - state.actAt;
     if (state.act && since >= 0 && since < 1.1) {
       const e = Math.sin(since * Math.PI / 1.1);
       if (state.act === 'talk') {
-        eyeL.scale.setScalar(1 + e * 0.32);
-        eyeR.scale.setScalar(1 + e * 0.32);
+        talkK = 1 + e * 0.32;
         head.position.y += Math.sin(since * 26) * 0.012;
       } else if (state.act === 'nod') {
         head.rotation.x += Math.sin(since * 9) * 0.22 * Math.max(0, 1 - since / 1.1);
       } else if (state.act === 'wave') {
         hands[1].position.y = -0.1 + Math.abs(Math.sin(since * 8)) * 0.55;
         hands[1].rotation.z = Math.sin(since * 8) * 0.6;
+      } else if (state.act === 'point' && !REDUCED) {
+        // Reach toward the bubble, which sits on the robot's screen-right.
+        hands[1].position.x = HAND_X + e * 0.5;
+        hands[1].position.y += e * 0.32;
+        hands[1].position.z += e * 0.4;
+        hands[1].scale.setScalar(1 + e * 0.18);
+        head.rotation.y += e * 0.25;
+      } else if (state.act === 'jump' && !REDUCED) {
+        // A little hop of delight, with a squash on landing.
+        const hop = Math.max(0, Math.sin(since * Math.PI / 0.7));
+        robot.position.y += since < 0.7 ? hop * 0.42 : 0;
+        const land = since > 0.62 && since < 0.9 ? Math.sin((since - 0.62) * Math.PI / 0.28) : 0;
+        body.scale.set(1 + land * 0.08, 1 - land * 0.1, 1 + land * 0.08);
+        hands[0].position.y += hop * 0.3;
+        hands[1].position.y += hop * 0.3;
       }
     } else if (state.act) {
       state.act = '';
-      eyeL.scale.setScalar(1);
-      eyeR.scale.setScalar(1);
       hands[1].rotation.z = 0;
+      hands[1].position.x = HAND_X;
+      hands[1].scale.setScalar(1);
+      body.scale.set(1, 1, 1);
     }
+
+    // Thinking: eyes glance up and aside, the head tilts, the antenna flickers.
+    eyes.position.set(think * 0.1, 0.07 + think * 0.09, 0.95);
+    head.rotation.z += think * 0.16;
+    if (!REDUCED) {
+      head.rotation.z += Math.sin(t * 2.2) * 0.03 * think;
+      bulb.material.emissiveIntensity += think * (0.6 + Math.sin(t * 14) * 0.9);
+      // Happy: a small bounce.
+      robot.position.y += happy * Math.abs(Math.sin(t * 5.5)) * 0.06;
+    }
+    // Happy: eyes squint into smiles and the cheeks light up.
+    cheekMat.emissiveIntensity = 1.2 + happy * 1.8;
+    const ex = talkK * (1 + happy * 0.2);
+    const ey = talkK * blinkK * (1 - happy * 0.52);
+    eyeL.scale.set(ex, ey, talkK);
+    eyeR.scale.set(ex, ey, talkK);
 
     const wantScale = state.hover ? 1.06 : 0.96;
     robot.scale.setScalar(robot.scale.x + (wantScale - robot.scale.x) * Math.min(1, dt * 8));
@@ -349,7 +392,7 @@ export async function createRobot(canvas, opts = {}) {
     /** Current pose, for debugging the character from the page console. */
     get pose() {
       return { hx: +head.rotation.x.toFixed(3), hy: +head.rotation.y.toFixed(3),
-               rx: +robot.rotation.x.toFixed(3), act: state.act, blink: +state.blink.toFixed(3) };
+               rx: +robot.rotation.x.toFixed(3), act: state.act, mood: state.mood, blink: +state.blink.toFixed(3) };
     },
     /** -1 (flying down) .. 1 (flying up); driven by scroll velocity. */
     fly(v) { state.fly = clamp(v); },
@@ -359,6 +402,8 @@ export async function createRobot(canvas, opts = {}) {
     // and made the fade-out factor amplify the reaction instead of ending it —
     // the robot then shook its head forever.
     react(kind) { state.act = kind; state.actAt = elapsed; },
+    /** Held expression: 'think' while waiting on an answer, 'happy' after a good one. */
+    mood(kind) { state.mood = kind === 'think' || kind === 'happy' ? kind : ''; },
     dispose() {
       alive = false;
       pause();
