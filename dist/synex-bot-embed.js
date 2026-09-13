@@ -110,9 +110,11 @@ class SynexBot extends HTMLElement {
               font-family:'Cairo',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
               color-scheme:dark}
         :host([hidden]){display:none}
-        .stack{display:flex;align-items:flex-end;gap:10px;flex-direction:var(--dir,row-reverse)}
+        .stack{display:flex;align-items:flex-end;gap:10px;flex-direction:var(--dir,row-reverse);
+          direction:ltr}  /* placement is physical: RTL must not swap the robot and the bubble */
+        :host([dir="rtl"]) .bubble{direction:rtl}
 
-        .avatar{width:58px;height:58px;flex:none;border:0;padding:0;cursor:pointer;border-radius:50%;
+        .avatar{width:66px;height:66px;flex:none;border:0;padding:0;cursor:pointer;border-radius:50%;
           background:linear-gradient(150deg,color-mix(in srgb,var(--c) 45%,#7cc0ff),var(--c) 58%,
                      color-mix(in srgb,var(--c) 78%,#04101f));
           box-shadow:0 10px 30px -8px rgba(4,12,28,.75),0 0 0 1px rgba(255,255,255,.30),
@@ -120,14 +122,29 @@ class SynexBot extends HTMLElement {
           display:grid;place-items:center;transition:transform .22s ease,box-shadow .22s ease}
         .avatar:hover{transform:translateY(-2px) scale(1.04)}
         .avatar:focus-visible{outline:3px solid #9ecbff;outline-offset:3px}
-        .avatar img{width:34px;height:34px;object-fit:contain;display:block;
-          filter:drop-shadow(0 1px 3px rgba(0,0,0,.55)) brightness(1.75) contrast(1.05)}
-        .ping{position:absolute;width:58px;height:58px;border-radius:50%;
+        .bot{width:44px;height:44px;display:block;overflow:visible;
+          filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+        .bot .head{fill:url(#shell);stroke:rgba(255,255,255,.7);stroke-width:.9}
+        .bot .ear{fill:#93aec9}
+        .bot .visor{fill:url(#glass)}
+        .bot .ant{stroke:#d7e6f7;stroke-width:2.4;stroke-linecap:round}
+        .bot .bulb{fill:#78e4ff}
+        .bot .eyes circle{fill:#6fe0ff;transform-box:fill-box;transform-origin:center}
+        .bot .smile{fill:#4b7ba3}
+        .bot .float{transform-box:fill-box;transform-origin:center;animation:bob 3.4s ease-in-out infinite}
+        .bot .bulb{animation:blip 2.4s ease-in-out infinite}
+        .bot .eyes circle{animation:blink 5.4s infinite}
+        .talking .bot .eyes circle{animation:talk .46s ease-in-out 2}
+        @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}
+        @keyframes blip{0%,100%{opacity:.5}50%{opacity:1}}
+        @keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+        @keyframes talk{50%{transform:scale(1.28)}}
+        .ping{position:absolute;width:66px;height:66px;border-radius:50%;
           border:2px solid color-mix(in srgb,var(--c) 60%,#7fb6ff);opacity:0;pointer-events:none}
         .wake .ping{animation:ping 2.2s ease-out 2}
         @keyframes ping{0%{transform:scale(.9);opacity:.75}100%{transform:scale(1.7);opacity:0}}
 
-        .bubble{position:relative;width:min(19rem,calc(100vw - 2 * var(--m,20px) - 74px));
+        .bubble{position:relative;width:min(19rem,calc(100vw - 2 * var(--m,20px) - 82px));
           background:linear-gradient(180deg,#101a29,#0a1220);
           border:1px solid rgba(255,255,255,.12);border-radius:18px;
           padding:15px 17px 15px;box-shadow:0 22px 52px -22px rgba(0,0,0,.85);
@@ -158,20 +175,42 @@ class SynexBot extends HTMLElement {
         .close:focus-visible{outline:2px solid #9ecbff;outline-offset:2px}
 
         @media (max-width:520px){
-          .avatar,.ping{width:50px;height:50px}
-          .avatar img{width:29px;height:29px}
-          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 64px));padding:13px 15px}
+          .avatar,.ping{width:58px;height:58px}
+          .bot{width:38px;height:38px}
+          .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 72px));padding:13px 15px}
           h3{font-size:15px} p{font-size:12.8px}
         }
         @media (prefers-reduced-motion:reduce){
           .avatar,.bubble{transition:none}
-          .wake .ping{animation:none}
+          .wake .ping,.bot .float,.bot .bulb,.bot .eyes circle{animation:none}
         }
       </style>
       <div class="stack" part="stack">
         <button class="avatar" type="button" aria-expanded="false">
           <span class="ping"></span>
-          <img src="/assets/logo_transparent.png" alt="">
+          <svg class="bot" viewBox="0 0 72 72" aria-hidden="true">
+            <defs>
+              <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#f2f8ff"/><stop offset="1" stop-color="#aec6e2"/>
+              </linearGradient>
+              <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#10273e"/><stop offset="1" stop-color="#040d18"/>
+              </linearGradient>
+            </defs>
+            <g class="float">
+              <line class="ant" x1="36" y1="20" x2="36" y2="11"/>
+              <circle class="bulb" cx="36" cy="7.5" r="3.6"/>
+              <rect class="ear" x="7" y="33" width="6" height="13" rx="3"/>
+              <rect class="ear" x="59" y="33" width="6" height="13" rx="3"/>
+              <rect class="head" x="14" y="19" width="44" height="39" rx="13"/>
+              <rect class="visor" x="20" y="27" width="32" height="22" rx="10"/>
+              <g class="eyes">
+                <circle cx="29.5" cy="38" r="3.6"/>
+                <circle cx="42.5" cy="38" r="3.6"/>
+              </g>
+              <rect class="smile" x="31" y="45.5" width="10" height="2.4" rx="1.2"/>
+            </g>
+          </svg>
         </button>
         <div class="bubble" role="status" aria-live="polite">
           <button class="close" type="button"></button>
@@ -301,6 +340,8 @@ class SynexBot extends HTMLElement {
     this._el.stack.classList.add('open');
     this._el.avatar.setAttribute('aria-expanded', 'true');
     this._el.avatar.classList.remove('wake');
+    this._el.stack.classList.add('talking');
+    setTimeout(() => this._el.stack.classList.remove('talking'), 1000);
     clearTimeout(this._timer);
     if (!this.sticky && !byUser) {
       this._timer = setTimeout(() => this._hide(false), this.collapseAfter);
