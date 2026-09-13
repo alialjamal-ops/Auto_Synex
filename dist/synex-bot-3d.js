@@ -50,41 +50,54 @@ export async function createRobot(canvas, opts = {}) {
 
   /* ---------------------------------------------------------------- head -- */
   const head = new THREE.Group();
-  head.position.y = 0.62;
+  head.position.y = 0.78;
   robot.add(head);
 
   const skull = new THREE.Mesh(new THREE.SphereGeometry(1.02, 42, 34), shell);
   skull.scale.set(1.02, 0.9, 0.92);
   head.add(skull);
 
-  // Visor: a slab sunk into the face, with the eyes floating just in front.
-  const visor = new THREE.Mesh(new THREE.CapsuleGeometry(0.38, 0.78, 10, 26), glass);
-  visor.rotation.z = Math.PI / 2;
-  visor.scale.set(1, 1, 0.5);
-  visor.position.set(0, 0.05, 0.58);
+  // Visor: a wide lens that stands proud of the skull, so the face reads as a
+  // face from any angle.
+  const visor = new THREE.Mesh(new THREE.SphereGeometry(0.62, 36, 26), glass);
+  visor.scale.set(1.42, 0.88, 0.42);
+  visor.position.set(0, 0.06, 0.72);
   head.add(visor);
 
   const eyes = new THREE.Group();
-  eyes.position.set(0, 0.06, 0.82);
+  eyes.position.set(0, 0.07, 0.95);
   head.add(eyes);
-  const eyeGeo = new THREE.SphereGeometry(0.215, 24, 24);
+  const eyeGeo = new THREE.SphereGeometry(0.175, 26, 26);
   const eyeL = new THREE.Mesh(eyeGeo, lit);
   const eyeR = new THREE.Mesh(eyeGeo, lit);
-  eyeL.position.x = -0.36;
-  eyeR.position.x = 0.36;
+  eyeL.position.x = -0.33;
+  eyeR.position.x = 0.33;
   eyes.add(eyeL, eyeR);
 
-  // Cheek lights — the "cute" cue.
-  const cheekGeo = new THREE.CircleGeometry(0.1, 20);
-  const cheekMat = new THREE.MeshBasicMaterial({ color: glow, transparent: true, opacity: 0.5 });
-  for (const x of [-0.72, 0.72]) {
+  // A smile, curved to sit on the chin rather than inside it.
+  const smile = new THREE.Mesh(
+    new THREE.TorusGeometry(0.2, 0.038, 10, 22, Math.PI),
+    new THREE.MeshStandardMaterial({ color: glow, emissive: glow, emissiveIntensity: 0.9, roughness: 0.4 }),
+  );
+  smile.rotation.z = Math.PI;
+  smile.rotation.x = -0.35;
+  smile.position.set(0, -0.42, 0.8);
+  head.add(smile);
+
+  // Cheek lights sit just clear of the skull, beside the visor.
+  const cheekGeo = new THREE.SphereGeometry(0.09, 16, 16);
+  const cheekMat = new THREE.MeshStandardMaterial({
+    color: glow, emissive: glow, emissiveIntensity: 1.2, roughness: 0.5,
+  });
+  for (const x of [-0.63, 0.63]) {
     const c = new THREE.Mesh(cheekGeo, cheekMat);
-    c.position.set(x, -0.26, 0.74);
+    c.scale.set(1, 0.8, 0.5);
+    c.position.set(x, -0.24, 0.66);
     head.add(c);
   }
 
   const ears = [];
-  for (const x of [-1.07, 1.07]) {
+  for (const x of [-1.04, 1.04]) {
     const ear = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.3, 6, 14), shellDark);
     ear.position.set(x * 0.94, -0.05, 0);
     ear.rotation.z = Math.PI / 2;
@@ -113,10 +126,9 @@ export async function createRobot(canvas, opts = {}) {
   const core = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.075, 12, 28), lit);
   core.position.set(0, 0.08, 0.52);
   body.add(core);
-  const chest = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.34, 8, 18), brand);
-  chest.rotation.z = Math.PI / 2;
-  chest.scale.set(1, 1, 0.35);
-  chest.position.set(0, -0.46, 0.52);
+  const chest = new THREE.Mesh(new THREE.SphereGeometry(0.1, 18, 18), brand);
+  chest.scale.set(1, 1, 0.5);
+  chest.position.set(0, -0.42, 0.56);
   body.add(chest);
 
   // Detached hands — they hover beside the body, which reads friendlier than arms.
@@ -141,8 +153,15 @@ export async function createRobot(canvas, opts = {}) {
 
   /* ----------------------------------------------------------- animation -- */
   const target = { x: 0, y: 0 };
+  // The head aims at a point in space instead of being driven by hand-signed
+  // Euler angles: lookAt() cannot be inverted, so "look where the pointer is"
+  // stays true however the model is rotated by its parent.
+  const aim = new THREE.Vector3(0, 0.78, 9);
+  const want = new THREE.Vector3();
+  const hp = new THREE.Vector3();
   const state = { hover: false, act: '', actAt: 0, blinkAt: 1.6, blink: 0, fly: 0, flyNow: 0 };
   const clock = new THREE.Clock();
+  let elapsed = 0;
   let raf = 0;
   let alive = true;
 
@@ -161,15 +180,21 @@ export async function createRobot(canvas, opts = {}) {
   function frame() {
     if (!alive) return;
     raf = requestAnimationFrame(frame);
-    const t = clock.getElapsedTime();
+    // Clock.getElapsedTime() consumes the delta internally, so calling
+    // getDelta() after it returns ~0 — which froze every lerp and left the
+    // eyes stuck shut mid-blink. Take the delta once and keep the clock here.
     const dt = Math.min(clock.getDelta(), 0.05);
+    elapsed += dt;
+    const t = elapsed;
 
     // Follow the pointer with a lag, so it reads as looking rather than tracking.
-    const yaw = target.x * 0.55;
-    const pitch = target.y * 0.34 - 0.07;
-    head.rotation.y += (yaw - head.rotation.y) * Math.min(1, dt * 6);
-    head.rotation.x += (pitch - head.rotation.x) * Math.min(1, dt * 6);
-    robot.rotation.y += (yaw * 0.42 - robot.rotation.y) * Math.min(1, dt * 4);
+    // Screen y grows downward, so a pointer above the robot sits higher in world
+    // space — hence the minus on target.y.
+    head.getWorldPosition(hp);
+    want.set(hp.x + target.x * 5.5, hp.y - target.y * 3.4, hp.z + 8);
+    aim.lerp(want, Math.min(1, dt * 6));
+    head.lookAt(aim);
+    robot.rotation.y += (target.x * 0.23 - robot.rotation.y) * Math.min(1, dt * 4);
 
     // Scrolling makes it fly: lean into the direction of travel, roll a little,
     // and let the hands stream behind. It settles back when the page stops.
@@ -224,8 +249,8 @@ export async function createRobot(canvas, opts = {}) {
       hands[1].rotation.z = 0;
     }
 
-    const want = state.hover ? 1.06 : 0.96;
-    robot.scale.setScalar(robot.scale.x + (want - robot.scale.x) * Math.min(1, dt * 8));
+    const wantScale = state.hover ? 1.06 : 0.96;
+    robot.scale.setScalar(robot.scale.x + (wantScale - robot.scale.x) * Math.min(1, dt * 8));
 
     renderer.render(scene, camera);
   }
