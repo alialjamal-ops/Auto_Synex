@@ -206,7 +206,7 @@ class SynexBot extends HTMLElement {
         /* With the character on screen the disc would only box it in. */
         .is3d .avatar{background:none;box-shadow:none;width:118px;height:118px}
         .is3d .avatar:hover{transform:none}
-        .is3d .bot,.is3d .ping{display:none}
+        .is3d svg.bot,.is3d .ping{display:none}
         .avatar{position:relative;width:66px;height:66px;flex:none;border:0;padding:0;cursor:pointer;border-radius:50%;
           background:linear-gradient(150deg,color-mix(in srgb,var(--c) 45%,#7cc0ff),var(--c) 58%,
                      color-mix(in srgb,var(--c) 78%,#04101f));
@@ -215,7 +215,7 @@ class SynexBot extends HTMLElement {
           display:grid;place-items:center;transition:transform .22s ease,box-shadow .22s ease}
         .avatar:hover{transform:translateY(-2px) scale(1.04)}
         .avatar:focus-visible{outline:3px solid #9ecbff;outline-offset:3px}
-        .bot{width:44px;height:44px;display:block;overflow:visible;
+        svg.bot{width:44px;height:44px;display:block;overflow:visible;
           filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
         .bot .head{fill:url(#shell);stroke:rgba(255,255,255,.7);stroke-width:.9}
         .bot .ear{fill:#93aec9}
@@ -296,7 +296,7 @@ class SynexBot extends HTMLElement {
           scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
         .msg{max-width:86%;font-size:13.5px;line-height:1.7;padding:9px 13px;border-radius:14px;
           white-space:pre-wrap;overflow-wrap:anywhere}
-        .msg.bot{align-self:flex-start;background:rgba(255,255,255,.07);color:#dfe7f2;
+        .msg.bot{display:block;width:auto;height:auto;align-self:flex-start;background:rgba(255,255,255,.07);color:#dfe7f2;
           border:1px solid rgba(255,255,255,.09);border-start-start-radius:5px}
         .msg.me{align-self:flex-end;background:color-mix(in srgb,var(--c) 80%,#4d8ff0);color:#fff;
           border-end-end-radius:5px}
@@ -331,7 +331,7 @@ class SynexBot extends HTMLElement {
         @media (max-width:520px){
           .chat{width:min(21rem,calc(100vw - 2 * var(--m,20px)));height:min(26rem,calc(100vh - 120px))}
           .avatar,.ping{width:58px;height:58px}
-          .bot{width:38px;height:38px}
+          svg.bot{width:38px;height:38px}
           .is3d .avatar{width:96px;height:96px}
           .bubble{width:min(17rem,calc(100vw - 2 * var(--m,20px) - 106px));padding:13px 15px}
           h3{font-size:15px} p{font-size:12.8px}
