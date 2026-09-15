@@ -207,6 +207,14 @@
   font-weight: 600;
 }
 
+/* The display faces here are Latin-only, so Arabic falls back to a system face
+   and the browser synthesises the italic above. A slanted Arabic glyph reaches
+   past its own box: at phone width the salon headline was sliced off by the
+   screen edge. Arabic has no italic tradition anyway — keep it upright. */
+:lang(ar) :is(h1, h2, h3, .font-display) {
+  font-style: normal;
+}
+
 /* Only the big headings shout; item names stay readable. */
 [data-display='caps'] :is(h1, h2) {
   text-transform: uppercase;

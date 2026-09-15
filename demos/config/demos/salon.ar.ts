@@ -3,7 +3,7 @@ import type { Translation } from '@/lib/localize';
 /** LUMÉ BEAUTY — Arabic. */
 export const salonAr: Translation = {
   industry: 'صالون تجميل',
-  tagline: 'الجمال، منقّحًا.',
+  tagline: 'جمالكِ، بلمسة خبيرة.',
 
   seo: {
     title: 'لومي بيوتي — استوديو الشعر والبشرة والتجميل',
@@ -132,7 +132,7 @@ export const salonAr: Translation = {
   sections: [
     {
       kicker: 'شعر · بشرة · أظافر — شورديتش، لندن',
-      headline: ['الجمال،', 'منقّحًا.'],
+      headline: ['جمالكِ،', 'بلمسة خبيرة.'],
       lead: 'استوديو بثمانية مقاعد وأربع فنّانات وقاعدة واحدة: لا شيء يغادر هذه الغرفة إلا إذا بدا أنه أنتِ في أفضل أيامك.',
       badges: ['تأسّس ٢٠١٦', 'الأولوية للعضوات', 'نفتح الأحد'],
       stats: [{ label: 'فنّانات' }, { label: 'عميلة سنويًا' }, { label: 'التقييم' }],
