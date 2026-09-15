@@ -668,12 +668,12 @@ function Summary({
       value:
         mode === 'stay'
           ? draft.date && draft.endDate
-            ? `${formatDayShort(draft.date)} → ${formatDayShort(draft.endDate)}`
+            ? `${formatDayShort(draft.date, locale)} → ${formatDayShort(draft.endDate, locale)}`
             : draft.date
-              ? `${formatDayShort(draft.date)} → …`
+              ? `${formatDayShort(draft.date, locale)} → …`
               : null
           : draft.date
-            ? formatDayShort(draft.date)
+            ? formatDayShort(draft.date, locale)
             : null,
     },
     ...(config.booking.steps.includes('time')
@@ -681,7 +681,7 @@ function Summary({
           {
             label: labels.time,
             value: draft.time
-              ? `${formatTime(draft.time)} – ${formatTime(addMinutes(draft.time, durationMin))}`
+              ? `${formatTime(draft.time, locale)} – ${formatTime(addMinutes(draft.time, durationMin), locale)}`
               : null,
           },
         ]
@@ -763,8 +763,8 @@ function Confirmation({
     {
       label: labels.date,
       value: booking.endDate
-        ? `${formatDayLong(booking.date)} → ${formatDayLong(booking.endDate)}`
-        : formatDayLong(booking.date),
+        ? `${formatDayLong(booking.date, locale)} → ${formatDayLong(booking.endDate, locale)}`
+        : formatDayLong(booking.date, locale),
     },
     ...(booking.time
       ? [
