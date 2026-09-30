@@ -90,6 +90,7 @@ export const salonDemo: DemoConfig = {
     currency: 'GBP',
     currencySymbol: '£',
     dateMode: 'single',
+    requiresApproval: true,
     labels: {
       service: 'Treatment',
       servicePlural: 'Choose a treatment',
@@ -99,10 +100,10 @@ export const salonDemo: DemoConfig = {
       time: 'Time',
       guests: 'Guests',
       customer: 'Your details',
-      submit: 'Confirm booking',
-      successTitle: 'Booking confirmed',
+      submit: 'Request booking',
+      successTitle: 'Request received',
       successText:
-        'Your artist has been notified. We hold your chair for 15 minutes — a card is never charged in advance.',
+        'The studio will confirm your booking shortly. A card is never charged in advance.',
     },
     notesPlaceholder: 'Inspiration, allergies, previous colour history…',
   },

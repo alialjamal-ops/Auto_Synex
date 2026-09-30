@@ -90,6 +90,7 @@ export const dentalDemo: DemoConfig = {
     currency: 'USD',
     currencySymbol: '$',
     dateMode: 'single',
+    requiresApproval: true,
     labels: {
       service: 'Treatment',
       servicePlural: 'Choose a treatment',
@@ -99,10 +100,10 @@ export const dentalDemo: DemoConfig = {
       time: 'Time',
       guests: 'Guests',
       customer: 'Your details',
-      submit: 'Confirm appointment',
-      successTitle: 'Appointment confirmed',
+      submit: 'Request appointment',
+      successTitle: 'Request received',
       successText:
-        'We have emailed your confirmation and a digital intake form. Complete it before you arrive and you can walk straight in.',
+        'The practice will confirm your appointment shortly. Arrive a few minutes early and you can walk straight in.',
     },
     notesPlaceholder: 'Anything we should know — anxiety, previous work, insurance provider…',
   },

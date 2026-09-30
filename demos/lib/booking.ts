@@ -15,6 +15,25 @@ import { createRng, seededUnit } from '@/lib/random';
 
 export type BookingStatus = 'confirmed' | 'completed' | 'cancelled' | 'pending';
 
+export type FollowUpState = 'none' | 'needed' | 'done';
+
+/** Follow-up the business keeps on an appointment (call back, review visit, missing details…). */
+export interface FollowUp {
+  readonly state: FollowUpState;
+  /** ISO date the follow-up is due, if any. */
+  readonly dueDate: string | null;
+  readonly note: string;
+}
+
+/**
+ * Changes made from the dashboard. Seeded appointments are regenerated on every
+ * render, so edits are stored separately and laid over them by id.
+ */
+export interface AppointmentOverride {
+  readonly status?: BookingStatus;
+  readonly followUp?: FollowUp;
+}
+
 export interface Booking {
   readonly id: string;
   readonly reference: string;

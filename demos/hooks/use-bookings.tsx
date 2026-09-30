@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import type { Booking } from '@/lib/booking';
+import type { AppointmentOverride, Booking } from '@/lib/booking';
 import type { DemoSlug } from '@/types/demo';
 
 /* ------------------------------------------------------------------ */
@@ -22,53 +22,57 @@ import type { DemoSlug } from '@/types/demo';
 
 type Listener = () => void;
 
-interface Store {
-  data: Booking[];
+interface Store<T> {
+  data: T;
   hydrated: boolean;
   listeners: Set<Listener>;
 }
 
+type Overrides = Readonly<Record<string, AppointmentOverride>>;
+
 const EMPTY: Booking[] = [];
-const stores = new Map<string, Store>();
+const NO_OVERRIDES: Overrides = {};
+const stores = new Map<string, Store<unknown>>();
 
-const storageKey = (slug: DemoSlug) => `demo-suite:bookings:${slug}`;
+const bookingsKey = (slug: DemoSlug) => `demo-suite:bookings:${slug}`;
+const overridesKey = (slug: DemoSlug) => `demo-suite:overrides:${slug}`;
 
-function getStore(slug: DemoSlug): Store {
-  let store = stores.get(slug);
+function getStore<T>(key: string, empty: T): Store<T> {
+  let store = stores.get(key) as Store<T> | undefined;
   if (!store) {
-    store = { data: EMPTY, hydrated: false, listeners: new Set() };
-    stores.set(slug, store);
+    store = { data: empty, hydrated: false, listeners: new Set() };
+    stores.set(key, store as Store<unknown>);
   }
   return store;
 }
 
-function hydrate(slug: DemoSlug): Store {
-  const store = getStore(slug);
+function hydrate<T>(key: string, empty: T): Store<T> {
+  const store = getStore(key, empty);
   if (store.hydrated || typeof window === 'undefined') return store;
   store.hydrated = true;
   try {
-    const raw = window.localStorage.getItem(storageKey(slug));
-    if (raw) store.data = JSON.parse(raw) as Booking[];
+    const raw = window.localStorage.getItem(key);
+    if (raw) store.data = JSON.parse(raw) as T;
   } catch {
     // Private mode or a corrupted payload — start clean, never crash the demo.
   }
   return store;
 }
 
-function commit(slug: DemoSlug, next: Booking[]): void {
-  const store = getStore(slug);
+function commit<T>(key: string, empty: T, next: T): void {
+  const store = getStore(key, empty);
   store.data = next;
   try {
-    window.localStorage.setItem(storageKey(slug), JSON.stringify(next));
+    window.localStorage.setItem(key, JSON.stringify(next));
   } catch {
     // Storage unavailable — the demo still works for this session.
   }
   for (const listener of store.listeners) listener();
 }
 
-function subscribe(slug: DemoSlug) {
+function subscribe<T>(key: string, empty: T) {
   return (listener: Listener) => {
-    const store = getStore(slug);
+    const store = getStore(key, empty);
     store.listeners.add(listener);
     return () => {
       store.listeners.delete(listener);
@@ -83,8 +87,12 @@ function subscribe(slug: DemoSlug) {
 interface BookingsContextValue {
   /** Bookings the visitor created during this demo session. */
   bookings: Booking[];
+  /** Dashboard edits (status, follow-up), keyed by appointment id. */
+  overrides: Overrides;
   addBooking: (booking: Booking) => void;
   cancelBooking: (id: string) => void;
+  /** Merges a dashboard edit into any appointment, seeded or visitor-made. */
+  updateAppointment: (id: string, patch: AppointmentOverride) => void;
   clearBookings: () => void;
   /** False during server render and the first hydration pass. */
   ready: boolean;
@@ -93,42 +101,63 @@ interface BookingsContextValue {
 const BookingsContext = createContext<BookingsContextValue | null>(null);
 
 export function BookingsProvider({ slug, children }: { slug: DemoSlug; children: ReactNode }) {
+  const bKey = bookingsKey(slug);
+  const oKey = overridesKey(slug);
+
   const bookings = useSyncExternalStore(
-    useMemo(() => subscribe(slug), [slug]),
-    () => hydrate(slug).data,
+    useMemo(() => subscribe(bKey, EMPTY), [bKey]),
+    () => hydrate(bKey, EMPTY).data,
     () => EMPTY,
   );
 
+  const overrides = useSyncExternalStore(
+    useMemo(() => subscribe(oKey, NO_OVERRIDES), [oKey]),
+    () => hydrate(oKey, NO_OVERRIDES).data,
+    () => NO_OVERRIDES,
+  );
+
   const ready = useSyncExternalStore(
-    useMemo(() => subscribe(slug), [slug]),
+    useMemo(() => subscribe(bKey, EMPTY), [bKey]),
     () => true,
     () => false,
   );
 
   const addBooking = useCallback(
     (booking: Booking) => {
-      commit(slug, [...hydrate(slug).data, booking]);
+      commit(bKey, EMPTY, [...hydrate(bKey, EMPTY).data, booking]);
     },
-    [slug],
+    [bKey],
   );
 
   const cancelBooking = useCallback(
     (id: string) => {
       commit(
-        slug,
-        hydrate(slug).data.map((booking) =>
+        bKey,
+        EMPTY,
+        hydrate(bKey, EMPTY).data.map((booking) =>
           booking.id === id ? { ...booking, status: 'cancelled' as const } : booking,
         ),
       );
     },
-    [slug],
+    [bKey],
   );
 
-  const clearBookings = useCallback(() => commit(slug, []), [slug]);
+  const updateAppointment = useCallback(
+    (id: string, patch: AppointmentOverride) => {
+      const current = hydrate(oKey, NO_OVERRIDES).data;
+      commit(oKey, NO_OVERRIDES, { ...current, [id]: { ...current[id], ...patch } });
+    },
+    [oKey],
+  );
+
+  const clearBookings = useCallback(() => {
+    commit(bKey, EMPTY, []);
+    commit(oKey, NO_OVERRIDES, {});
+  }, [bKey, oKey]);
 
   const value = useMemo<BookingsContextValue>(
-    () => ({ bookings, addBooking, cancelBooking, clearBookings, ready }),
-    [bookings, addBooking, cancelBooking, clearBookings, ready],
+    () => ({ bookings, overrides, addBooking, cancelBooking, updateAppointment, clearBookings, ready }),
+    [bookings, overrides, addBooking, cancelBooking, updateAppointment, clearBookings, ready],
   );
 
   return <BookingsContext.Provider value={value}>{children}</BookingsContext.Provider>;

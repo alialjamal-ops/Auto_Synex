@@ -1,4 +1,4 @@
-import type { Booking, BookingStatus } from '@/lib/booking';
+import type { AppointmentOverride, Booking, BookingStatus, FollowUp } from '@/lib/booking';
 import {
   addDays,
   addMinutes,
@@ -15,6 +15,20 @@ export type BookingChannel = 'online' | 'phone' | 'walk-in';
 export interface Appointment extends Booking {
   readonly channel: BookingChannel;
   readonly durationMin: number;
+  readonly followUp?: FollowUp;
+}
+
+/** Lays dashboard edits (status, follow-up) over the generated + visitor records. */
+export function applyOverride(
+  appointment: Appointment,
+  override: AppointmentOverride | undefined,
+): Appointment {
+  if (!override) return appointment;
+  return {
+    ...appointment,
+    ...(override.status ? { status: override.status } : null),
+    ...(override.followUp ? { followUp: override.followUp } : null),
+  };
 }
 
 /** Window of generated history / future used by every dashboard screen. */

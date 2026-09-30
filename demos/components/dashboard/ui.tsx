@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { EASE } from '@/components/animations/motion-primitives';
 import { useLocale } from '@/hooks/use-locale';
 import { cn } from '@/lib/cn';
-import type { BookingStatus } from '@/lib/booking';
+import type { BookingStatus, FollowUpState } from '@/lib/booking';
 
 /* ------------------------------------------------------------------ */
 /* Page header                                                         */
@@ -142,6 +142,29 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
     >
       <span className="size-1.5 rounded-full bg-current" />
       {ui.dashboard.status[status]}
+    </span>
+  );
+}
+
+const followUpStyles: Record<Exclude<FollowUpState, 'none'>, string> = {
+  needed: 'bg-amber-500/14 text-amber-600',
+  done: 'bg-emerald-500/12 text-emerald-600',
+};
+
+/** Follow-up state of an appointment; renders nothing when there is none. */
+export function FollowUpBadge({ state }: { state: FollowUpState | undefined }) {
+  const { ui } = useLocale();
+  if (!state || state === 'none') return <span className="text-[12px] text-muted">—</span>;
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium',
+        followUpStyles[state],
+      )}
+    >
+      <span className="size-1.5 rounded-full bg-current" />
+      {ui.dashboard.followUp[state]}
     </span>
   );
 }

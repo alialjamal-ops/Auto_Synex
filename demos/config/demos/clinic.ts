@@ -90,6 +90,7 @@ export const clinicDemo: DemoConfig = {
     currency: 'USD',
     currencySymbol: '$',
     dateMode: 'single',
+    requiresApproval: true,
     labels: {
       service: 'Service',
       servicePlural: 'Choose a service',
@@ -99,10 +100,10 @@ export const clinicDemo: DemoConfig = {
       time: 'Time',
       guests: 'Guests',
       customer: 'Your details',
-      submit: 'Confirm appointment',
-      successTitle: 'Appointment confirmed',
+      submit: 'Request appointment',
+      successTitle: 'Request received',
       successText:
-        'A confirmation has been sent to your email. Please arrive 10 minutes early with a photo ID.',
+        'The clinic will confirm your appointment shortly. Please arrive 10 minutes early with a photo ID.',
     },
     notesPlaceholder: 'Symptoms, referrals or anything the doctor should know in advance…',
   },

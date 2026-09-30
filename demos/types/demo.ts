@@ -163,6 +163,11 @@ export interface BookingSettings {
   readonly currencySymbol: string;
   /** 'range' turns the date step into a check-in / check-out picker. */
   readonly dateMode: 'single' | 'range';
+  /**
+   * When true, a booking made on the public site lands in the dashboard as a
+   * pending request and the business confirms it by hand from the dashboard.
+   */
+  readonly requiresApproval?: boolean;
   readonly labels: {
     readonly service: string;
     readonly servicePlural: string;

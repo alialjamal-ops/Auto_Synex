@@ -267,7 +267,8 @@ export function BookingFlow({
         email: draft.email.trim(),
         notes: draft.notes.trim(),
       },
-      status: 'confirmed',
+      // Businesses that approve by hand receive the booking as a pending request.
+      status: settings.requiresApproval ? 'pending' : 'confirmed',
       createdAt: todayIso,
       source: 'visitor',
       price: total,

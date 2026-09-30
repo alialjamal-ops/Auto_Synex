@@ -2,10 +2,12 @@
 
 import { CalendarX2, Download, SearchX } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { AppointmentDrawer } from '@/components/dashboard/appointment-drawer';
 import {
   DataTable,
   EmptyState,
   FilterTabs,
+  FollowUpBadge,
   PageHeader,
   Panel,
   SearchInput,
@@ -22,11 +24,11 @@ import type { BookingStatus } from '@/lib/booking';
 import type { DemoConfig } from '@/types/demo';
 
 type RangeFilter = 'today' | 'upcoming' | 'past' | 'all';
-type StatusFilter = 'all' | BookingStatus;
+type StatusFilter = 'all' | BookingStatus | 'followUp';
 
 const RANGE_IDS: readonly RangeFilter[] = ['today', 'upcoming', 'past', 'all'];
 
-const STATUS_IDS: readonly StatusFilter[] = ['all', 'confirmed', 'pending', 'completed', 'cancelled'];
+const STATUS_IDS: readonly StatusFilter[] = ['all', 'confirmed', 'pending', 'completed', 'cancelled', 'followUp'];
 
 const PAGE_SIZE = 12;
 
@@ -37,6 +39,8 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
   const [status, setStatus] = useState<StatusFilter>('all');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const open = openId ? (appointments.find((item) => item.id === openId) ?? null) : null;
 
   const symbol = config.booking.currencySymbol;
   const serviceName = (id: string) =>
@@ -57,7 +61,13 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     return byRange[range]
-      .filter((item) => (status === 'all' ? true : item.status === status))
+      .filter((item) =>
+        status === 'all'
+          ? true
+          : status === 'followUp'
+            ? item.followUp?.state === 'needed'
+            : item.status === status,
+      )
       .filter((item) =>
         term
           ? item.customer.name.toLowerCase().includes(term) ||
@@ -150,7 +160,11 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
           >
             {STATUS_IDS.map((id) => (
               <option key={id} value={id}>
-                {id === 'all' ? ui.dashboard.filters.anyStatus : ui.dashboard.filters[id]}
+                {id === 'all'
+                  ? ui.dashboard.filters.anyStatus
+                  : id === 'followUp'
+                    ? ui.dashboard.followUp.filter
+                    : ui.dashboard.filters[id]}
               </option>
             ))}
           </select>
@@ -199,16 +213,26 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
                 ui.dashboard.table.date,
                 ui.dashboard.table.time,
                 ui.dashboard.table.status,
+                ui.dashboard.followUp.column,
                 ui.dashboard.table.value,
               ]}
             >
               {!ready ? (
-                <SkeletonRows rows={8} cols={7} />
+                <SkeletonRows rows={8} cols={8} />
               ) : (
                 rows.map((appointment) => (
                   <tr
                     key={appointment.id}
-                    className="transition-colors hover:bg-[color:var(--surface-alt)]"
+                    onClick={() => setOpenId(appointment.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setOpenId(appointment.id);
+                      }
+                    }}
+                    tabIndex={0}
+                    aria-label={`${ui.dashboard.detail.open} — ${appointment.customer.name}`}
+                    className="cursor-pointer transition-colors hover:bg-[color:var(--surface-alt)] focus-visible:bg-[color:var(--surface-alt)] focus-visible:outline-none"
                   >
                     <td className="px-5 py-3.5">
                       <span className="block text-[13.5px]">{appointment.customer.name}</span>
@@ -235,6 +259,9 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
                     </td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={appointment.status} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <FollowUpBadge state={appointment.followUp?.state} />
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5 text-[13px] tabular-nums">
                       {formatMoney(appointment.price, symbol)}
@@ -272,6 +299,8 @@ export function AppointmentsView({ config, todayIso }: { config: DemoConfig; tod
           </>
         )}
       </Panel>
+
+      <AppointmentDrawer appointment={open} config={config} onClose={() => setOpenId(null)} />
     </>
   );
 }

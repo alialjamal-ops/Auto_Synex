@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useBookings } from '@/hooks/use-bookings';
 import {
+  applyOverride,
   buildCustomers,
   generateAppointments,
   summarize,
@@ -31,21 +32,22 @@ interface AppointmentBook {
  * during this session.
  */
 export function useAppointmentBook(config: DemoConfig, todayIso: string): AppointmentBook {
-  const { bookings, ready } = useBookings();
+  const { bookings, overrides, ready } = useBookings();
 
   const seeded = useMemo(() => generateAppointments(config, todayIso), [config, todayIso]);
 
   const visitor = useMemo(
-    () => bookings.map((booking) => visitorToAppointment(booking, config)),
-    [bookings, config],
+    () =>
+      bookings.map((booking) => applyOverride(visitorToAppointment(booking, config), overrides[booking.id])),
+    [bookings, config, overrides],
   );
 
   const appointments = useMemo(
     () =>
-      [...seeded, ...visitor].sort((a, b) =>
+      [...seeded.map((item) => applyOverride(item, overrides[item.id])), ...visitor].sort((a, b) =>
         a.date === b.date ? (a.time ?? '').localeCompare(b.time ?? '') : a.date.localeCompare(b.date),
       ),
-    [seeded, visitor],
+    [seeded, visitor, overrides],
   );
 
   const summary = useMemo(
