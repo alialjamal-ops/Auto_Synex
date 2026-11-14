@@ -2,7 +2,7 @@
  * Tenant directory — lists the demo businesses for the Demo Hub without
  * loading their booking data. A future API equivalent: GET /tenants.
  */
-import { INDUSTRY_IDS, type Business, type IndustryId } from "@/domain/types";
+import { INDUSTRY_IDS, type Business, type IndustryId, type Service } from "@/domain/types";
 import { industrySeeds } from "./seed";
 
 export interface TenantSummary {
@@ -10,6 +10,8 @@ export interface TenantSummary {
   business: Business;
   serviceCount: number;
   staffCount: number;
+  /** A few representative services for previews. */
+  featured: Service[];
 }
 
 export function listDemoTenants(): TenantSummary[] {
@@ -20,6 +22,7 @@ export function listDemoTenants(): TenantSummary[] {
       business: seed.business,
       serviceCount: seed.services.filter((s) => s.active).length,
       staffCount: seed.resources.filter((r) => r.kind === "staff" && r.active).length,
+      featured: seed.services.filter((s) => s.active).slice(0, 3),
     };
   });
 }

@@ -15,6 +15,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useState, type ReactNode } from "react";
@@ -83,8 +84,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-              active && "bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft hover:text-primary-soft-foreground",
+              "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              active &&
+                "bg-primary-soft text-primary-soft-foreground before:absolute before:inset-y-2 before:start-0 before:w-[3px] before:rounded-e-full before:bg-primary hover:bg-primary-soft hover:text-primary-soft-foreground rtl:before:rounded-e-none rtl:before:rounded-s-full",
             )}
           >
             <item.icon className="size-[18px] shrink-0" strokeWidth={active ? 2.25 : 1.9} aria-hidden />
@@ -136,7 +138,7 @@ function Shell({ children }: { children: ReactNode }) {
     <NewBookingContext.Provider value={(prefill) => setNewBooking({ open: true, prefill })}>
       <BookingDetailsProvider>
       <div className="min-h-dvh lg:grid lg:grid-cols-[256px_minmax(0,1fr)]">
-        <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-e bg-card px-3 py-5 lg:flex">
+        <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-e bg-card/80 px-3 py-5 backdrop-blur lg:flex">
           <div className="flex items-center gap-3 px-2">
             <BusinessLogo monogram={business.monogram} hue={business.hue} size="sm" />
             <div className="min-w-0">
@@ -208,7 +210,9 @@ function Shell({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+          <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <PageTransition>{children}</PageTransition>
+          </main>
         </div>
       </div>
       <Dialog open={newBooking.open} onOpenChange={(open) => setNewBooking((s) => ({ ...s, open }))}>
@@ -218,6 +222,21 @@ function Shell({ children }: { children: ReactNode }) {
       </Dialog>
       </BookingDetailsProvider>
     </NewBookingContext.Provider>
+  );
+}
+
+function PageTransition({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      key={pathname}
+      initial={reduce ? false : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.2, 0.7, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 }
 

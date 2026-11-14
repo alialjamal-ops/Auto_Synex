@@ -1,12 +1,16 @@
 "use client";
 
-import { LayoutDashboard, MapPin, Phone } from "lucide-react";
+import { BadgeCheck, Clock, Globe, LayoutDashboard, MapPin, Phone, Zap } from "lucide-react";
+import { useState } from "react";
+import { toDateKey, weekdayOfKey } from "@/domain/time";
+import { industryIcons } from "@/config/industry-icons";
+import { hueStyle } from "@/lib/utils";
 import Link from "next/link";
 import { AutoSynexMark, BusinessLogo } from "@/components/brand/logo";
 import { DemoBadge, LanguageToggle, ThemeToggle } from "@/components/controls";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BusinessGate, useBusiness } from "@/data/repository-context";
+import { BusinessGate, useBusiness, useRepository } from "@/data/repository-context";
 import { useI18n } from "@/i18n/provider";
 import { BookingFlow } from "./booking-flow";
 
@@ -29,7 +33,6 @@ function PortalShell() {
             <BusinessLogo monogram={business.monogram} hue={business.hue} />
             <div className="min-w-0">
               <p className="truncate text-[15px] font-semibold tracking-tight">{tx(business.name)}</p>
-              <p className="hidden truncate text-xs text-muted-foreground sm:block">{tx(business.tagline)}</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -46,7 +49,8 @@ function PortalShell() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <BusinessHero />
+      <main className="mx-auto max-w-6xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8">
         <BookingFlow />
       </main>
 
@@ -70,6 +74,48 @@ function PortalShell() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function BusinessHero() {
+  const { t, tx } = useI18n();
+  const { business, fmt } = useBusiness();
+  const repo = useRepository();
+  const [todayKey] = useState(() => toDateKey(repo.now(), business.timezone));
+  const today = business.rules.closedDates.includes(todayKey) ? [] : business.openingHours[weekdayOfKey(todayKey)];
+  const Icon = industryIcons[business.id];
+  const chips = [
+    {
+      icon: Clock,
+      label: today.length ? t.booking.openToday(today.map((r) => `${r.start}–${r.end}`).join(", ")) : t.booking.closedToday,
+      tone: today.length ? "text-success-foreground" : "text-danger-foreground",
+    },
+    { icon: MapPin, label: business.branches.map((b) => tx(b.name)).join(" · ") },
+    { icon: business.rules.autoConfirm ? Zap : BadgeCheck, label: business.rules.autoConfirm ? t.booking.instantConfirmation : t.booking.approvalRequired },
+    { icon: Globe, label: fmt.tzName(), ltr: true },
+  ];
+  return (
+    <section style={hueStyle(business.hue)} className="lane relative overflow-hidden border-b">
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[var(--lane-bg)] to-background" />
+      <div aria-hidden className="absolute inset-0 opacity-50 [background-image:radial-gradient(var(--lane-border)_0.6px,transparent_0.6px)] [background-size:16px_16px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+      <Icon aria-hidden strokeWidth={1.25} className="absolute -bottom-10 end-6 size-56 text-[var(--lane-fg)] opacity-[0.06]" />
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-5 px-4 py-8 sm:flex-row sm:items-center sm:px-6 sm:py-10">
+        <BusinessLogo monogram={business.monogram} hue={business.hue} size="lg" className="bg-card shadow-md" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--lane-fg)]">{t.booking.onlineBooking}</p>
+          <h1 className="mt-1 text-balance text-2xl font-semibold tracking-tight sm:text-3xl">{tx(business.name)}</h1>
+          <p className="mt-1.5 text-pretty text-sm text-muted-foreground sm:text-base">{tx(business.tagline)}</p>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {chips.map((c) => (
+              <li key={c.label} className="inline-flex items-center gap-1.5 rounded-full border bg-card/85 px-3 py-1 text-xs font-medium shadow-xs backdrop-blur">
+                <c.icon className={`size-3.5 ${c.tone ?? "text-muted-foreground"}`} aria-hidden />
+                <span dir={c.ltr ? "ltr" : undefined}>{c.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 }
 

@@ -68,7 +68,20 @@ export function Overview() {
     const byService = new Map<string, number>();
     for (const b of upcoming) byService.set(b.serviceId, (byService.get(b.serviceId) ?? 0) + 1);
 
+    const series = (days: number, offset: number, fn: (b: Booking) => number) =>
+      Array.from({ length: days }, (_, i) => {
+        const key = addDaysToKey(todayKey, offset + i);
+        return list.filter((b) => keyOf(b) === key).reduce((n, b) => n + fn(b), 0);
+      });
+    const sparks = {
+      today: series(14, -13, (b) => (b.status !== "cancelled" ? 1 : 0)),
+      upcoming: series(8, 0, (b) => (active(b) ? 1 : 0)),
+      completed: series(14, -13, (b) => (b.status === "completed" ? 1 : 0)),
+      cancelled: series(14, -13, (b) => (b.status === "cancelled" ? 1 : 0)),
+      revenue: series(14, -13, (b) => (b.status === "completed" ? b.price : 0)),
+    };
     return {
+      sparks,
       today: today.sort((a, b) => Date.parse(a.start) - Date.parse(b.start)),
       remaining: today.filter((b) => Date.parse(b.start) > nowMs && active(b)).length,
       upcoming: upcoming.length,
@@ -91,10 +104,10 @@ export function Overview() {
       <PageHeader title={t.nav.overview} subtitle={`${fmt.keyLong(todayKey)} · ${t.overview.greeting}`} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <Kpi icon={CalendarCheck2} label={t.overview.todays} value={m ? fmt.number(m.today.length) : null} sub={m ? t.overview.remaining(m.remaining) : ""} tone="primary" />
-        <Kpi icon={CalendarClock} label={t.overview.upcoming} value={m ? fmt.number(m.upcoming) : null} sub={m ? t.overview.pendingCount(m.pending) : ""} tone="warning" />
-        <Kpi icon={History} label={t.overview.completed} value={m ? fmt.number(m.completed) : null} sub={t.overview.completedRevenue} tone="success" />
-        <Kpi icon={XCircle} label={t.overview.cancellations} value={m ? fmt.number(m.cancelled) : null} sub={m ? t.overview.cancelRate(fmt.percent(m.cancelRate)) : ""} tone="danger" />
+        <Kpi icon={CalendarCheck2} label={t.overview.todays} value={m ? fmt.number(m.today.length) : null} sub={m ? t.overview.remaining(m.remaining) : ""} tone="primary" spark={m?.sparks.today} />
+        <Kpi icon={CalendarClock} label={t.overview.upcoming} value={m ? fmt.number(m.upcoming) : null} sub={m ? t.overview.pendingCount(m.pending) : ""} tone="warning" spark={m?.sparks.upcoming} />
+        <Kpi icon={History} label={t.overview.completed} value={m ? fmt.number(m.completed) : null} sub={t.overview.completedRevenue} tone="success" spark={m?.sparks.completed} />
+        <Kpi icon={XCircle} label={t.overview.cancellations} value={m ? fmt.number(m.cancelled) : null} sub={m ? t.overview.cancelRate(fmt.percent(m.cancelRate)) : ""} tone="danger" spark={m?.sparks.cancelled} />
         <Kpi
           icon={CircleDollarSign}
           label={t.overview.revenue}
@@ -110,6 +123,7 @@ export function Overview() {
             )
           }
           tone="primary"
+          spark={m?.sparks.revenue}
           className="sm:col-span-2 xl:col-span-1"
         />
       </div>
@@ -239,25 +253,51 @@ const toneClass = {
   success: "bg-success-soft text-success-foreground",
   danger: "bg-danger-soft text-danger-foreground",
 };
+const toneStroke = { primary: "text-primary", warning: "text-warning", success: "text-success", danger: "text-danger" };
 
-function Kpi({ icon: Icon, label, value, sub, tone, className }: {
+/** Tiny trend line; decorative (the figure itself carries the meaning). */
+function Sparkline({ values, tone }: { values: number[]; tone: keyof typeof toneStroke }) {
+  const max = Math.max(1, ...values);
+  const w = 96;
+  const h = 28;
+  const step = w / Math.max(1, values.length - 1);
+  const pts = values.map((v, i) => [i * step, h - 2 - (v / max) * (h - 4)] as const);
+  const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const id = `spark-${tone}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} aria-hidden preserveAspectRatio="none" className={cn("h-8 w-full overflow-visible rtl:-scale-x-100", toneStroke[tone])}>
+      <defs>
+        <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.22" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`${line} L${w},${h} L0,${h} Z`} fill={`url(#${id})`} />
+      <path d={line} fill="none" stroke="currentColor" strokeWidth="1.75" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Kpi({ icon: Icon, label, value, sub, tone, spark, className }: {
   icon: LucideIcon;
   label: string;
   value: string | null;
   sub: React.ReactNode;
   tone: keyof typeof toneClass;
+  spark?: number[];
   className?: string;
 }) {
   return (
-    <Card className={cn("p-5", className)}>
+    <Card className={cn("group relative overflow-hidden p-5 transition-shadow hover:shadow-md", className)}>
       <div className="flex items-start justify-between gap-3">
         <p className="text-[13px] font-medium text-muted-foreground">{label}</p>
-        <span className={cn("flex size-8 items-center justify-center rounded-lg", toneClass[tone])}>
+        <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105", toneClass[tone])}>
           <Icon className="size-4" aria-hidden />
         </span>
       </div>
-      {value === null ? <Skeleton className="mt-2 h-8 w-24" /> : <p className="mt-1 text-[28px] font-semibold leading-tight tracking-tight tabular">{value}</p>}
-      <p className="mt-1.5 truncate text-xs text-muted-foreground">{sub}</p>
+      {value === null ? <Skeleton className="mt-2 h-8 w-24" /> : <p className="mt-1 truncate text-[28px] font-semibold leading-tight tracking-tight tabular">{value}</p>}
+      <p className="mt-1 truncate text-xs text-muted-foreground">{sub}</p>
+      <div className="-mx-1 mt-3 h-8">{spark ? <Sparkline values={spark} tone={tone} /> : null}</div>
     </Card>
   );
 }
