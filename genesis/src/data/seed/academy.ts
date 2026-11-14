@@ -17,6 +17,7 @@ export const academySeed: IndustrySeed = {
     monogram: "NX",
     hue: 230,
     branches: [{ id: "olaya", name: L("Olaya campus", "فرع العليا"), address: L("King Fahd Road, Al Olaya, Riyadh", "طريق الملك فهد، العليا، الرياض") }],
+    media: { cover: "/media/academy/cover.webp", card: "/media/academy/card.webp" },
     openingHours: week({ 0: "09:00-22:00", 1: "09:00-22:00", 2: "09:00-22:00", 3: "09:00-22:00", 4: "09:00-22:00", 6: "10:00-18:00" }),
     rules: {
       slotIntervalMin: 30,

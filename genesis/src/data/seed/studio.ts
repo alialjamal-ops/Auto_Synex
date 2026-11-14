@@ -19,6 +19,7 @@ export const studioSeed: IndustrySeed = {
     monogram: "CL",
     hue: 40,
     branches: [{ id: "mar-mikhael", name: L("Mar Mikhael", "مار مخايل"), address: L("Armenia Street, Mar Mikhael, Beirut", "شارع أرمينيا، مار مخايل، بيروت") }],
+    media: { cover: "/media/studio/cover.webp", card: "/media/studio/card.webp" },
     openingHours: sameHours([...monToSat], "10:00-19:00"),
     rules: {
       slotIntervalMin: 30,
@@ -45,8 +46,8 @@ export const studioSeed: IndustrySeed = {
     { id: "karim", kind: "staff", name: L("Karim Saad", "كريم سعد"), title: L("Lead Photographer", "المصور الرئيسي"), branchId: "mar-mikhael", hue: 40, serviceIds: ["portrait", "headshots", "product", "aerial"], weeklyHours: sameHours([1, 2, 3, 4, 5], "10:00-19:00"), active: true },
     { id: "rita", kind: "staff", name: L("Rita Khoury", "ريتا خوري"), title: L("Portrait & Family Photographer", "مصورة بورتريه وعائلات"), branchId: "mar-mikhael", hue: 340, serviceIds: ["portrait", "family", "maternity", "headshots"], weeklyHours: sameHours([2, 3, 4, 5, 6], "10:00-19:00"), active: true },
     { id: "elie", kind: "staff", name: L("Elie Haddad", "إيلي حداد"), title: L("Commercial Photographer", "مصور تجاري"), branchId: "mar-mikhael", hue: 200, serviceIds: ["product", "aerial", "headshots"], weeklyHours: sameHours([1, 3, 5, 6], "10:00-19:00"), active: true },
-    { id: "studio-a", kind: "room", name: L("Studio A — Cyclorama", "استوديو أ — خلفية لا نهائية"), title: L("6m infinity wall, blackout", "جدار لا نهائي 6م، تعتيم كامل"), branchId: "mar-mikhael", hue: 30, serviceIds: [], weeklyHours: sameHours([...monToSat], "10:00-19:00"), active: true },
-    { id: "studio-b", kind: "room", name: L("Studio B — Daylight loft", "استوديو ب — إضاءة طبيعية"), title: L("North-facing windows, styled sets", "نوافذ شمالية ومشاهد منسقة"), branchId: "mar-mikhael", hue: 50, serviceIds: [], weeklyHours: sameHours([...monToSat], "10:00-19:00"), active: true },
+    { id: "studio-a", kind: "room", name: L("Studio A - Cyclorama", "استوديو أ - خلفية لا نهائية"), title: L("6m infinity wall, blackout", "جدار لا نهائي 6م، تعتيم كامل"), branchId: "mar-mikhael", hue: 30, serviceIds: [], weeklyHours: sameHours([...monToSat], "10:00-19:00"), active: true },
+    { id: "studio-b", kind: "room", name: L("Studio B - Daylight loft", "استوديو ب - إضاءة طبيعية"), title: L("North-facing windows, styled sets", "نوافذ شمالية ومشاهد منسقة"), branchId: "mar-mikhael", hue: 50, serviceIds: [], weeklyHours: sameHours([...monToSat], "10:00-19:00"), active: true },
     { id: "profoto-1", kind: "equipment", name: L("Profoto kit #1", "معدات Profoto ‏#1"), title: L("3× B10X, softboxes, stands", "3× B10X وصناديق ضوء وحوامل"), branchId: "mar-mikhael", hue: 60, serviceIds: [], weeklyHours: sameHours([...monToSat], "10:00-19:00"), active: true },
     { id: "profoto-2", kind: "equipment", name: L("Profoto kit #2", "معدات Profoto ‏#2"), title: L("2× D2, beauty dish, reflectors", "2× D2 وطبق تجميل وعواكس"), branchId: "mar-mikhael", hue: 70, serviceIds: [], weeklyHours: sameHours([...monToSat], "10:00-19:00"), active: true },
     { id: "drone", kind: "equipment", name: L("DJI Mavic 3 Pro", "DJI Mavic 3 Pro"), title: L("Drone with 3 batteries", "طائرة مع 3 بطاريات"), branchId: "mar-mikhael", hue: 190, serviceIds: [], weeklyHours: sameHours([...monToSat], "10:00-19:00"), active: true },

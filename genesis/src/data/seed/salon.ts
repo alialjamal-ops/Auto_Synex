@@ -14,6 +14,7 @@ export const salonSeed: IndustrySeed = {
     monogram: "LB",
     hue: 350,
     branches: [{ id: "city-walk", name: L("City Walk", "سيتي ووك"), address: L("City Walk, Building 12, Dubai", "سيتي ووك، مبنى 12، دبي") }],
+    media: { cover: "/media/salon/hero.webp", card: "/media/salon/card.webp" },
     openingHours: week({ 0: "10:00-22:00", 1: "10:00-22:00", 2: "10:00-22:00", 3: "10:00-22:00", 4: "10:00-22:00", 5: "14:00-22:00", 6: "10:00-22:00" }),
     rules: {
       slotIntervalMin: 15,
@@ -40,11 +41,11 @@ export const salonSeed: IndustrySeed = {
     { id: "hydrafacial", name: L("HydraFacial", "هيدرافيشل"), description: L("Deep cleanse, extraction and hydration for instant glow.", "تنظيف عميق واستخراج وترطيب لنضارة فورية."), category: L("Skin", "البشرة"), durationMin: 60, price: 550, capacity: 1, active: true },
   ],
   resources: [
-    { id: "rania", kind: "staff", name: L("Rania Saleh", "رانيا صالح"), title: L("Senior Hair Stylist", "مصففة شعر أولى"), branchId: "city-walk", hue: 350, serviceIds: ["cut-blow", "blowdry", "root-color"], weeklyHours: sameHours([6, 0, 1, 2, 3], "10:00-19:00"), active: true },
-    { id: "chloe", kind: "staff", name: L("Chloé Martin", "كلوي مارتن"), title: L("Colour Specialist", "أخصائية صبغات"), branchId: "city-walk", hue: 280, serviceIds: ["root-color", "balayage", "blowdry"], weeklyHours: sameHours([0, 1, 2, 3, 4], "12:00-22:00"), active: true },
-    { id: "maya", kind: "staff", name: L("Maya Fernandes", "مايا فرنانديز"), title: L("Nail Artist", "فنانة أظافر"), branchId: "city-walk", hue: 20, serviceIds: ["gel-mani", "spa-pedi"], weeklyHours: week({ 6: "10:00-20:00", 0: "10:00-20:00", 2: "10:00-20:00", 3: "12:00-22:00", 4: "12:00-22:00", 5: "14:00-22:00" }), active: true },
-    { id: "hind", kind: "staff", name: L("Hind Al Ali", "هند العلي"), title: L("Makeup Artist", "خبيرة مكياج"), branchId: "city-walk", hue: 320, serviceIds: ["evening-makeup", "bridal"], weeklyHours: week({ 3: "13:00-22:00", 4: "13:00-22:00", 5: "14:00-22:00", 6: "10:00-20:00", 1: "13:00-21:00" }), active: true },
-    { id: "joanna", kind: "staff", name: L("Joanna Kowalski", "جوانا كوالسكي"), title: L("Skin Therapist", "أخصائية بشرة"), branchId: "city-walk", hue: 170, serviceIds: ["hydrafacial", "gel-mani"], weeklyHours: sameHours([6, 0, 1, 2, 4], "10:00-18:00"), active: true },
+    { id: "rania", kind: "staff", photo: "/media/team/rania.webp", name: L("Rania Saleh", "رانيا صالح"), title: L("Senior Hair Stylist", "مصففة شعر أولى"), branchId: "city-walk", hue: 350, serviceIds: ["cut-blow", "blowdry", "root-color"], weeklyHours: sameHours([6, 0, 1, 2, 3], "10:00-19:00"), active: true },
+    { id: "chloe", kind: "staff", photo: "/media/team/chloe.webp", name: L("Chloé Martin", "كلوي مارتن"), title: L("Colour Specialist", "أخصائية صبغات"), branchId: "city-walk", hue: 280, serviceIds: ["root-color", "balayage", "blowdry"], weeklyHours: sameHours([0, 1, 2, 3, 4], "12:00-22:00"), active: true },
+    { id: "maya", kind: "staff", photo: "/media/team/maya.webp", name: L("Maya Fernandes", "مايا فرنانديز"), title: L("Nail Artist", "فنانة أظافر"), branchId: "city-walk", hue: 20, serviceIds: ["gel-mani", "spa-pedi"], weeklyHours: week({ 6: "10:00-20:00", 0: "10:00-20:00", 2: "10:00-20:00", 3: "12:00-22:00", 4: "12:00-22:00", 5: "14:00-22:00" }), active: true },
+    { id: "hind", kind: "staff", photo: "/media/team/hind.webp", name: L("Hind Al Ali", "هند العلي"), title: L("Makeup Artist", "خبيرة مكياج"), branchId: "city-walk", hue: 320, serviceIds: ["evening-makeup", "bridal"], weeklyHours: week({ 3: "13:00-22:00", 4: "13:00-22:00", 5: "14:00-22:00", 6: "10:00-20:00", 1: "13:00-21:00" }), active: true },
+    { id: "joanna", kind: "staff", photo: "/media/team/joanna.webp", name: L("Joanna Kowalski", "جوانا كوالسكي"), title: L("Skin Therapist", "أخصائية بشرة"), branchId: "city-walk", hue: 170, serviceIds: ["hydrafacial", "gel-mani"], weeklyHours: sameHours([6, 0, 1, 2, 4], "10:00-18:00"), active: true },
   ],
   customers: people("+971 55", [
     ["نورة الهاشمي", "noura.h"], ["Emily Watson", "emily.w"], ["شما المزروعي", "shamma.m"], ["Yasmin Haddad", "yasmin.h"],

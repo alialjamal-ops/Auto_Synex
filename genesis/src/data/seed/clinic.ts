@@ -19,6 +19,7 @@ export const clinicSeed: IndustrySeed = {
       { id: "jumeirah", name: L("Jumeirah", "جميرا"), address: L("Al Wasl Road, Jumeirah 1, Dubai", "شارع الوصل، جميرا 1، دبي") },
       { id: "business-bay", name: L("Business Bay", "الخليج التجاري"), address: L("Bay Square, Building 7, Dubai", "باي سكوير، مبنى 7، دبي") },
     ],
+    media: { cover: "/media/clinic/cover.webp", card: "/media/clinic/card.webp" },
     openingHours: week({ 6: "08:00-20:00", 0: "08:00-20:00", 1: "08:00-20:00", 2: "08:00-20:00", 3: "08:00-20:00", 4: "08:00-18:00" }),
     rules: {
       slotIntervalMin: 15,
@@ -42,11 +43,11 @@ export const clinicSeed: IndustrySeed = {
     { id: "checkup", name: L("Comprehensive health check", "فحص صحي شامل"), description: L("Full physical exam, vitals and a personalised prevention plan.", "فحص سريري كامل والعلامات الحيوية وخطة وقائية مخصصة."), category: L("Preventive care", "الرعاية الوقائية"), durationMin: 60, price: 900, capacity: 1, bufferMin: 10, active: true },
   ],
   resources: [
-    { id: "dr-layla", kind: "staff", name: L("Dr. Layla Haddad", "د. ليلى حداد"), title: L("Family Physician", "طبيبة أسرة"), branchId: "jumeirah", hue: 195, serviceIds: ["gp", "follow-up", "checkup"], weeklyHours: sameHours([...satToThu], "08:00-16:00"), active: true },
-    { id: "dr-omar", kind: "staff", name: L("Dr. Omar Khalil", "د. عمر خليل"), title: L("Consultant Dermatologist", "استشاري الأمراض الجلدية"), branchId: "jumeirah", hue: 260, serviceIds: ["derma", "follow-up"], weeklyHours: week({ 6: "12:00-20:00", 0: "12:00-20:00", 1: "12:00-20:00", 3: "12:00-20:00", 4: "10:00-16:00" }), active: true },
-    { id: "dr-sarah", kind: "staff", name: L("Dr. Sarah Mitchell", "د. سارة ميتشل"), title: L("Paediatrician", "طبيبة أطفال"), branchId: "business-bay", hue: 330, serviceIds: ["peds", "gp", "follow-up"], weeklyHours: sameHours([0, 1, 2, 3, 4], ["09:00-13:00", "15:00-19:00"]), active: true },
-    { id: "dr-yousef", kind: "staff", name: L("Dr. Yousef Al Mansoori", "د. يوسف المنصوري"), title: L("Orthopaedic Surgeon", "جراح عظام"), branchId: "business-bay", hue: 30, serviceIds: ["ortho", "follow-up"], weeklyHours: week({ 6: "10:00-18:00", 1: "10:00-18:00", 2: "10:00-18:00", 3: "14:00-20:00" }), active: true },
-    { id: "dr-nadia", kind: "staff", name: L("Dr. Nadia Rahman", "د. نادية رحمن"), title: L("Internal Medicine", "الطب الباطني"), branchId: "business-bay", hue: 150, serviceIds: ["gp", "checkup", "follow-up"], weeklyHours: sameHours([6, 0, 1, 2, 3], "12:00-20:00"), active: true },
+    { id: "dr-layla", kind: "staff", photo: "/media/team/dr-layla.webp", name: L("Dr. Layla Haddad", "د. ليلى حداد"), title: L("Family Physician", "طبيبة أسرة"), branchId: "jumeirah", hue: 195, serviceIds: ["gp", "follow-up", "checkup"], weeklyHours: sameHours([...satToThu], "08:00-16:00"), active: true },
+    { id: "dr-omar", kind: "staff", photo: "/media/team/dr-omar.webp", name: L("Dr. Omar Khalil", "د. عمر خليل"), title: L("Consultant Dermatologist", "استشاري الأمراض الجلدية"), branchId: "jumeirah", hue: 260, serviceIds: ["derma", "follow-up"], weeklyHours: week({ 6: "12:00-20:00", 0: "12:00-20:00", 1: "12:00-20:00", 3: "12:00-20:00", 4: "10:00-16:00" }), active: true },
+    { id: "dr-sarah", kind: "staff", photo: "/media/team/dr-sarah.webp", name: L("Dr. Sarah Mitchell", "د. سارة ميتشل"), title: L("Paediatrician", "طبيبة أطفال"), branchId: "business-bay", hue: 330, serviceIds: ["peds", "gp", "follow-up"], weeklyHours: sameHours([0, 1, 2, 3, 4], ["09:00-13:00", "15:00-19:00"]), active: true },
+    { id: "dr-yousef", kind: "staff", photo: "/media/team/dr-yousef.webp", name: L("Dr. Yousef Al Mansoori", "د. يوسف المنصوري"), title: L("Orthopaedic Surgeon", "جراح عظام"), branchId: "business-bay", hue: 30, serviceIds: ["ortho", "follow-up"], weeklyHours: week({ 6: "10:00-18:00", 1: "10:00-18:00", 2: "10:00-18:00", 3: "14:00-20:00" }), active: true },
+    { id: "dr-nadia", kind: "staff", photo: "/media/team/dr-nadia.webp", name: L("Dr. Nadia Rahman", "د. نادية رحمن"), title: L("Internal Medicine", "الطب الباطني"), branchId: "business-bay", hue: 150, serviceIds: ["gp", "checkup", "follow-up"], weeklyHours: sameHours([6, 0, 1, 2, 3], "12:00-20:00"), active: true },
   ],
   customers: people("+971 50", [
     ["سارة أحمد", "sara.ahmed"], ["Mohammed Khalid", "m.khalid"], ["ليلى حسن", "layla.hassan"], ["James Carter", "j.carter"],

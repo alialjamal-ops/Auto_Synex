@@ -71,6 +71,8 @@ export interface Business {
   /** Tailwind-independent brand hue (oklch hue angle) for the logo placeholder. */
   hue: number;
   branches: Branch[];
+  /** Brand imagery (paths or URLs). A real backend would serve CDN URLs. */
+  media: { cover: string; card: string };
   openingHours: WeeklyHours;
   rules: BookingRules;
   /** Label for the person delivering the service, e.g. "Doctor", "Stylist". */
@@ -90,6 +92,8 @@ export interface Resource {
   branchId: string;
   /** Hue for avatar / calendar lane colour. */
   hue: number;
+  /** Optional profile photo (staff). Falls back to initials. */
+  photo?: string;
   /** Staff only: services they can deliver. Rooms/equipment: ignored. */
   serviceIds: string[];
   /** Personal working hours, intersected with business opening hours. */

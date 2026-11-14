@@ -1,6 +1,8 @@
 "use client";
 
 import { BadgeCheck, Clock, Globe, LayoutDashboard, MapPin, Phone, Zap } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
 import { useState } from "react";
 import { toDateKey, weekdayOfKey } from "@/domain/time";
 import { industryIcons } from "@/config/industry-icons";
@@ -84,6 +86,7 @@ function BusinessHero() {
   const [todayKey] = useState(() => toDateKey(repo.now(), business.timezone));
   const today = business.rules.closedDates.includes(todayKey) ? [] : business.openingHours[weekdayOfKey(todayKey)];
   const Icon = industryIcons[business.id];
+  const reduce = useReducedMotion();
   const chips = [
     {
       icon: Clock,
@@ -97,14 +100,21 @@ function BusinessHero() {
   return (
     <section style={hueStyle(business.hue)} className="lane relative overflow-hidden border-b">
       <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[var(--lane-bg)] to-background" />
-      <div aria-hidden className="absolute inset-0 opacity-50 [background-image:radial-gradient(var(--lane-border)_0.6px,transparent_0.6px)] [background-size:16px_16px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
-      <Icon aria-hidden strokeWidth={1.25} className="absolute -bottom-10 end-6 size-56 text-[var(--lane-fg)] opacity-[0.06]" />
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-5 px-4 py-8 sm:flex-row sm:items-center sm:px-6 sm:py-10">
-        <BusinessLogo monogram={business.monogram} hue={business.hue} size="lg" className="bg-card shadow-md" />
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--lane-fg)]">{t.booking.onlineBooking}</p>
-          <h1 className="mt-1 text-balance text-2xl font-semibold tracking-tight sm:text-3xl">{tx(business.name)}</h1>
-          <p className="mt-1.5 text-pretty text-sm text-muted-foreground sm:text-base">{tx(business.tagline)}</p>
+      <div className="relative mx-auto grid max-w-6xl items-center gap-6 px-4 py-6 sm:px-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:gap-10 md:py-8">
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="order-2 md:order-1"
+        >
+          <div className="flex items-center gap-3">
+            <BusinessLogo monogram={business.monogram} hue={business.hue} size="lg" className="bg-card shadow-md" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-[var(--lane-fg)]">{t.booking.onlineBooking}</p>
+              <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">{tx(business.name)}</h1>
+            </div>
+          </div>
+          <p className="mt-3 max-w-[52ch] text-pretty text-sm text-muted-foreground sm:text-base">{tx(business.tagline)}</p>
           <ul className="mt-4 flex flex-wrap gap-2">
             {chips.map((c) => (
               <li key={c.label} className="inline-flex items-center gap-1.5 rounded-full border bg-card/85 px-3 py-1 text-xs font-medium shadow-xs backdrop-blur">
@@ -113,7 +123,16 @@ function BusinessHero() {
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
+        <motion.div
+          initial={reduce ? false : { opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative order-1 aspect-[16/7] overflow-hidden rounded-2xl border shadow-lg md:order-2 md:aspect-[16/10]"
+        >
+          <Image src={business.media.cover} alt="" fill priority sizes="(min-width: 768px) 440px, 100vw" className="object-cover" />
+          <Icon aria-hidden className="absolute bottom-3 end-3 size-9 rounded-xl bg-card/90 p-2 text-[var(--lane-fg)] shadow-md backdrop-blur" />
+        </motion.div>
       </div>
     </section>
   );

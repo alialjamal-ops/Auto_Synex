@@ -49,7 +49,7 @@ export function Staff() {
               {people.map((p) => (
                 <Card key={p.id} className={cn("flex flex-col gap-4 p-5", !p.active && "opacity-60")}>
                   <div className="flex items-center gap-3">
-                    <Avatar name={p.name.en} hue={p.hue} size="lg" />
+                    <Avatar name={p.name.en} hue={p.hue} photo={p.photo} size="lg" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{tx(p.name)}</p>
                       <p className="truncate text-sm text-muted-foreground">{tx(p.title)}</p>

@@ -18,6 +18,7 @@ export function makeBusiness(overrides: Partial<Business["rules"]> = {}): Busine
     monogram: "TC",
     hue: 200,
     branches: [{ id: "main", name: L("Main"), address: L("") }],
+    media: { cover: "", card: "" },
     openingHours: week({ 1: "09:00-17:00", 2: "09:00-17:00", 3: "09:00-17:00", 4: "09:00-17:00", 5: "09:00-17:00" }),
     rules: {
       slotIntervalMin: 30,

@@ -106,7 +106,7 @@ function BookingDetailsSheet({ id }: { id: string }) {
 
         <section className="grid gap-3 rounded-xl border p-4 text-sm">
           <Row icon={Sparkles}>
-            <span className="font-medium">{service ? tx(service.name) : "—"}</span>
+            <span className="font-medium">{service ? tx(service.name) : "-"}</span>
             {booking.seats > 1 ? <span className="text-muted-foreground"> · {t.common.seats(booking.seats)}</span> : null}
           </Row>
           <Row icon={Clock}>

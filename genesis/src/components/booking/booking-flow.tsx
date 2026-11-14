@@ -415,7 +415,7 @@ function StaffStep({
                   onClick={() => onSelect(s.id)}
                   title={tx(s.name)}
                   subtitle={`${tx(s.title)}${business.branches.length > 1 ? ` · ${tx(business.branches.find((b) => b.id === s.branchId)!.name)}` : ""}`}
-                  avatar={<Avatar name={s.name.en} hue={s.hue} />}
+                  avatar={<Avatar name={s.name.en} hue={s.hue} photo={s.photo} />}
                 />
               ))
             : null}
@@ -640,7 +640,7 @@ function ReviewStep({ service, staff, state, onEdit, onBack, onConfirm, onAltern
       step: business.rules.allowStaffSelection || business.branches.length > 1 ? "staff" : "datetime",
     },
     { label: t.booking.when, value: <span>{fmt.dateLong(state.slot!.start!)} · <span dir="ltr">{fmt.time(state.slot!.start!)}</span></span>, step: "datetime" },
-    { label: t.booking.where, value: `${tx(business.name)} — ${tx(branch.name)}`, step: business.branches.length > 1 ? "staff" : "datetime" },
+    { label: t.booking.where, value: `${tx(business.name)}, ${tx(branch.name)}`, step: business.branches.length > 1 ? "staff" : "datetime" },
     { label: t.booking.customer, value: <span className="grid"><span>{d.name}</span><span className="text-muted-foreground" dir="ltr">{d.phone} · {d.email}</span></span>, step: "details" },
   ];
   if (d.seats > 1) rows.push({ label: t.booking.seatsLabel, value: t.common.seats(d.seats), step: "details" });
@@ -748,7 +748,7 @@ function DoneStep({ booking, service, staff, onRestart }: { booking: Booking; se
         <div className="flex gap-3">
           <dt className="sr-only">{t.booking.where}</dt>
           <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
-          <dd>{tx(business.name)} — {tx(branch.address)}</dd>
+          <dd>{tx(business.name)}, {tx(branch.address)}</dd>
         </div>
       </dl>
       <p className="mt-3 text-xs text-muted-foreground">{t.booking.cancellationPolicy(business.rules.cancellationWindowHours)}</p>
@@ -759,7 +759,7 @@ function DoneStep({ booking, service, staff, onRestart }: { booking: Booking; se
           onClick={() =>
             downloadIcs({
               uid: booking.reference,
-              title: `${tx(service.name)} — ${tx(business.name)}`,
+              title: `${tx(service.name)}, ${tx(business.name)}`,
               description: `${t.booking.reference}: ${booking.reference}`,
               location: tx(branch.address),
               start: booking.start,
@@ -802,7 +802,7 @@ function Summary({ service, staff, state, booking }: { service?: Service; staff?
       </dl>
       <div className="mt-4 flex items-center justify-between border-t pt-4">
         <span className="text-sm text-muted-foreground">{t.booking.total}</span>
-        <span className={cn("text-lg font-semibold tabular", !service && "text-muted-foreground/60")}>{service ? fmt.money(service.price * seats) : "—"}</span>
+        <span className={cn("text-lg font-semibold tabular", !service && "text-muted-foreground/60")}>{service ? fmt.money(service.price * seats) : "-"}</span>
       </div>
       <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
         <Clock className="mt-px size-3.5 shrink-0" aria-hidden />
@@ -816,7 +816,7 @@ function SummaryRow({ label, value }: { label: string; value: React.ReactNode })
   return (
     <div className="flex items-start justify-between gap-4">
       <dt className="shrink-0 text-muted-foreground">{label}</dt>
-      <dd className={cn("min-w-0 text-end font-medium", !value && "text-muted-foreground/60")}>{value ?? "—"}</dd>
+      <dd className={cn("min-w-0 text-end font-medium", !value && "text-muted-foreground/60")}>{value ?? "-"}</dd>
     </div>
   );
 }

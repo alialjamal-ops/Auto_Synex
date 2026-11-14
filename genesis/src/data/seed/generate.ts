@@ -18,7 +18,7 @@ import type {
 } from "@/domain/types";
 import type { IndustrySeed } from "./types";
 
-export const SNAPSHOT_VERSION = 5;
+export const SNAPSHOT_VERSION = 7;
 
 export function mulberry32(seed: number) {
   let a = seed >>> 0;

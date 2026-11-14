@@ -320,7 +320,7 @@ function TimeGrid({
             <div key={c.key} className="flex min-w-0 flex-1 items-center justify-between gap-2 border-s px-2.5 py-2.5">
               {view === "day" && c.staff ? (
                 <div className="flex min-w-0 items-center gap-2">
-                  <Avatar name={c.staff.name.en} hue={c.staff.hue} size="sm" />
+                  <Avatar name={c.staff.name.en} hue={c.staff.hue} photo={c.staff.photo} size="sm" />
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-medium">{tx(c.staff.name)}</p>
                     <p className="truncate text-[11px] text-muted-foreground">{tx(c.staff.title)}</p>
@@ -343,7 +343,7 @@ function TimeGrid({
                 size="icon-sm"
                 className="size-7 shrink-0 text-muted-foreground"
                 onClick={() => newBooking({ dateKey: c.day, staffId: c.staff?.id })}
-                aria-label={`${t.nav.newBooking} — ${c.staff ? tx(c.staff.name) : fmt.keyShort(c.day)}`}
+                aria-label={`${t.nav.newBooking}, ${c.staff ? tx(c.staff.name) : fmt.keyShort(c.day)}`}
               >
                 <Plus />
               </Button>
@@ -436,7 +436,7 @@ function EntryBlock({ entry, catalog, style, compact }: { entry: Entry; catalog:
             cancelled && "opacity-55 line-through",
             (entry.status === "completed" || entry.status === "no_show") && "saturate-[0.6]",
           )}
-          aria-label={`${fmt.time(entry.start)} ${name} — ${t.status[entry.status]}`}
+          aria-label={`${fmt.time(entry.start)} ${name}, ${t.status[entry.status]}`}
         >
           <span className="flex items-center gap-1 text-[11px] font-semibold leading-tight">
             <span className={cn("size-1.5 shrink-0 rounded-full", statusDot[entry.status])} aria-hidden />
@@ -466,7 +466,7 @@ function EntryBlock({ entry, catalog, style, compact }: { entry: Entry; catalog:
           </div>
           {staff ? (
             <div className="flex items-center gap-2 text-sm">
-              <Avatar name={staff.name.en} hue={staff.hue} size="sm" />
+              <Avatar name={staff.name.en} hue={staff.hue} photo={staff.photo} size="sm" />
               {tx(staff.name)}
             </div>
           ) : null}
@@ -543,7 +543,7 @@ function MonthGrid({ from, anchor, todayKey, entries, catalog, onPickDay }: {
               key={k}
               type="button"
               onClick={() => onPickDay(k)}
-              aria-label={`${fmt.keyLong(k)} — ${list.length}`}
+              aria-label={`${fmt.keyLong(k)}, ${list.length}`}
               className={cn(
                 "flex min-h-20 flex-col gap-1 border-b border-e p-1.5 text-start transition-colors hover:bg-muted/60 sm:min-h-28 sm:p-2 [&:nth-child(7n)]:border-e-0",
                 out && "bg-subtle/60 text-muted-foreground",

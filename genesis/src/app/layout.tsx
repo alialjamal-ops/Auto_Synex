@@ -10,7 +10,7 @@ import { Providers } from "@/components/providers";
 import { DEFAULT_LOCALE, dirOf, isLocale, LOCALE_COOKIE } from "@/i18n/config";
 
 export const metadata: Metadata = {
-  title: { default: "Auto Synex Booking OS — Genesis demo", template: "%s · Auto Synex Booking OS" },
+  title: { default: "Auto Synex Booking OS · Genesis demo", template: "%s · Auto Synex Booking OS" },
   description: "Interactive multi-industry booking platform demo: clinic, salon, academy and photography studio.",
   robots: { index: false, follow: false },
 };
