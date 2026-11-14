@@ -1,0 +1,57 @@
+import type { IndustrySeed } from "./types";
+import { L, people, sameHours, week } from "./helpers";
+
+export const salonSeed: IndustrySeed = {
+  business: {
+    id: "salon",
+    name: L("Lumière Beauty Lounge", "صالون لوميير للتجميل"),
+    tagline: L("Hair, skin and nails by people who care about the details.", "الشعر والبشرة والأظافر، بأيدٍ تهتم بأدق التفاصيل."),
+    industryLabel: L("Beauty salon", "صالون تجميل"),
+    timezone: "Asia/Dubai",
+    currency: "AED",
+    phone: "+971 4 555 0177",
+    email: "hello@lumiere-lounge.example",
+    monogram: "LB",
+    hue: 350,
+    branches: [{ id: "city-walk", name: L("City Walk", "سيتي ووك"), address: L("City Walk, Building 12, Dubai", "سيتي ووك، مبنى 12، دبي") }],
+    openingHours: week({ 0: "10:00-22:00", 1: "10:00-22:00", 2: "10:00-22:00", 3: "10:00-22:00", 4: "10:00-22:00", 5: "14:00-22:00", 6: "10:00-22:00" }),
+    rules: {
+      slotIntervalMin: 15,
+      bufferMin: 10,
+      minNoticeMin: 120,
+      maxAdvanceDays: 60,
+      allowStaffSelection: true,
+      autoConfirm: true,
+      cancellationWindowHours: 24,
+      closedDates: [],
+    },
+    staffNoun: { singular: L("Stylist", "خبيرة التجميل"), plural: L("Stylists", "خبيرات التجميل") },
+    customerNoun: { singular: L("Client", "عميلة"), plural: L("Clients", "العميلات") },
+  },
+  services: [
+    { id: "cut-blow", name: L("Haircut & blow-dry", "قص وتصفيف الشعر"), description: L("Consultation, wash, precision cut and signature blow-dry.", "استشارة وغسيل وقص دقيق وتصفيف مميز."), category: L("Hair", "الشعر"), durationMin: 60, price: 250, capacity: 1, active: true },
+    { id: "blowdry", name: L("Blow-dry", "تصفيف سشوار"), description: L("Wash and blow-dry: sleek, volume or soft waves.", "غسيل وتصفيف: ناعم أو بحجم أو تموجات خفيفة."), category: L("Hair", "الشعر"), durationMin: 45, price: 150, capacity: 1, active: true },
+    { id: "root-color", name: L("Root colour", "صبغة الجذور"), description: L("Single-process colour to refresh regrowth.", "صبغة أحادية لتجديد الجذور."), category: L("Colour", "الصبغة"), durationMin: 90, price: 380, capacity: 1, active: true },
+    { id: "balayage", name: L("Balayage", "بالياج"), description: L("Hand-painted, lived-in colour including toner and finish.", "صبغة مرسومة يدوياً بمظهر طبيعي مع التونر والتصفيف."), category: L("Colour", "الصبغة"), durationMin: 180, price: 950, capacity: 1, bufferMin: 15, active: true },
+    { id: "gel-mani", name: L("Gel manicure", "مانيكير جل"), description: L("Shape, cuticle care and long-wear gel colour.", "تشكيل والعناية بالجلد ولون جل يدوم طويلاً."), category: L("Nails", "الأظافر"), durationMin: 45, price: 140, capacity: 1, active: true },
+    { id: "spa-pedi", name: L("Spa pedicure", "باديكير سبا"), description: L("Soak, exfoliation, massage and polish.", "نقع وتقشير وتدليك وطلاء."), category: L("Nails", "الأظافر"), durationMin: 60, price: 180, capacity: 1, active: true },
+    { id: "evening-makeup", name: L("Evening makeup", "مكياج سهرة"), description: L("Full-face makeup with lashes for events.", "مكياج كامل مع رموش للمناسبات."), category: L("Makeup", "المكياج"), durationMin: 60, price: 450, capacity: 1, active: true },
+    { id: "bridal", name: L("Bridal makeup", "مكياج عروس"), description: L("Bridal look with trial notes, lashes and touch-up kit.", "إطلالة العروس مع رموش وحقيبة لمسات نهائية."), category: L("Makeup", "المكياج"), durationMin: 120, price: 1200, capacity: 1, bufferMin: 20, active: true },
+    { id: "hydrafacial", name: L("HydraFacial", "هيدرافيشل"), description: L("Deep cleanse, extraction and hydration for instant glow.", "تنظيف عميق واستخراج وترطيب لنضارة فورية."), category: L("Skin", "البشرة"), durationMin: 60, price: 550, capacity: 1, active: true },
+  ],
+  resources: [
+    { id: "rania", kind: "staff", name: L("Rania Saleh", "رانيا صالح"), title: L("Senior Hair Stylist", "مصففة شعر أولى"), branchId: "city-walk", hue: 350, serviceIds: ["cut-blow", "blowdry", "root-color"], weeklyHours: sameHours([6, 0, 1, 2, 3], "10:00-19:00"), active: true },
+    { id: "chloe", kind: "staff", name: L("Chloé Martin", "كلوي مارتن"), title: L("Colour Specialist", "أخصائية صبغات"), branchId: "city-walk", hue: 280, serviceIds: ["root-color", "balayage", "blowdry"], weeklyHours: sameHours([0, 1, 2, 3, 4], "12:00-22:00"), active: true },
+    { id: "maya", kind: "staff", name: L("Maya Fernandes", "مايا فرنانديز"), title: L("Nail Artist", "فنانة أظافر"), branchId: "city-walk", hue: 20, serviceIds: ["gel-mani", "spa-pedi"], weeklyHours: week({ 6: "10:00-20:00", 0: "10:00-20:00", 2: "10:00-20:00", 3: "12:00-22:00", 4: "12:00-22:00", 5: "14:00-22:00" }), active: true },
+    { id: "hind", kind: "staff", name: L("Hind Al Ali", "هند العلي"), title: L("Makeup Artist", "خبيرة مكياج"), branchId: "city-walk", hue: 320, serviceIds: ["evening-makeup", "bridal"], weeklyHours: week({ 3: "13:00-22:00", 4: "13:00-22:00", 5: "14:00-22:00", 6: "10:00-20:00", 1: "13:00-21:00" }), active: true },
+    { id: "joanna", kind: "staff", name: L("Joanna Kowalski", "جوانا كوالسكي"), title: L("Skin Therapist", "أخصائية بشرة"), branchId: "city-walk", hue: 170, serviceIds: ["hydrafacial", "gel-mani"], weeklyHours: sameHours([6, 0, 1, 2, 4], "10:00-18:00"), active: true },
+  ],
+  customers: people("+971 55", [
+    ["نورة الهاشمي", "noura.h"], ["Emily Watson", "emily.w"], ["شما المزروعي", "shamma.m"], ["Yasmin Haddad", "yasmin.h"],
+    ["لطيفة الفلاسي", "latifa.f"], ["Anna Ivanova", "anna.i"], ["مها القاسمي", "maha.q"], ["Grace Thompson", "grace.t"],
+    ["روضة الكتبي", "rawda.k"], ["Lina Barakat", "lina.b"], ["عائشة الحمادي", "aisha.h"], ["Chiara Bianchi", "chiara.b"],
+    ["أمل سعيد", "amal.s"], ["Sofia Garcia", "sofia.g"], ["جواهر المري", "jawaher.m"], ["Nour Khoury", "nour.k"],
+    ["ميثاء الرميثي", "maitha.r"], ["Isabelle Dubois", "isabelle.d"], ["حصة الشحي", "hessa.s"], ["Farah Siddiqui", "farah.s"],
+    ["آمنة العامري", "amna.a"], ["Olivia Brown", "olivia.b"], ["سلامة النقبي", "salama.n"], ["Hala Mansour", "hala.m"],
+  ]),
+};
