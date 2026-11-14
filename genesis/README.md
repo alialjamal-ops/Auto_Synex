@@ -10,6 +10,14 @@ public booking portal and business dashboard.
 > time. Conflict checks run in the browser only, so they are **not multi-user safe**
 > (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Demo Hub](docs/screenshots/01-demo-hub.png) | ![Booking — alternatives for a taken slot](docs/screenshots/02-booking-time.png) |
+| ![Dashboard overview](docs/screenshots/03-dashboard-overview.png) | ![Week calendar](docs/screenshots/04-calendar-week.png) |
+| ![Arabic dashboard, dark mode](docs/screenshots/05-dashboard-arabic-dark.png) | ![Mobile booking in Arabic](docs/screenshots/06-mobile-booking-arabic.png) |
+
 ## Quick start
 
 ```bash
