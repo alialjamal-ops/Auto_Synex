@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Auto Synex Booking OS - promo</title>
+<style>
+  @font-face { font-family: Geist; font-weight: 400; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Regular.woff2"); }
+  @font-face { font-family: Geist; font-weight: 500; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Medium.woff2"); }
+  @font-face { font-family: Geist; font-weight: 600; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-SemiBold.woff2"); }
+  @font-face { font-family: Geist; font-weight: 700; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Bold.woff2"); }
+  @font-face { font-family: Plex; font-weight: 400; src: url("../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2"); }
+  @font-face { font-family: Plex; font-weight: 600; src: url("../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-600-normal.woff2"); }
+  @font-face { font-family: Plex; font-weight: 700; src: url("../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-700-normal.woff2"); }
+  :root { --blue: #2f6bff; --sky: #5cc8ff; --ink: #050a18; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ink); }
+  body { font-family: Geist, Plex, sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+  html[lang="ar"] body { font-family: Plex, Geist, sans-serif; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+  .bg { position: absolute; inset: 0; background:
+      radial-gradient(900px 520px at 72% 38%, rgba(47,107,255,.42), transparent 70%),
+      radial-gradient(700px 500px at 18% 85%, rgba(92,200,255,.14), transparent 70%),
+      linear-gradient(180deg, #070d20, #040814); }
+  .grid { position: absolute; inset: -60px; background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(70% 70% at 50% 40%, #000, transparent); }
+  .streak { position: absolute; left: -10%; top: 50%; width: 120%; height: 3px; background: linear-gradient(90deg, transparent, var(--sky) 40%, #fff 50%, var(--sky) 60%, transparent); filter: blur(1.5px); box-shadow: 0 0 60px 14px rgba(92,200,255,.35); transform-origin: center; }
+  .star { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #bfe0ff; }
+  .scene { position: absolute; inset: 0; opacity: 0; will-change: transform, opacity; }
+  .center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .h { font-weight: 700; letter-spacing: -0.035em; line-height: 1.04; }
+  html[lang="ar"] .h { letter-spacing: 0; line-height: 1.25; }
+  .grad { background: linear-gradient(92deg, #fff 0%, var(--sky) 55%, var(--blue) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: rgba(226,236,255,.72); font-weight: 400; }
+  .mask { overflow: hidden; padding: 0.08em 0; }
+  .frame { position: absolute; border-radius: 22px; background: #0d1530; padding: 12px; box-shadow: 0 60px 140px -30px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.12), 0 0 120px rgba(47,107,255,.25); }
+  .frame .dots { display: flex; gap: 8px; padding: 4px 8px 12px; }
+  .frame .dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.22); }
+  .frame img { display: block; width: 100%; border-radius: 12px; }
+  .phone { position: absolute; width: 400px; border-radius: 56px; border: 12px solid #0b1022; background: #0b1022; box-shadow: 0 60px 120px -20px rgba(0,0,0,.8), 0 0 0 2px rgba(255,255,255,.14), 0 0 100px rgba(47,107,255,.3); overflow: hidden; }
+  .phone img { display: block; width: 100%; }
+  .chip { display: inline-flex; align-items: center; gap: 14px; padding: 16px 26px; border-radius: 999px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); font-size: 30px; font-weight: 500; backdrop-filter: blur(8px); }
+  .chip b { display: inline-flex; width: 34px; height: 34px; border-radius: 50%; align-items: center; justify-content: center; background: var(--blue); font-size: 18px; }
+  .card { position: absolute; width: 400px; height: 540px; border-radius: 28px; overflow: hidden; box-shadow: 0 50px 100px -30px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.12); }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card span { position: absolute; inset: auto 0 0 0; padding: 90px 28px 26px; font-size: 34px; font-weight: 600; background: linear-gradient(transparent, rgba(4,8,20,.92)); }
+  .cta { display: inline-flex; align-items: center; gap: 14px; padding: 22px 44px; border-radius: 999px; background: linear-gradient(92deg, var(--blue), #4d8dff); font-size: 36px; font-weight: 600; box-shadow: 0 20px 60px rgba(47,107,255,.5); }
+  .plan { position: absolute; top: 360px; width: 520px; height: 520px; padding: 44px; border-radius: 32px; background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03)); border: 1.5px solid rgba(255,255,255,.14); box-shadow: 0 40px 100px -30px rgba(0,0,0,.7); }
+  .plan b { display: flex; width: 68px; height: 68px; border-radius: 20px; align-items: center; justify-content: center; font-size: 34px; background: linear-gradient(135deg, var(--sky), var(--blue)); box-shadow: 0 12px 30px rgba(47,107,255,.45); }
+  .plan h3 { font-size: 52px; font-weight: 700; letter-spacing: -0.02em; margin-top: 30px; line-height: 1.15; }
+  html[lang="ar"] .plan h3 { letter-spacing: 0; }
+  .plan p { font-size: 30px; line-height: 1.45; color: rgba(226,236,255,.75); margin-top: 16px; }
+  .plan ul { list-style: none; padding: 0; margin-top: 30px; display: grid; gap: 14px; }
+  .plan li { font-size: 28px; font-weight: 500; display: flex; align-items: center; gap: 14px; }
+  .plan li::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--sky); box-shadow: 0 0 14px var(--sky); flex: none; }
+  .check { width: 120px; height: 120px; border-radius: 50%; background: #12b76a; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 16px rgba(18,183,106,.18), 0 20px 60px rgba(18,183,106,.45); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg"></div>
+  <div class="grid" id="grid"></div>
+  <div id="stars"></div>
+  <div class="streak" id="streak"></div>
+
+  <!-- 1. Logo reveal -->
+  <section class="scene center" id="s1">
+    <img id="s1logo" src="../public/brand/mark-exact.png" style="width:400px" />
+    <div id="s1word" class="h" dir="ltr" style="font-family:Geist;font-size:96px;margin-top:34px;font-style:italic;transform-origin:center"><span style="background:linear-gradient(180deg,#fff,#aab3bf);-webkit-background-clip:text;color:transparent;padding:0 .06em">AUTO</span> <span style="background:linear-gradient(180deg,#63bdff,#1f6fe0);-webkit-background-clip:text;color:transparent;padding:0 .06em">SYNEX</span></div>
+    <div id="s1sub" class="sub" style="font-size:34px;margin-top:14px;letter-spacing:.42em" data-t="tag"></div>
+  </section>
+
+  <!-- 2. Kinetic headline -->
+  <section class="scene center" id="s2">
+    <div class="mask"><div class="h l" style="font-size:150px" data-t="k1"></div></div>
+    <div class="mask"><div class="h l" style="font-size:150px" data-t="k2"></div></div>
+    <div class="mask"><div class="h l grad" style="font-size:150px" data-t="k3"></div></div>
+  </section>
+
+  <!-- 3. Dashboard -->
+  <section class="scene" id="s3">
+    <div class="side" style="position:absolute;top:150px;width:640px">
+      <div class="h a" style="font-size:86px" data-t="d1"></div>
+      <div class="sub a" style="font-size:36px;margin-top:28px;line-height:1.45" data-t="d2"></div>
+      <div style="display:grid;gap:18px;margin-top:48px;justify-items:start">
+        <div class="chip a"><b>✓</b><span data-t="d3"></span></div>
+        <div class="chip a"><b>✓</b><span data-t="d4"></span></div>
+        <div class="chip a"><b>✓</b><span data-t="d5"></span></div>
+      </div>
+    </div>
+    <div class="frame" id="s3frame" style="width:1180px;top:170px"><div class="dots"><i></i><i></i><i></i></div><img data-img="dash" /></div>
+  </section>
+
+  <!-- 4. Phone booking -->
+  <section class="scene" id="s4">
+    <div class="phone" id="s4phone" style="top:120px"><img data-img="phone" /></div>
+    <div class="side" style="position:absolute;top:230px;width:900px">
+      <div class="h a" style="font-size:104px" data-t="p1"></div>
+      <div style="display:flex;gap:18px;margin-top:56px;flex-wrap:wrap">
+        <div class="chip st"><b>1</b><span data-t="p2"></span></div>
+        <div class="chip st"><b>2</b><span data-t="p3"></span></div>
+        <div class="chip st"><b>3</b><span data-t="p4"></span></div>
+      </div>
+      <div id="s4ok" style="display:flex;align-items:center;gap:28px;margin-top:64px">
+        <div class="check"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <div><div class="h" style="font-size:54px" data-t="p5"></div><div class="sub" style="font-size:32px;margin-top:8px" dir="ltr">GN-7KQ2PX</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Industries -->
+  <section class="scene" id="s5">
+    <div class="h center" id="s5h" style="position:absolute;top:92px;left:0;right:0;font-size:92px" data-t="i0"></div>
+    <div class="card"><img src="../public/media/clinic/card.webp" /><span data-t="i1"></span></div>
+    <div class="card"><img src="../public/media/salon/card-beauty.webp" /><span data-t="i2"></span></div>
+    <div class="card"><img src="../public/media/academy/card.webp" /><span data-t="i3"></span></div>
+    <div class="card"><img src="../public/media/studio/card.webp" /><span data-t="i4"></span></div>
+  </section>
+
+  <!-- 6. Bilingual + themes -->
+  <section class="scene" id="s6">
+    <div class="center" style="position:absolute;top:70px;left:0;right:0">
+      <div class="h" id="s6h" style="font-size:84px"><span>العربية</span> <span class="grad">+</span> <span style="font-family:Geist">English</span></div>
+      <div class="sub" id="s6s" style="font-size:36px;margin-top:14px" data-t="b1"></div>
+    </div>
+    <div class="frame" id="s6frame" style="width:1240px;left:340px;top:290px"><div class="dots"><i></i><i></i><i></i></div>
+      <div style="position:relative"><img src="assets/dash-light-en.jpg" /><img id="s6top" src="assets/dash-dark-ar.jpg" style="position:absolute;inset:0" /></div>
+    </div>
+  </section>
+
+  <!-- 7. Ways to get it -->
+  <section class="scene" id="s8">
+    <div class="center" style="position:absolute;top:96px;left:0;right:0">
+      <div class="h" id="s8h" style="font-size:92px" data-t="o0"></div>
+      <div class="sub" id="s8s" style="font-size:36px;margin-top:16px" data-t="o00"></div>
+    </div>
+    <div class="plan"><b>1</b><h3 data-t="o1"></h3><p data-t="o1d"></p><ul><li data-t="o1a"></li><li data-t="o1b"></li></ul></div>
+    <div class="plan"><b>2</b><h3 data-t="o2"></h3><p data-t="o2d"></p><ul><li data-t="o2a"></li><li data-t="o2b"></li></ul></div>
+    <div class="plan"><b>3</b><h3 data-t="o3"></h3><p data-t="o3d"></p><ul><li data-t="o3a"></li><li data-t="o3b"></li></ul></div>
+  </section>
+
+  <!-- 8. End card -->
+  <section class="scene center" id="s7">
+    <img id="s7logo" src="../public/brand/mark-exact.png" style="width:300px" />
+    <div class="h" id="s7a" dir="ltr" style="font-family:Geist;font-size:104px;margin-top:36px"><i>AUTO <span style="color:#4ea2ff">SYNEX</span></i> <span class="grad" style="font-weight:500">Booking OS</span></div>
+    <div class="sub" id="s7b" style="font-size:44px;margin-top:20px" data-t="e1"></div>
+    <div class="cta" id="s7c" style="margin-top:56px"><span data-t="e2"></span><span dir="ltr" style="opacity:.85;font-weight:500">autosynex.com</span></div>
+  </section>
+</div>
+
+<script>
+const AR = new URLSearchParams(location.search).get("lang") === "ar";
+const T = AR ? {
+  tag: "منصة الحجز الذكية", k1: "كل حجز.", k2: "كل نشاط.", k3: "منصة واحدة.",
+  d1: "نشاطك كله أمامك.", d2: "مواعيد اليوم والإيرادات والفريق في لوحة تحكم واحدة.", d3: "تقويم مباشر", d4: "إدارة الفريق والخدمات", d5: "تحليلات فورية",
+  p1: "حجز في أقل من دقيقة.", p2: "اختر الخدمة", p3: "اختر الوقت", p4: "تأكيد", p5: "تم الحجز!",
+  i0: "مصممة لكل القطاعات", i1: "العيادات", i2: "صالونات التجميل", i3: "أكاديميات التدريب", i4: "استوديوهات التصوير",
+  b1: "وضع فاتح وداكن، من اليمين إلى اليسار بإتقان",
+  o0: "اختر ما يناسب نشاطك", o00: "ثلاث طرق للحصول على المنصة",
+  o1: "اشتراك", o1d: "ابدأ اليوم بخطة شهرية جاهزة.", o1a: "جاهز خلال دقائق", o1b: "التحديثات مشمولة",
+  o2: "تخصيص", o2d: "نصممه على هويتك وطريقة عملك.", o2a: "شعارك وألوانك", o2b: "خدماتك وقواعدك",
+  o3: "نظام خاص كامل", o3d: "منصة مستقلة تُبنى خصيصاً لك.", o3a: "نطاقك وبياناتك", o3b: "مزايا حسب الطلب", e1: "نحو غدٍ أفضل", e2: "اطلب عرضاً تجريبياً",
+} : {
+  tag: "SMART AUTOMATION", k1: "Every booking.", k2: "Every business.", k3: "One platform.",
+  d1: "Your whole business, live.", d2: "Today's appointments, revenue and team in one dashboard.", d3: "Live calendar", d4: "Team and services", d5: "Instant analytics",
+  p1: "Booked in under a minute.", p2: "Choose a service", p3: "Pick a time", p4: "Confirm", p5: "You're booked!",
+  i0: "Built for every industry", i1: "Clinics", i2: "Beauty salons", i3: "Training academies", i4: "Photo studios",
+  b1: "Light and dark. True right-to-left.",
+  o0: "Choose what fits your business", o00: "Three ways to get the platform",
+  o1: "Subscription", o1d: "Start today on a ready monthly plan.", o1a: "Live in minutes", o1b: "Updates included",
+  o2: "Customization", o2d: "Tailored to your brand and workflow.", o2a: "Your logo and colours", o2b: "Your services and rules",
+  o3: "Your own full system", o3d: "A complete private platform, built for you.", o3a: "Your domain and data", o3b: "Features made to order", e1: "Optimizing Tomorrow", e2: "Book a demo",
+};
+document.documentElement.lang = AR ? "ar" : "en";
+document.documentElement.dir = AR ? "rtl" : "ltr";
+document.querySelectorAll("[data-t]").forEach((el) => (el.textContent = T[el.dataset.t]));
+document.querySelectorAll("[data-img]").forEach((el) => (el.src = `assets/${el.dataset.img === "dash" ? "dash-light" : "phone"}-${AR ? "ar" : "en"}.jpg`));
+if (AR) { document.getElementById("s1sub").style.letterSpacing = "0"; }
+
+// Deterministic star field
+const stars = document.getElementById("stars"); let seed = 7;
+const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const starEls = Array.from({ length: 70 }, () => { const e = document.createElement("i"); e.className = "star"; e.dataset.x = rnd() * 1920; e.dataset.y = rnd() * 1080; e.dataset.s = 0.3 + rnd() * 0.9; e.dataset.p = rnd() * 6.28; stars.appendChild(e); return e; });
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 4);           // ease-out quart
+const eio = (x) => (x < 0.5 ? 8 * x ** 4 : 1 - Math.pow(-2 * x + 2, 4) / 2);
+const back = (x) => { const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+const $ = (id) => document.getElementById(id);
+const all = (sel) => [...document.querySelectorAll(sel)];
+const set = (el, o) => { for (const k in o) el.style[k] = o[k]; };
+const DIR = AR ? -1 : 1;
+
+const SCENES = [["s1", 0, 3.5], ["s2", 3.5, 7.3], ["s3", 7.3, 12.4], ["s4", 12.4, 17], ["s5", 17, 21.2], ["s6", 21.2, 24.6], ["s8", 24.6, 30.8], ["s7", 30.8, 35.5]];
+window.DURATION = 35.5;
+
+window.seek = (t) => {
+  // background
+  set($("grid"), { transform: `translate(${-t * 6}px, ${-t * 4}px)` });
+  starEls.forEach((e) => set(e, { transform: `translate(${+e.dataset.x - t * 9 * e.dataset.s}px, ${+e.dataset.y}px) scale(${e.dataset.s})`, opacity: 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(t * 1.6 + +e.dataset.p)) }));
+  const flash = Math.max(...SCENES.map(([, a]) => 1 - clamp(Math.abs(t - a) / 0.45)));
+  set($("streak"), { opacity: 0.25 + flash * 0.75, transform: `translateY(${lerp(-40, 40, (Math.sin(t * 0.25) + 1) / 2)}px) scaleX(${0.55 + flash * 0.6}) rotate(-4deg)` });
+
+  for (const [id, a, b] of SCENES) {
+    const el = $(id); const inn = eo(prog(t, a, a + 0.5)); const out = id === "s7" ? 0 : eio(prog(t, b - 0.4, b));
+    const vis = t >= a - 0.01 && t < b + 0.01;
+    set(el, { opacity: vis ? inn * (1 - out) : 0, transform: `scale(${lerp(1, 1.06, out)})`, visibility: vis ? "visible" : "hidden" });
+  }
+
+  // 1 logo
+  { const p = eo(prog(t, 0.15, 1.3));
+    set($("s1logo"), { opacity: p, transform: `scale(${lerp(0.72, 1, p)})`, filter: `blur(${lerp(18, 0, p)}px) drop-shadow(0 0 ${lerp(0, 60, p)}px rgba(92,200,255,.45))` });
+    const w = eo(prog(t, 0.9, 1.9)); set($("s1word"), { opacity: w, letterSpacing: `${lerp(0.3, 0.02, w)}em`, transform: `translateY(${lerp(30, 0, w)}px)` });
+    const s = eo(prog(t, 1.5, 2.3)); set($("s1sub"), { opacity: s * 0.9, transform: `translateY(${lerp(20, 0, s)}px)` }); }
+
+  // 2 kinetic lines
+  all("#s2 .l").forEach((el, i) => { const p = eo(prog(t, 3.7 + i * 0.75, 4.5 + i * 0.75)); set(el, { transform: `translateY(${lerp(110, 0, p)}%)`, opacity: p }); });
+
+  // 3 dashboard
+  { all("#s3 .a").forEach((el, i) => { const p = eo(prog(t, 7.7 + i * 0.28, 8.5 + i * 0.28)); set(el, { opacity: p, transform: `translateX(${lerp(-50 * DIR, 0, p)}px)` }); });
+    all("#s3 .side").forEach((el) => set(el, AR ? { right: "110px", left: "auto" } : { left: "110px", right: "auto" }));
+    const p = eo(prog(t, 7.5, 9.2)); const drift = prog(t, 7.5, 12.4);
+    set($("s3frame"), { [AR ? "left" : "right"]: "-190px", [AR ? "right" : "left"]: "auto", opacity: p, transform: `perspective(2200px) rotateY(${lerp(-26, -10, p) * DIR}deg) rotateX(${lerp(14, 4, p)}deg) translateY(${lerp(160, 0, p)}px) scale(${lerp(0.94, 1.03, drift)})` }); }
+
+  // 4 phone
+  { const p = eo(prog(t, 12.6, 14)); const drift = prog(t, 12.6, 17);
+    set($("s4phone"), { [AR ? "right" : "left"]: "190px", [AR ? "left" : "right"]: "auto", opacity: p, transform: `translateY(${lerp(240, -30 * drift, p)}px) rotate(${lerp(-10, -4, p) * DIR}deg)` });
+    all("#s4 .side").forEach((el) => set(el, AR ? { right: "760px", left: "auto" } : { left: "760px", right: "auto" }));
+    all("#s4 .a").forEach((el) => { const q = eo(prog(t, 12.9, 13.8)); set(el, { opacity: q, transform: `translateY(${lerp(50, 0, q)}px)` }); });
+    all("#s4 .st").forEach((el, i) => { const q = back(prog(t, 13.7 + i * 0.5, 14.2 + i * 0.5)); const on = t > 14.1 + i * 0.5; set(el, { opacity: clamp(q), transform: `scale(${lerp(0.7, 1, q)})`, background: on ? "rgba(47,107,255,.28)" : "rgba(255,255,255,.07)", borderColor: on ? "rgba(92,200,255,.7)" : "rgba(255,255,255,.14)" }); });
+    const k = back(prog(t, 15.3, 15.9)); set($("s4ok"), { opacity: clamp(k), transform: `scale(${lerp(0.6, 1, k)})`, transformOrigin: AR ? "right center" : "left center" }); }
+
+  // 5 industries
+  { const h = eo(prog(t, 17.2, 18)); set($("s5h"), { opacity: h, transform: `translateY(${lerp(40, 0, h)}px)` });
+    all("#s5 .card").forEach((el, i) => { const idx = AR ? 3 - i : i; const p = eo(prog(t, 17.5 + i * 0.22, 18.6 + i * 0.22)); const drift = prog(t, 17.5, 21.2);
+      set(el, { left: `${130 + idx * 420}px`, top: "300px", opacity: p, transform: `translateY(${lerp(220, (i % 2 ? 26 : -14) - drift * 18, p)}px) rotate(${lerp((i - 1.5) * 5, (i - 1.5) * 1.2, p)}deg)` });
+      el.querySelector("img").style.transform = `scale(${lerp(1.18, 1.04, drift)})`; }); }
+
+  // 6 wipe: dark Arabic → light English
+  { const p = eo(prog(t, 21.4, 22.4)); set($("s6frame"), { opacity: p, transform: `translateY(${lerp(120, 0, p)}px) scale(${lerp(0.96, 1, p)})` });
+    const w = eio(prog(t, 22.3, 23.9)); const x = lerp(115, -15, w);
+    set($("s6top"), { clipPath: `polygon(0 0, ${x}% 0, ${x - 14}% 100%, 0 100%)` });
+    const h = eo(prog(t, 21.5, 22.3)); set($("s6h"), { opacity: h, transform: `translateY(${lerp(30, 0, h)}px)` }); set($("s6s"), { opacity: h * 0.9 }); }
+
+  // 7 plans: cards rise in order, then a highlight steps through 1 → 2 → 3
+  { const h = eo(prog(t, 24.8, 25.6)); set($("s8h"), { opacity: h, transform: `translateY(${lerp(40, 0, h)}px)` }); set($("s8s"), { opacity: h * 0.9 });
+    all("#s8 .plan").forEach((el, i) => { const idx = AR ? 2 - i : i; const p = eo(prog(t, 25.3 + i * 0.3, 26.3 + i * 0.3));
+      const focus = clamp(1 - Math.abs(t - (27.3 + i * 1.0)) / 0.55);
+      set(el, { left: `${130 + idx * 570}px`, opacity: p, transform: `translateY(${lerp(140, -14 * focus, p)}px) scale(${1 + 0.035 * focus})`,
+        borderColor: `rgba(${lerp(255, 92, focus)},${lerp(255, 200, focus)},255,${lerp(0.14, 0.9, focus)})`,
+        boxShadow: `0 40px 100px -30px rgba(0,0,0,.7), 0 0 ${80 * focus}px rgba(47,107,255,${0.55 * focus})` }); }); }
+
+  // 8 end card
+  { const p = eo(prog(t, 31.0, 32.1)); set($("s7logo"), { opacity: p, transform: `scale(${lerp(0.7, 1, p)})`, filter: `drop-shadow(0 0 ${lerp(0, 70, p)}px rgba(92,200,255,.5))` });
+    const a = eo(prog(t, 31.5, 32.4)); set($("s7a"), { opacity: a, transform: `translateY(${lerp(40, 0, a)}px)` });
+    const b = eo(prog(t, 32.0, 32.8)); set($("s7b"), { opacity: b * 0.9, transform: `translateY(${lerp(30, 0, b)}px)` });
+    const c = back(prog(t, 32.5, 33.2)); const pulse = 1 + 0.025 * Math.sin((t - 33.2) * 3.2) * (t > 33.2 ? 1 : 0); set($("s7c"), { opacity: clamp(c), transform: `scale(${lerp(0.7, 1, c) * pulse})` }); }
+};
+window.ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode().catch(() => {}))]).then(() => { seek(0); return true; });
+</script>
+</body>
+</html>
