@@ -10,6 +10,17 @@ A 35-second, 1080p promo for Auto Synex Booking OS, in English and Arabic.
 | `assets/` | Real screenshots of the Genesis demo used in the video |
 | `make-music.sh` | Generates `music.wav`, a synthesised ambient bed (ffmpeg only, no third-party audio) |
 
+## High-energy cut
+
+`promo-hype.html` is a faster 30-second edit at 120 BPM: cuts land on the beat, phrases slam in
+one at a time, and impacts add a short shake and a soft flash (main cuts only). Its music comes
+from `make-music-hype.sh` (kick, off-beat bass, hats, clap, arpeggio, risers; ffmpeg only).
+
+```bash
+bash promo/make-music-hype.sh
+PROMO_HTML=promo-hype.html PROMO_AUDIO=promo/music-hype.wav node promo/render.cjs en promo/auto-synex-promo-hype-en.mp4
+```
+
 ## Re-render
 
 ```bash

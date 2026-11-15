@@ -14,7 +14,8 @@ const path = require("node:path");
   const FPS = 30;
   const browser = await chromium.launch();
   const page = await (await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 })).newPage();
-  await page.goto(`file://${path.join(__dirname, "promo.html")}?lang=${lang}`);
+  const html = process.env.PROMO_HTML || "promo.html";
+  await page.goto(`file://${path.join(__dirname, html)}?lang=${lang}`);
   await page.evaluate(() => window.ready);
   const duration = await page.evaluate(() => window.DURATION);
 

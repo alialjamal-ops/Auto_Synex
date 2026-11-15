@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Auto Synex Booking OS - high-energy promo</title>
+<style>
+  @font-face { font-family: Geist; font-weight: 400; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Regular.woff2"); }
+  @font-face { font-family: Geist; font-weight: 500; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Medium.woff2"); }
+  @font-face { font-family: Geist; font-weight: 600; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-SemiBold.woff2"); }
+  @font-face { font-family: Geist; font-weight: 700; src: url("../node_modules/geist/dist/fonts/geist-sans/Geist-Bold.woff2"); }
+  @font-face { font-family: Plex; font-weight: 400; src: url("../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2"); }
+  @font-face { font-family: Plex; font-weight: 600; src: url("../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-600-normal.woff2"); }
+  @font-face { font-family: Plex; font-weight: 700; src: url("../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-700-normal.woff2"); }
+  :root { --blue: #2f6bff; --sky: #5cc8ff; --ink: #050a18; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ink); }
+  body { font-family: Geist, Plex, sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+  html[lang="ar"] body { font-family: Plex, Geist, sans-serif; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+  .bg { position: absolute; inset: 0; background:
+      radial-gradient(900px 520px at 72% 38%, rgba(47,107,255,.42), transparent 70%),
+      radial-gradient(700px 500px at 18% 85%, rgba(92,200,255,.14), transparent 70%),
+      linear-gradient(180deg, #070d20, #040814); }
+  .grid { position: absolute; inset: -60px; background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(70% 70% at 50% 40%, #000, transparent); }
+  .streak { position: absolute; left: -10%; top: 50%; width: 120%; height: 3px; background: linear-gradient(90deg, transparent, var(--sky) 40%, #fff 50%, var(--sky) 60%, transparent); filter: blur(1.5px); box-shadow: 0 0 60px 14px rgba(92,200,255,.35); transform-origin: center; }
+  .star { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #bfe0ff; }
+  .scene { position: absolute; inset: 0; opacity: 0; will-change: transform, opacity; }
+  .center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .h { font-weight: 700; letter-spacing: -0.035em; line-height: 1.04; }
+  html[lang="ar"] .h { letter-spacing: 0; line-height: 1.25; }
+  .grad { background: linear-gradient(92deg, #fff 0%, var(--sky) 55%, var(--blue) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: rgba(226,236,255,.72); font-weight: 400; }
+  .mask { overflow: hidden; padding: 0.08em 0; }
+  .frame { position: absolute; border-radius: 22px; background: #0d1530; padding: 12px; box-shadow: 0 60px 140px -30px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.12), 0 0 120px rgba(47,107,255,.25); }
+  .frame .dots { display: flex; gap: 8px; padding: 4px 8px 12px; }
+  .frame .dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.22); }
+  .frame img { display: block; width: 100%; border-radius: 12px; }
+  .phone { position: absolute; width: 400px; border-radius: 56px; border: 12px solid #0b1022; background: #0b1022; box-shadow: 0 60px 120px -20px rgba(0,0,0,.8), 0 0 0 2px rgba(255,255,255,.14), 0 0 100px rgba(47,107,255,.3); overflow: hidden; }
+  .phone img { display: block; width: 100%; }
+  .chip { display: inline-flex; align-items: center; gap: 14px; padding: 16px 26px; border-radius: 999px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); font-size: 30px; font-weight: 500; backdrop-filter: blur(8px); }
+  .chip b { display: inline-flex; width: 34px; height: 34px; border-radius: 50%; align-items: center; justify-content: center; background: var(--blue); font-size: 18px; }
+  .card { position: absolute; width: 400px; height: 540px; border-radius: 28px; overflow: hidden; box-shadow: 0 50px 100px -30px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.12); }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card span { position: absolute; inset: auto 0 0 0; padding: 90px 28px 26px; font-size: 34px; font-weight: 600; background: linear-gradient(transparent, rgba(4,8,20,.92)); }
+  .cta { display: inline-flex; align-items: center; gap: 14px; padding: 22px 44px; border-radius: 999px; background: linear-gradient(92deg, var(--blue), #4d8dff); font-size: 36px; font-weight: 600; box-shadow: 0 20px 60px rgba(47,107,255,.5); }
+  .plan { position: absolute; top: 360px; width: 520px; height: 520px; padding: 44px; border-radius: 32px; background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03)); border: 1.5px solid rgba(255,255,255,.14); box-shadow: 0 40px 100px -30px rgba(0,0,0,.7); }
+  .plan b { display: flex; width: 68px; height: 68px; border-radius: 20px; align-items: center; justify-content: center; font-size: 34px; background: linear-gradient(135deg, var(--sky), var(--blue)); box-shadow: 0 12px 30px rgba(47,107,255,.45); }
+  .plan h3 { font-size: 52px; font-weight: 700; letter-spacing: -0.02em; margin-top: 30px; line-height: 1.15; }
+  html[lang="ar"] .plan h3 { letter-spacing: 0; }
+  .plan p { font-size: 30px; line-height: 1.45; color: rgba(226,236,255,.75); margin-top: 16px; }
+  .plan ul { list-style: none; padding: 0; margin-top: 30px; display: grid; gap: 14px; }
+  .plan li { font-size: 28px; font-weight: 500; display: flex; align-items: center; gap: 14px; }
+  .plan li::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--sky); box-shadow: 0 0 14px var(--sky); flex: none; }
+  .check { width: 120px; height: 120px; border-radius: 50%; background: #12b76a; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 16px rgba(18,183,106,.18), 0 20px 60px rgba(18,183,106,.45); }
+  .word { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 230px; font-weight: 700; letter-spacing: -0.045em; line-height: 1; padding: 0 80px; }
+  html[lang="ar"] .word { letter-spacing: 0; font-size: 210px; }
+  #flash { position: absolute; inset: 0; background: #cfe6ff; opacity: 0; pointer-events: none; mix-blend-mode: screen; }
+  .line { position: absolute; height: 2px; width: 520px; background: linear-gradient(90deg, transparent, rgba(140,200,255,.9), transparent); }
+  #cam { position: absolute; inset: 0; will-change: transform; }
+  .big { font-size: 120px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg"></div>
+  <div class="grid" id="grid"></div>
+  <div id="lines"></div>
+  <div class="streak" id="streak"></div>
+  <div id="cam">
+    <section class="scene center" id="a">
+      <img id="alogo" src="../public/brand/mark-exact.png" style="width:440px" />
+      <div id="aword" class="h" dir="ltr" style="font-family:Geist;font-size:110px;margin-top:30px;font-style:italic"><span style="background:linear-gradient(180deg,#fff,#aab3bf);-webkit-background-clip:text;color:transparent;padding:0 .06em">AUTO</span> <span style="background:linear-gradient(180deg,#63bdff,#1f6fe0);-webkit-background-clip:text;color:transparent;padding:0 .06em">SYNEX</span></div>
+      <div id="asub" class="sub" style="font-size:36px;margin-top:14px;letter-spacing:.42em" data-t="tag"></div>
+    </section>
+    <section class="scene" id="b">
+      <div class="word w" data-t="k1"></div><div class="word w" data-t="k2"></div><div class="word w grad" data-t="k3"></div>
+    </section>
+    <section class="scene" id="c">
+      <div class="side" style="position:absolute;top:170px;width:660px">
+        <div class="h big" id="ch" data-t="d1" style="font-size:96px"></div>
+        <div style="display:grid;gap:20px;margin-top:54px;justify-items:start">
+          <div class="chip cc" style="font-size:36px;padding:20px 32px"><b>✓</b><span data-t="d3"></span></div>
+          <div class="chip cc" style="font-size:36px;padding:20px 32px"><b>✓</b><span data-t="d4"></span></div>
+          <div class="chip cc" style="font-size:36px;padding:20px 32px"><b>✓</b><span data-t="d5"></span></div>
+        </div>
+      </div>
+      <div class="frame" id="cframe" style="width:1240px;top:150px"><div class="dots"><i></i><i></i><i></i></div><img data-img="dash" /></div>
+    </section>
+    <section class="scene" id="d">
+      <div class="phone" id="dphone" style="top:110px"><img data-img="phone" /></div>
+      <div class="side" style="position:absolute;top:210px;width:920px">
+        <div class="h" id="dh" style="font-size:112px" data-t="p1"></div>
+        <div style="display:flex;gap:18px;margin-top:56px;flex-wrap:wrap">
+          <div class="chip ds" style="font-size:34px"><b>1</b><span data-t="p2"></span></div>
+          <div class="chip ds" style="font-size:34px"><b>2</b><span data-t="p3"></span></div>
+          <div class="chip ds" style="font-size:34px"><b>3</b><span data-t="p4"></span></div>
+        </div>
+        <div id="dok" style="display:flex;align-items:center;gap:28px;margin-top:64px">
+          <div class="check"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <div class="h" style="font-size:72px" data-t="p5"></div>
+        </div>
+      </div>
+    </section>
+    <section class="scene" id="e">
+      <div class="h center" id="eh" style="position:absolute;top:84px;left:0;right:0;font-size:100px" data-t="i0"></div>
+      <div class="card"><img src="../public/media/clinic/card.webp" /><span data-t="i1"></span></div>
+      <div class="card"><img src="../public/media/salon/card-beauty.webp" /><span data-t="i2"></span></div>
+      <div class="card"><img src="../public/media/academy/card.webp" /><span data-t="i3"></span></div>
+      <div class="card"><img src="../public/media/studio/card.webp" /><span data-t="i4"></span></div>
+    </section>
+    <section class="scene" id="f">
+      <div class="center" style="position:absolute;top:70px;left:0;right:0">
+        <div class="h" id="fh" style="font-size:96px"><span>العربية</span> <span class="grad">+</span> <span style="font-family:Geist">English</span></div>
+        <div class="sub" style="font-size:38px;margin-top:14px" data-t="b1"></div>
+      </div>
+      <div class="frame" id="fframe" style="width:1240px;left:340px;top:300px"><div class="dots"><i></i><i></i><i></i></div>
+        <div style="position:relative"><img src="assets/dash-light-en.jpg" /><img id="ftop" src="assets/dash-dark-ar.jpg" style="position:absolute;inset:0" /></div>
+      </div>
+    </section>
+    <section class="scene" id="g">
+      <div class="center" style="position:absolute;top:96px;left:0;right:0">
+        <div class="h" id="gh" style="font-size:100px" data-t="o0"></div>
+        <div class="sub" style="font-size:38px;margin-top:16px" data-t="o00"></div>
+      </div>
+      <div class="plan"><b>1</b><h3 data-t="o1"></h3><p data-t="o1d"></p><ul><li data-t="o1a"></li><li data-t="o1b"></li></ul></div>
+      <div class="plan"><b>2</b><h3 data-t="o2"></h3><p data-t="o2d"></p><ul><li data-t="o2a"></li><li data-t="o2b"></li></ul></div>
+      <div class="plan"><b>3</b><h3 data-t="o3"></h3><p data-t="o3d"></p><ul><li data-t="o3a"></li><li data-t="o3b"></li></ul></div>
+    </section>
+    <section class="scene center" id="h">
+      <img id="hlogo" src="../public/brand/mark-exact.png" style="width:320px" />
+      <div class="h" id="ha" dir="ltr" style="font-family:Geist;font-size:112px;margin-top:36px"><i>AUTO <span style="color:#4ea2ff">SYNEX</span></i> <span class="grad" style="font-weight:500">Booking OS</span></div>
+      <div class="sub" id="hb" style="font-size:46px;margin-top:20px" data-t="e1"></div>
+      <div class="cta" id="hc" style="margin-top:56px;font-size:40px"><span data-t="e2"></span><span dir="ltr" style="opacity:.85;font-weight:500">autosynex.com</span></div>
+    </section>
+  </div>
+  <div id="flash"></div>
+</div>
+<script>
+const AR = new URLSearchParams(location.search).get("lang") === "ar";
+const T = AR ? {
+  tag: "منصة الحجز الذكية", k1: "كل حجز.", k2: "كل نشاط.", k3: "منصة واحدة.",
+  d1: "نشاطك كله أمامك.", d2: "مواعيد اليوم والإيرادات والفريق في لوحة تحكم واحدة.", d3: "تقويم مباشر", d4: "إدارة الفريق والخدمات", d5: "تحليلات فورية",
+  p1: "حجز في أقل من دقيقة.", p2: "اختر الخدمة", p3: "اختر الوقت", p4: "تأكيد", p5: "تم الحجز!",
+  i0: "مصممة لكل القطاعات", i1: "العيادات", i2: "صالونات التجميل", i3: "أكاديميات التدريب", i4: "استوديوهات التصوير",
+  b1: "وضع فاتح وداكن، من اليمين إلى اليسار بإتقان",
+  o0: "اختر ما يناسب نشاطك", o00: "ثلاث طرق للحصول على المنصة",
+  o1: "اشتراك", o1d: "ابدأ اليوم بخطة شهرية جاهزة.", o1a: "جاهز خلال دقائق", o1b: "التحديثات مشمولة",
+  o2: "تخصيص", o2d: "نصممه على هويتك وطريقة عملك.", o2a: "شعارك وألوانك", o2b: "خدماتك وقواعدك",
+  o3: "نظام خاص كامل", o3d: "منصة مستقلة تُبنى خصيصاً لك.", o3a: "نطاقك وبياناتك", o3b: "مزايا حسب الطلب", e1: "نحو غدٍ أفضل", e2: "اطلب عرضاً تجريبياً",
+} : {
+  tag: "SMART AUTOMATION", k1: "Every booking.", k2: "Every business.", k3: "One platform.",
+  d1: "Your whole business, live.", d2: "Today's appointments, revenue and team in one dashboard.", d3: "Live calendar", d4: "Team and services", d5: "Instant analytics",
+  p1: "Booked in under a minute.", p2: "Choose a service", p3: "Pick a time", p4: "Confirm", p5: "You're booked!",
+  i0: "Built for every industry", i1: "Clinics", i2: "Beauty salons", i3: "Training academies", i4: "Photo studios",
+  b1: "Light and dark. True right-to-left.",
+  o0: "Choose what fits your business", o00: "Three ways to get the platform",
+  o1: "Subscription", o1d: "Start today on a ready monthly plan.", o1a: "Live in minutes", o1b: "Updates included",
+  o2: "Customization", o2d: "Tailored to your brand and workflow.", o2a: "Your logo and colours", o2b: "Your services and rules",
+  o3: "Your own full system", o3d: "A complete private platform, built for you.", o3a: "Your domain and data", o3b: "Features made to order", e1: "Optimizing Tomorrow", e2: "Book a demo",
+};
+document.documentElement.lang = AR ? "ar" : "en";
+document.documentElement.dir = AR ? "rtl" : "ltr";
+document.querySelectorAll("[data-t]").forEach((el) => (el.textContent = T[el.dataset.t]));
+document.querySelectorAll("[data-img]").forEach((el) => (el.src = `assets/${el.dataset.img === "dash" ? "dash-light" : "phone"}-${AR ? "ar" : "en"}.jpg`));
+
+
+if (AR) document.getElementById("asub").style.letterSpacing = "0";
+let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const lines = Array.from({ length: 16 }, () => { const e = document.createElement("i"); e.className = "line"; e.dataset.y = rnd() * 1080; e.dataset.v = 900 + rnd() * 1600; e.dataset.o = rnd() * 3000; e.dataset.a = 0.05 + rnd() * 0.16; document.getElementById("lines").appendChild(e); return e; });
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 5);
+const eio = (x) => (x < 0.5 ? 8 * x ** 4 : 1 - Math.pow(-2 * x + 2, 4) / 2);
+const back = (x) => { const c = 2.4; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+const $ = (id) => document.getElementById(id);
+const all = (sel) => [...document.querySelectorAll(sel)];
+const set = (el, o) => { for (const k in o) el.style[k] = o[k]; };
+const DIR = AR ? -1 : 1;
+const BEAT = 0.5;                                   // 120 BPM
+const SCENES = [["a", 0, 2], ["b", 2, 5], ["c", 5, 9], ["d", 9, 13], ["e", 13, 17], ["f", 17, 20], ["g", 20, 26], ["h", 26, 30.5]];
+const HITS = [1, 2, 3, 4, 5, 9, 11.5, 13, 13.5, 14, 14.5, 17, 20, 21.5, 23, 24.5, 26]; // impacts (shake + zoom)
+const CUTS = [1, 2, 5, 9, 13, 17, 20, 26];                                             // soft flash only on main cuts
+window.DURATION = 30.5;
+// pop: overshoot scale-in that lands exactly on its beat
+const pop = (t, at, d = 0.32) => { const p = prog(t, at, at + d); return { o: clamp(p * 4), s: lerp(0.3, 1, back(p)) }; };
+
+window.seek = (t) => {
+  const drums = t >= 2 && t < 28;
+  const pulse = drums ? Math.exp(-7 * (t % BEAT)) : 0;
+  const hit = Math.max(0, ...HITS.map((c) => (t >= c ? Math.exp(-9 * (t - c)) : 0)));
+  const shake = hit * 7;
+  set($("cam"), { transform: `translate(${Math.sin(t * 91) * shake}px, ${Math.cos(t * 77) * shake}px) scale(${1 + 0.012 * pulse + 0.02 * hit})` });
+  const cut = Math.max(0, ...CUTS.map((c) => (t >= c ? Math.exp(-11 * (t - c)) : 0)));
+  set($("flash"), { opacity: cut * 0.3 });
+  set($("grid"), { transform: `translate(${-t * 30}px, ${-t * 14}px) scale(${1 + 0.03 * pulse})` });
+  lines.forEach((e) => { const x = ((+e.dataset.o + t * e.dataset.v) % 3000) - 600; set(e, { transform: `translate(${AR ? 1920 - x : x}px, ${e.dataset.y}px)`, opacity: e.dataset.a * (0.6 + pulse) }); });
+  set($("streak"), { opacity: 0.3 + 0.7 * Math.max(hit, pulse * 0.5), transform: `translateY(${lerp(-60, 60, (Math.sin(t * 0.5) + 1) / 2)}px) scaleX(${0.6 + hit * 0.7}) rotate(-4deg)` });
+
+  for (const [id, a, b] of SCENES) {
+    const inn = eo(prog(t, a, a + 0.22)); const out = id === "h" ? 0 : prog(t, b - 0.14, b);
+    const vis = t >= a && t < b;
+    set($(id), { opacity: vis ? inn * (1 - out) : 0, transform: `scale(${lerp(1.22, 1, inn) * lerp(1, 0.86, out)})`, filter: `blur(${lerp(14, 0, inn) + out * 10}px)`, visibility: vis ? "visible" : "hidden" });
+  }
+
+  // A: logo slams in on beat 2 (t=1.0)
+  { const p = eo(prog(t, 0.55, 1.0)); set($("alogo"), { opacity: clamp(p * 3), transform: `scale(${lerp(3.2, 1, p)})`, filter: `blur(${lerp(30, 0, p)}px) drop-shadow(0 0 ${40 + 60 * hit}px rgba(92,200,255,.6))` });
+    const w = pop(t, 1.2); set($("aword"), { opacity: w.o, transform: `scale(${w.s})` });
+    const s = eo(prog(t, 1.45, 1.8)); set($("asub"), { opacity: s * 0.9, transform: `translateY(${lerp(24, 0, s)}px)` }); }
+
+  // B: one phrase per bar-beat, each slams and is replaced
+  all("#b .w").forEach((el, i) => { const a = 2 + i; const p = eo(prog(t, a, a + 0.28)); const gone = i < 2 ? prog(t, a + 0.9, a + 1.0) : 0; const live = t >= a && t < a + 1;
+    set(el, { opacity: live ? clamp(p * 3) * (1 - gone) : 0, transform: `scale(${lerp(2.1, 1, p) + 0.03 * prog(t, a + 0.28, a + 1)}) rotate(${lerp(i % 2 ? 4 : -4, 0, p)}deg)` }); });
+
+  // C: dashboard
+  { all("#c .side").forEach((el) => set(el, AR ? { right: "100px", left: "auto" } : { left: "100px", right: "auto" }));
+    const h = eo(prog(t, 5.05, 5.4)); set($("ch"), { opacity: h, transform: `translateX(${lerp(-120 * DIR, 0, h)}px)` });
+    all("#c .cc").forEach((el, i) => { const k = pop(t, 6 + i * 0.5); set(el, { opacity: k.o, transform: `scale(${k.s})`, transformOrigin: AR ? "right center" : "left center" }); });
+    const p = eo(prog(t, 5, 5.6)); const drift = prog(t, 5, 9);
+    set($("cframe"), { [AR ? "left" : "right"]: "-230px", [AR ? "right" : "left"]: "auto", opacity: clamp(p * 2), transform: `perspective(2000px) rotateY(${lerp(-48, -11, p) * DIR}deg) rotateX(${lerp(22, 4, p)}deg) translate(${lerp(500 * DIR, 0, p)}px, ${lerp(120, 0, p)}px) scale(${lerp(0.96, 1.08, drift) + 0.01 * pulse})` }); }
+
+  // D: phone
+  { const p = eo(prog(t, 9, 9.55)); const drift = prog(t, 9, 13);
+    set($("dphone"), { [AR ? "right" : "left"]: "200px", [AR ? "left" : "right"]: "auto", opacity: clamp(p * 2), transform: `translateY(${lerp(700, -40 * drift, p)}px) rotate(${lerp(-24, -5, p) * DIR}deg) scale(${1 + 0.012 * pulse})` });
+    all("#d .side").forEach((el) => set(el, AR ? { right: "770px", left: "auto" } : { left: "770px", right: "auto" }));
+    const h = eo(prog(t, 9.1, 9.5)); set($("dh"), { opacity: h, transform: `translateY(${lerp(80, 0, h)}px)` });
+    all("#d .ds").forEach((el, i) => { const k = pop(t, 10 + i * 0.5); const on = t >= 10.3 + i * 0.5; set(el, { opacity: k.o, transform: `scale(${k.s})`, background: on ? "rgba(47,107,255,.32)" : "rgba(255,255,255,.07)", borderColor: on ? "rgba(92,200,255,.8)" : "rgba(255,255,255,.14)" }); });
+    const k = pop(t, 11.5, 0.4); set($("dok"), { opacity: k.o, transform: `scale(${k.s})`, transformOrigin: AR ? "right center" : "left center" }); }
+
+  // E: four cards, one per half-beat
+  { const h = eo(prog(t, 13, 13.3)); set($("eh"), { opacity: h, transform: `scale(${lerp(1.3, 1, h)})` });
+    all("#e .card").forEach((el, i) => { const idx = AR ? 3 - i : i; const a = 13 + i * 0.5; const p = eo(prog(t, a, a + 0.3)); const drift = prog(t, 13, 17);
+      set(el, { left: `${130 + idx * 420}px`, top: "300px", opacity: clamp(p * 3), transform: `translateY(${lerp(-520, (i % 2 ? 24 : -14) - 20 * drift, p)}px) rotate(${lerp((i - 1.5) * 14, (i - 1.5) * 1.4, p)}deg) scale(${lerp(1.25, 1, p) + 0.012 * pulse})` });
+      el.querySelector("img").style.transform = `scale(${lerp(1.25, 1.04, drift)})`; }); }
+
+  // F: Arabic dark ↔ English light wipe (there and back)
+  { const p = eo(prog(t, 17, 17.45)); set($("fframe"), { opacity: clamp(p * 2), transform: `translateY(${lerp(300, 0, p)}px) scale(${lerp(0.9, 1, p) + 0.008 * pulse})` });
+    const w = eio(prog(t, 17.6, 18.5)) - eio(prog(t, 18.9, 19.7)) * 0.55; const x = lerp(115, -15, w);
+    set($("ftop"), { clipPath: `polygon(0 0, ${x}% 0, ${x - 14}% 100%, 0 100%)` });
+    const h = eo(prog(t, 17.05, 17.4)); set($("fh"), { opacity: h, transform: `scale(${lerp(1.3, 1, h)})` }); }
+
+  // G: three ways to get it, each spotlighted for three beats
+  { const h = eo(prog(t, 20, 20.35)); set($("gh"), { opacity: h, transform: `scale(${lerp(1.3, 1, h)})` });
+    all("#g .plan").forEach((el, i) => { const idx = AR ? 2 - i : i; const k = pop(t, 20.4 + i * 0.25, 0.4); const fa = 21.5 + i * 1.5;
+      const focus = clamp(Math.min(prog(t, fa, fa + 0.18), 1 - prog(t, fa + 1.3, fa + 1.5)));
+      set(el, { left: `${130 + idx * 570}px`, opacity: k.o * lerp(0.55, 1, Math.max(focus, t < 21.5 || t > 26 ? 1 : 0)), transform: `translateY(${-22 * focus}px) scale(${k.s * (1 + 0.06 * focus + 0.006 * pulse)})`,
+        borderColor: `rgba(${lerp(255, 92, focus)},${lerp(255, 200, focus)},255,${lerp(0.14, 1, focus)})`,
+        boxShadow: `0 40px 100px -30px rgba(0,0,0,.7), 0 0 ${110 * focus}px rgba(47,107,255,${0.7 * focus})` }); }); }
+
+  // H: end card, CTA beats with the music
+  { const p = eo(prog(t, 26, 26.35)); set($("hlogo"), { opacity: clamp(p * 3), transform: `scale(${lerp(2.6, 1, p)})`, filter: `drop-shadow(0 0 ${50 + 50 * pulse}px rgba(92,200,255,.6))` });
+    const a = pop(t, 26.5, 0.4); set($("ha"), { opacity: a.o, transform: `scale(${a.s})` });
+    const b = eo(prog(t, 27, 27.4)); set($("hb"), { opacity: b * 0.9, transform: `translateY(${lerp(30, 0, b)}px)` });
+    const c = pop(t, 27.5, 0.4); const beat = t > 27.9 ? 1 + 0.035 * Math.exp(-6 * ((t - 28) % 1 + (t < 28 ? 1 : 0))) : 1; set($("hc"), { opacity: c.o, transform: `scale(${c.s * beat})` }); }
+};
+window.ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode().catch(() => {}))]).then(() => { seek(0); return true; });
+</script>
+</body>
+</html>
