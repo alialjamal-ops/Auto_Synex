@@ -11,7 +11,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { industryIcons } from "@/config/industry-icons";
 import { listDemoTenants, type TenantSummary } from "@/data/tenant-directory";
-import { intlLocale } from "@/i18n/config";
 import { useI18n } from "@/i18n/provider";
 import { cn, hueStyle } from "@/lib/utils";
 import { CountUp, HeroVisual, Reveal, ThemeCompare } from "./motion-bits";
@@ -239,10 +238,10 @@ function TeamStack() {
 }
 
 function IndustryCard({ tenant }: { tenant: TenantSummary }) {
-  const { t, tx, locale } = useI18n();
+  const { t, tx } = useI18n();
   const Icon = industryIcons[tenant.id];
   const b = tenant.business;
-  const money = useMemo(() => new Intl.NumberFormat(intlLocale(locale), { style: "currency", currency: b.currency, maximumFractionDigits: 0 }), [locale, b.currency]);
+  const money = useMemo(() => new Intl.NumberFormat("en-US", { style: "currency", currency: b.currency, currencyDisplay: "narrowSymbol", maximumFractionDigits: 0 }), [b.currency]);
 
   return (
     <article style={hueStyle(b.hue)} className="lane group flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-xs transition-[box-shadow,transform] duration-500 hover:-translate-y-1 hover:shadow-lg">

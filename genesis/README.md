@@ -62,9 +62,9 @@ In the dashboard, press **Ctrl/⌘ + K** to search bookings, customers and pages
 
 | Industry | Business | Time zone / currency | Highlights |
 | --- | --- | --- | --- |
-| Clinic | Al Nakheel Medical Clinic | Asia/Dubai · AED | 5 doctors, 2 branches, 15-min slots |
-| Salon | Lumière Beauty Lounge | Asia/Dubai · AED | 5 stylists, 9 services with 45–180 min durations |
-| Academy | Nexus Training Academy | Asia/Riyadh · SAR | Group sessions with seat capacity, classrooms/labs, manual approval |
+| Clinic | Al Nakheel Medical Clinic | Asia/Dubai · USD | 5 doctors, 2 branches, 15-min slots |
+| Salon | Lumière Beauty Lounge | Asia/Dubai · USD | 5 stylists, 9 services with 45–180 min durations |
+| Academy | Nexus Training Academy | Asia/Riyadh · USD | Group sessions with seat capacity, classrooms/labs, manual approval |
 | Studio | Cedar Light Studio | Asia/Beirut (DST) · USD | Studios + lighting kits + drone as allocatable resources |
 
 ### Booking rules enforced

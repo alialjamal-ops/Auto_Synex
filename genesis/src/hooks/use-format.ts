@@ -23,8 +23,9 @@ export function useFormat(timeZone: string, currency: string) {
       }
       return f;
     };
-    const money = new Intl.NumberFormat(loc, { style: "currency", currency, maximumFractionDigits: 0 });
-    const compactMoney = new Intl.NumberFormat(loc, { style: "currency", currency, notation: "compact", maximumFractionDigits: 1 });
+    // Amounts use one Latin format ("$1,250") in both languages so RTL text never reorders the symbol.
+    const money = new Intl.NumberFormat("en-US", { style: "currency", currency, currencyDisplay: "narrowSymbol", maximumFractionDigits: 0 });
+    const compactMoney = new Intl.NumberFormat("en-US", { style: "currency", currency, currencyDisplay: "narrowSymbol", notation: "compact", maximumFractionDigits: 1 });
     const number = new Intl.NumberFormat(loc);
     const percent = new Intl.NumberFormat(loc, { style: "percent", maximumFractionDigits: 1 });
     const keyToDate = (key: DateKey) => zonedToInstant(key, "12:00", timeZone);
