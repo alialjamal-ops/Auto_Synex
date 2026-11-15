@@ -43,17 +43,20 @@ Requires Node 20+ (developed on Node 22).
 | --- | --- |
 | `/` | Demo Hub: choose an industry |
 | `/{industry}/book` | Public booking portal (6-step flow) |
-| `/{industry}/dashboard` | Overview: KPIs, 14-day trend, status mix, today's schedule, activity |
+| `/{industry}/manage` | Customer self-service: look up a booking by reference + phone/email, change the time or cancel within the free-cancellation window |
+| `/{industry}/dashboard` | Overview: KPIs with sparklines, 14-day trend, status mix, today's schedule, one-click confirmation of pending requests, activity |
 | `/{industry}/dashboard/calendar` | Day (per staff member), week and month views |
 | `/{industry}/dashboard/appointments` | Search, filters, details drawer, confirm / complete / no-show / reschedule / cancel |
 | `/{industry}/dashboard/customers` | Customer list, search, history drawer |
-| `/{industry}/dashboard/services` | Services by category, add/edit (React Hook Form + Zod) |
+| `/{industry}/dashboard/services` | Services by category, add/edit (React Hook Form + Zod), choose which team members deliver each service |
 | `/{industry}/dashboard/staff` | Team, rooms & equipment, weekly availability editor |
 | `/{industry}/dashboard/hours` | Business opening hours and closed dates |
 | `/{industry}/dashboard/settings` | Booking rules (slot interval, buffer, notice, window, auto-confirm…) |
 | `/{industry}/dashboard/analytics` | Revenue by service, utilisation, busiest days, channels |
 
 `{industry}` is one of `clinic`, `salon`, `academy`, `studio`.
+
+In the dashboard, press **Ctrl/⌘ + K** to search bookings, customers and pages.
 
 ### Demo businesses
 
@@ -115,7 +118,9 @@ genesis/
   server-side pagination and indexing.
 - Seeded customer names are fixed strings (a mix of Arabic and Latin script, as is
   typical for Gulf/Levant businesses). They are not translated when you switch language.
-- Staff ↔ service assignments are seeded and can't yet be edited in the UI.
-  Services, prices, durations, capacity, buffers, availability, opening hours,
-  closures and booking rules can be edited.
+- Team members themselves (names, photos) are seeded and can't yet be added or removed
+  in the UI. Services, staff assignments, prices, durations, capacity, buffers,
+  availability, opening hours, closures and booking rules can all be edited.
+- "Manage booking" verifies a customer by reference + phone/email only. A real
+  deployment should add a one-time code sent to that contact.
 - Times are always shown in the business time zone (by design), not the visitor's.

@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Clock, Globe, LayoutDashboard, MapPin, Phone, Zap } from "lucide-react";
+import { BadgeCheck, CalendarSearch, Clock, Globe, LayoutDashboard, MapPin, Phone, Zap } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
@@ -18,13 +18,22 @@ import { BookingFlow } from "./booking-flow";
 
 export function BookingPortal() {
   return (
+    <PortalFrame>
+      <BookingFlow />
+    </PortalFrame>
+  );
+}
+
+/** Shared public shell (header, business hero, footer) for customer-facing pages. */
+export function PortalFrame({ children }: { children: React.ReactNode }) {
+  return (
     <BusinessGate fallback={<PortalSkeleton />}>
-      <PortalShell />
+      <PortalShell>{children}</PortalShell>
     </BusinessGate>
   );
 }
 
-function PortalShell() {
+function PortalShell({ children }: { children: React.ReactNode }) {
   const { t, tx } = useI18n();
   const { business } = useBusiness();
   return (
@@ -33,14 +42,19 @@ function PortalShell() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <BusinessLogo monogram={business.monogram} hue={business.hue} />
-            <div className="min-w-0">
-              <p className="truncate text-[15px] font-semibold tracking-tight">{tx(business.name)}</p>
-            </div>
+            <Link href={`/${business.id}/book`} className="min-w-0 truncate text-[15px] font-semibold tracking-tight">
+              {tx(business.name)}
+            </Link>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <DemoBadge className="hidden md:inline-flex" />
             <LanguageToggle className="hidden sm:inline-flex" />
             <ThemeToggle />
+            <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+              <Link href={`/${business.id}/manage`}>
+                <CalendarSearch /> {t.manage.linkLabel}
+              </Link>
+            </Button>
             <Button asChild variant="secondary" size="sm" className="ms-1">
               <Link href={`/${business.id}/dashboard`}>
                 <LayoutDashboard />
@@ -53,7 +67,7 @@ function PortalShell() {
 
       <BusinessHero />
       <main className="mx-auto max-w-6xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8">
-        <BookingFlow />
+        {children}
       </main>
 
       <footer className="border-t">
@@ -66,8 +80,11 @@ function PortalShell() {
               <Phone className="size-3.5" aria-hidden /> {business.phone}
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <LanguageToggle className="sm:hidden" />
+            <Link href={`/${business.id}/manage`} className="font-medium text-foreground underline-offset-4 hover:underline md:hidden">
+              {t.manage.linkLabel}
+            </Link>
             <Link href="/" className="inline-flex items-center gap-2 transition-colors hover:text-foreground">
               <AutoSynexMark className="size-5" />
               {t.booking.poweredBy}

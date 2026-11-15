@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  CalendarClock,
   CalendarPlus,
   Check,
   CheckCircle2,
@@ -771,6 +772,11 @@ function DoneStep({ booking, service, staff, onRestart }: { booking: Booking; se
         </Button>
         <Button variant="secondary" onClick={onRestart}>
           <RotateCcw /> {t.booking.bookAnother}
+        </Button>
+        <Button asChild variant="secondary" className="sm:col-span-2">
+          <Link href={`/${business.id}/manage?ref=${booking.reference}`}>
+            <CalendarClock /> {t.manage.linkLabel}
+          </Link>
         </Button>
         <Button asChild variant="soft" className="sm:col-span-2">
           <Link href={`/${business.id}/dashboard/appointments?booking=${booking.id}`}>

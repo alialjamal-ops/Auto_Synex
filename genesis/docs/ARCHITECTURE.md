@@ -14,6 +14,7 @@ data layer can be swapped for a NestJS + PostgreSQL backend without redesigning 
 │ listResources · updateResourceAvailability · getAvailability                     │
 │ getAvailabilitySummary · findAlternatives · createBooking · cancelBooking        │
 │ rescheduleBooking · updateBookingStatus · listBookings · getBooking             │
+│ findBookingByReference · setServiceStaff                                        │
 │ listCustomers · listActivity · subscribe · reset                                 │
 └────────┬───────────────────────────────────────────────┬─────────────────────────┘
          ▼                                               ▼
@@ -51,6 +52,10 @@ Framework-free TypeScript, no React and no storage.
 - **`BookingRepository`** is the only data contract the UI uses. Components never import
   seed arrays. Rule failures are returned as values (`{ ok: false, code, alternatives }`),
   mirroring an HTTP 409 response. Invalid state transitions throw `RepositoryError`.
+- **Actors:** `cancelBooking` and `rescheduleBooking` take an optional actor. For
+  `"customer"` the repository also enforces the free-cancellation window and throws
+  `RepositoryError("POLICY_WINDOW")`. Staff are not bound by it. The UI only mirrors this
+  rule; the repository (later, the server) is the authority.
 - **`DemoBookingRepository`** holds one `DemoSnapshot` per industry under
   `autosynex.genesis.v{N}.{industry}` in `localStorage`. It adds simulated latency
   (160 ms) so loading states are real, notifies subscribers after every mutation, and

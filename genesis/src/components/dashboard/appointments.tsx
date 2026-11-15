@@ -35,11 +35,11 @@ export function Appointments() {
   const router = useRouter();
   const [todayKey] = useState(() => toDateKey(repo.now(), business.timezone));
 
-  const [range, setRange] = useState<Range>("upcoming");
+  const [range, setRange] = useState<Range>(() => (params.get("q") ? "all" : "upcoming"));
   const [status, setStatus] = useState<string>(ALL);
   const [staffId, setStaffId] = useState<string>(ALL);
   const [serviceId, setServiceId] = useState<string>(ALL);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => params.get("q") ?? "");
   const [limit, setLimit] = useState(PAGE);
 
   // Deep link from the booking confirmation page: ?booking=<id>

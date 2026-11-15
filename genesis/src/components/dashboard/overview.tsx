@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowDownRight, ArrowUpRight, CalendarCheck2, CalendarClock, CircleDollarSign, Clock, History, XCircle, type LucideIcon } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, CircleCheck, CalendarCheck2, CalendarClock, CircleDollarSign, Clock, History, XCircle, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { BarList, ColumnChart, Donut } from "@/components/charts/charts";
 import { StatusBadge } from "@/components/status-badge";
 import { Avatar } from "@/components/ui/avatar";
@@ -93,6 +94,7 @@ export function Overview() {
       delta: prevRevenue ? (revenue - prevRevenue) / prevRevenue : null,
       trend,
       status: { completed: count("completed"), confirmed: count("confirmed") + count("pending"), cancelled: count("cancelled"), no_show: count("no_show"), total: last30.length },
+      pendingList: upcoming.filter((b) => b.status === "pending").sort((a, b) => Date.parse(a.start) - Date.parse(b.start)).slice(0, 5),
       topServices: [...byService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4),
     };
   }, [bookings.data, now, tz, todayKey, monthKey, prevMonthKey, fmt]);
@@ -213,6 +215,29 @@ export function Overview() {
         <div className="grid content-start gap-4">
           <Card>
             <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {t.overview.pendingTitle}
+                {m && m.pending > 0 ? <span className="rounded-full bg-warning-soft px-2 py-0.5 text-xs font-semibold text-warning-foreground tabular">{m.pending}</span> : null}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-3">
+              {!m || !catalog.ready ? (
+                <Skeleton className="h-16" />
+              ) : m.pendingList.length === 0 ? (
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CircleCheck className="size-4 text-success" /> {t.overview.pendingEmpty}
+                </p>
+              ) : (
+                <ul className="grid gap-2">
+                  {m.pendingList.map((b) => (
+                    <PendingRow key={b.id} booking={b} customer={catalog.customer(b.customerId)?.name ?? ""} service={catalog.service(b.serviceId) ? tx(catalog.service(b.serviceId)!.name) : ""} />
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
               <CardTitle>{t.overview.activityTitle}</CardTitle>
             </CardHeader>
             <CardContent className="pt-3">
@@ -244,6 +269,41 @@ export function Overview() {
         </div>
       </div>
     </div>
+  );
+}
+
+function PendingRow({ booking, customer, service }: { booking: Booking; customer: string; service: string }) {
+  const { t } = useI18n();
+  const { fmt } = useBusiness();
+  const repo = useRepository();
+  const openBooking = useOpenBooking();
+  const [busy, setBusy] = useState(false);
+  return (
+    <li className="flex items-center gap-2 rounded-lg border p-2.5">
+      <button type="button" onClick={() => openBooking(booking.id)} className="min-w-0 flex-1 rounded text-start">
+        <span className="block truncate text-sm font-medium">{customer}</span>
+        <span className="block truncate text-xs text-muted-foreground">
+          {service} · {fmt.dateTime(booking.start)}
+        </span>
+      </button>
+      <Button
+        size="sm"
+        variant="soft"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await repo.updateBookingStatus(booking.id, "confirmed");
+            toast.success(t.details.updated);
+          } catch {
+            toast.error(t.common.errorGeneric);
+            setBusy(false);
+          }
+        }}
+      >
+        <CircleCheck /> {t.details.confirm}
+      </Button>
+    </li>
   );
 }
 

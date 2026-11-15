@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -129,7 +130,7 @@ function serviceSchema(t: Dictionary) {
 type ServiceValues = z.infer<ReturnType<typeof serviceSchema>>;
 
 function ServiceForm({ service, onDone }: { service: Service | null; onDone: () => void }) {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const { business } = useBusiness();
   const repo = useRepository();
   const schema = useMemo(() => serviceSchema(t), [t]);
@@ -151,11 +152,15 @@ function ServiceForm({ service, onDone }: { service: Service | null; onDone: () 
     },
   });
   const capacity = useWatch({ control, name: "capacity" });
+  const catalog = useCatalog();
+  const allStaff = catalog.staff.filter((s) => s.active);
+  const [staffIds, setStaffIds] = useState<string[] | null>(null);
+  const selectedStaff = staffIds ?? allStaff.filter((s) => (service ? s.serviceIds.includes(service.id) : false)).map((s) => s.id);
 
   async function onSubmit(v: ServiceValues) {
     const times = v.fixedTimes.split(",").map((x) => x.trim()).filter(Boolean);
     try {
-      await repo.saveService({
+      const saved = await repo.saveService({
         ...(service ?? {}),
         id: service?.id,
         name: { en: v.nameEn.trim(), ar: v.nameAr.trim() },
@@ -168,6 +173,7 @@ function ServiceForm({ service, onDone }: { service: Service | null; onDone: () 
         fixedStartTimes: times.length ? times : undefined,
         active: v.active,
       });
+      if (staffIds) await repo.setServiceStaff(saved.id, staffIds);
       toast.success(t.services.saved);
       onDone();
     } catch {
@@ -218,6 +224,30 @@ function ServiceForm({ service, onDone }: { service: Service | null; onDone: () 
               <Input id="sv-times" dir="ltr" placeholder="10:00, 17:00" aria-invalid={!!errors.fixedTimes} {...register("fixedTimes")} />
             </Field>
           ) : null}
+          <fieldset className="grid gap-2 sm:col-span-2">
+            <legend className="mb-1.5 text-[13px] font-medium">{t.services.fields.staff}</legend>
+            <div className="flex flex-wrap gap-2">
+              {allStaff.map((s) => {
+                const on = selectedStaff.includes(s.id);
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setStaffIds(on ? selectedStaff.filter((id) => id !== s.id) : [...selectedStaff, s.id])}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-full border py-1 pe-3 ps-1 text-sm transition-colors hover:bg-muted",
+                      on && "border-primary bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft",
+                    )}
+                  >
+                    <Avatar name={s.name.en} hue={s.hue} photo={s.photo} size="sm" />
+                    {tx(s.name)}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">{t.services.fields.staffHint}</p>
+          </fieldset>
           <label className="flex items-center justify-between gap-3 rounded-lg border p-3 sm:col-span-2">
             <span className="text-sm font-medium">{t.services.fields.active}</span>
             <Controller control={control} name="active" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />

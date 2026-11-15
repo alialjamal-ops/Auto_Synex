@@ -57,6 +57,9 @@ export interface CreateBookingInput {
   source: BookingSource;
 }
 
+/** Who is performing a change. Customers are bound by the cancellation policy. */
+export type BookingActor = "staff" | "customer";
+
 export interface RescheduleInput {
   start: string;
   staffId?: string;
@@ -91,6 +94,8 @@ export interface BookingRepository {
 
   listServices(options?: { includeInactive?: boolean }): Promise<Service[]>;
   saveService(input: ServiceInput): Promise<Service>;
+  /** Replaces the set of staff members who deliver a service. */
+  setServiceStaff(serviceId: string, staffIds: string[]): Promise<Resource[]>;
 
   listResources(options?: { kind?: ResourceKind; includeInactive?: boolean }): Promise<Resource[]>;
   updateResourceAvailability(id: string, weeklyHours: WeeklyHours, active?: boolean): Promise<Resource>;
@@ -104,8 +109,11 @@ export interface BookingRepository {
   findAlternatives(query: Omit<SlotQuery, "dateKey">, desiredStart: string): Promise<Alternative[]>;
 
   createBooking(input: CreateBookingInput): Promise<BookingResult>;
-  cancelBooking(id: string, reason?: string): Promise<Booking>;
-  rescheduleBooking(id: string, input: RescheduleInput): Promise<BookingResult>;
+  /** `actor: "customer"` additionally enforces the free-cancellation window. */
+  cancelBooking(id: string, reason?: string, actor?: BookingActor): Promise<Booking>;
+  rescheduleBooking(id: string, input: RescheduleInput, actor?: BookingActor): Promise<BookingResult>;
+  /** Customer self-service lookup: the reference must match AND the contact (phone or e-mail) must belong to the booking's customer. */
+  findBookingByReference(reference: string, contact: string): Promise<Booking | null>;
   updateBookingStatus(id: string, status: Extract<BookingStatus, "confirmed" | "completed" | "no_show">): Promise<Booking>;
   listBookings(filter?: BookingFilter): Promise<Booking[]>;
   getBooking(id: string): Promise<Booking | null>;
@@ -123,7 +131,7 @@ export interface BookingRepository {
 
 export class RepositoryError extends Error {
   constructor(
-    public readonly code: "NOT_FOUND" | "INVALID_STATE" | "VALIDATION",
+    public readonly code: "NOT_FOUND" | "INVALID_STATE" | "VALIDATION" | "POLICY_WINDOW",
     message: string,
   ) {
     super(message);

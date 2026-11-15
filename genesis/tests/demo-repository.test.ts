@@ -156,3 +156,50 @@ describe("DemoBookingRepository", () => {
     expect(calls).toBe(1);
   });
 });
+
+describe("customer self-service & staff assignment", () => {
+  it("finds a booking only with the matching reference and contact", async () => {
+    const r = repo("clinic");
+    const slot = await firstOpenSlot(r, "gp");
+    const res = await r.createBooking({ serviceId: "gp", start: slot.start, customer, source: "online" });
+    if (!res.ok) throw new Error("expected ok");
+    const ref = res.booking.reference;
+    expect((await r.findBookingByReference(ref.toLowerCase(), "+971500000000"))?.id).toBe(res.booking.id);
+    expect((await r.findBookingByReference(ref, "TEST.person@example.com"))?.id).toBe(res.booking.id);
+    expect(await r.findBookingByReference(ref, "+971 50 123 9999")).toBeNull();
+    expect(await r.findBookingByReference("GN-NOPE00", customer.email)).toBeNull();
+    expect(await r.findBookingByReference(ref, "")).toBeNull();
+  });
+
+  it("enforces the cancellation window for customers but not for staff", async () => {
+    const r = repo("clinic"); // window: 12 hours, notice: 1 hour
+    const biz = await r.getBusiness();
+    const { toDateKey } = await import("@/domain/time");
+    const today = await r.getAvailability({ serviceId: "follow-up", dateKey: toDateKey(NOW, biz.timezone) });
+    const soon = today.slots.find((s) => s.available);
+    if (!soon) throw new Error("no same-day slot");
+    const res = await r.createBooking({ serviceId: "follow-up", start: soon.start, customer, source: "online" });
+    if (!res.ok) throw new Error("expected ok");
+    await expect(r.cancelBooking(res.booking.id, undefined, "customer")).rejects.toMatchObject({ code: "POLICY_WINDOW" });
+    await expect(r.rescheduleBooking(res.booking.id, { start: soon.start }, "customer")).rejects.toMatchObject({ code: "POLICY_WINDOW" });
+    expect((await r.cancelBooking(res.booking.id, "Front desk")).status).toBe("cancelled");
+
+    const later = await firstOpenSlot(r, "follow-up"); // tomorrow or later → outside the window
+    const res2 = await r.createBooking({ serviceId: "follow-up", start: later.start, customer, source: "online" });
+    if (!res2.ok) throw new Error("expected ok");
+    if (Date.parse(later.start) - NOW.getTime() > 12 * 3_600_000) {
+      expect((await r.cancelBooking(res2.booking.id, undefined, "customer")).status).toBe("cancelled");
+    }
+  });
+
+  it("reassigning staff changes who can be booked", async () => {
+    const r = repo("salon");
+    await r.setServiceStaff("hydrafacial", ["rania"]);
+    const staff = await r.listResources({ kind: "staff" });
+    expect(staff.filter((s) => s.serviceIds.includes("hydrafacial")).map((s) => s.id)).toEqual(["rania"]);
+    const slot = await firstOpenSlot(r, "hydrafacial");
+    expect(slot.staffIds).toEqual(["rania"]);
+    const none = await r.getAvailability({ serviceId: "hydrafacial", staffId: "joanna", dateKey: slot.start.slice(0, 10) });
+    expect(none.closedReason).toBe("no_staff");
+  });
+});

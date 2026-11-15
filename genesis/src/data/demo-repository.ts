@@ -20,6 +20,7 @@ import type { ActivityEntry, Booking, BookingStatus, Customer, DemoSnapshot, Ind
 import { BLOCKING_STATUSES } from "@/domain/types";
 import {
   RepositoryError,
+  type BookingActor,
   type BookingFilter,
   type BookingRepository,
   type BookingResult,
@@ -298,11 +299,48 @@ export class DemoBookingRepository implements BookingRepository {
     return this.delay({ ok: true, booking: clone(booking) });
   }
 
-  async cancelBooking(id: string, reason?: string) {
+  /** Customers may only change a booking before the free-cancellation window closes. */
+  private assertCustomerWindow(b: Booking, actor: BookingActor) {
+    if (actor !== "customer") return;
+    const hours = this.load().business.rules.cancellationWindowHours;
+    if (Date.parse(b.start) - this.now().getTime() < hours * 3_600_000) {
+      throw new RepositoryError("POLICY_WINDOW", `Changes are only possible up to ${hours} hours before the booking`);
+    }
+  }
+
+  async findBookingByReference(reference: string, contact: string) {
+    const s = this.load();
+    const ref = reference.trim().toUpperCase();
+    const b = s.bookings.find((x) => x.reference.toUpperCase() === ref);
+    const c = b && s.customers.find((x) => x.id === b.customerId);
+    const phone = normalisePhone(contact);
+    const email = normaliseEmail(contact);
+    const matches = !!c && ((phone.length >= 7 && normalisePhone(c.phone) === phone) || (email.includes("@") && normaliseEmail(c.email) === email));
+    return this.delay(b && matches ? clone(b) : null);
+  }
+
+  async setServiceStaff(serviceId: string, staffIds: string[]) {
+    const s = this.load();
+    const service = s.services.find((x) => x.id === serviceId);
+    if (!service) throw new RepositoryError("NOT_FOUND", `Service ${serviceId} not found`);
+    for (const r of s.resources) {
+      if (r.kind !== "staff") continue;
+      const has = r.serviceIds.includes(serviceId);
+      const want = staffIds.includes(r.id);
+      if (want && !has) r.serviceIds.push(serviceId);
+      if (!want && has) r.serviceIds = r.serviceIds.filter((id) => id !== serviceId);
+    }
+    this.log("service_saved", { service: service.name.en, serviceAr: service.name.ar });
+    this.commit();
+    return this.delay(clone(s.resources.filter((r) => r.kind === "staff")));
+  }
+
+  async cancelBooking(id: string, reason?: string, actor: BookingActor = "staff") {
     const b = this.findBooking(id);
     if (!["pending", "confirmed"].includes(b.status)) {
       throw new RepositoryError("INVALID_STATE", `Cannot cancel a ${b.status} booking`);
     }
+    this.assertCustomerWindow(b, actor);
     b.status = "cancelled";
     b.cancelReason = reason?.trim() || undefined;
     b.history.push({ at: this.now().toISOString(), type: "cancelled", note: b.cancelReason });
@@ -311,11 +349,12 @@ export class DemoBookingRepository implements BookingRepository {
     return this.delay(clone(b));
   }
 
-  async rescheduleBooking(id: string, input: RescheduleInput): Promise<BookingResult> {
+  async rescheduleBooking(id: string, input: RescheduleInput, actor: BookingActor = "staff"): Promise<BookingResult> {
     const b = this.findBooking(id);
     if (!["pending", "confirmed"].includes(b.status)) {
       throw new RepositoryError("INVALID_STATE", `Cannot reschedule a ${b.status} booking`);
     }
+    this.assertCustomerWindow(b, actor);
     const ctx = this.ctx();
     const query = { serviceId: b.serviceId, staffId: input.staffId, seats: b.seats, excludeBookingId: b.id };
     const result = validateBooking(ctx, { ...query, start: input.start, customerId: b.customerId });

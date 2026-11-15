@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   Menu,
   Plus,
+  Search,
   Settings2,
   Sparkles,
   UserRound,
@@ -29,6 +30,7 @@ import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/utils";
 import { Dialog as RadixDialog } from "radix-ui";
 import { BookingDetailsProvider } from "./booking-details";
+import { CommandPalette } from "./command-palette";
 import { CreateBookingDialog } from "./create-booking-dialog";
 
 interface NavItem {
@@ -133,6 +135,8 @@ function Shell({ children }: { children: ReactNode }) {
   const { business } = useBusiness();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [newBooking, setNewBooking] = useState<{ open: boolean; prefill?: { dateKey?: string; staffId?: string } }>({ open: false });
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const nav = useNav();
 
   return (
     <NewBookingContext.Provider value={(prefill) => setNewBooking({ open: true, prefill })}>
@@ -187,12 +191,24 @@ function Shell({ children }: { children: ReactNode }) {
               <span className="truncate text-sm font-semibold">{tx(business.name)}</span>
             </div>
             <DemoBadge className="hidden lg:inline-flex" />
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="ms-2 hidden h-9 w-64 items-center gap-2 rounded-lg border bg-card px-3 text-sm text-muted-foreground shadow-xs transition-colors hover:bg-muted lg:flex"
+            >
+              <Search className="size-4" aria-hidden />
+              <span className="flex-1 text-start">{t.palette.trigger}</span>
+              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-sans text-[10px] font-medium" dir="ltr">⌘K</kbd>
+            </button>
 
             <div className="ms-auto flex items-center gap-1">
               <div className="hidden items-center gap-1 md:flex">
                 <ResetDemoButton />
                 <LanguageToggle />
               </div>
+              <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={() => setPaletteOpen(true)} aria-label={t.palette.trigger}>
+                <Search />
+              </Button>
               <ThemeToggle />
               <Button size="sm" className="ms-1" onClick={() => setNewBooking({ open: true })}>
                 <Plus />
@@ -220,6 +236,7 @@ function Shell({ children }: { children: ReactNode }) {
           <CreateBookingDialog prefill={newBooking.prefill} onDone={() => setNewBooking({ open: false })} />
         ) : null}
       </Dialog>
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} nav={[...nav.manage, ...nav.configure]} onNewBooking={() => setNewBooking({ open: true })} />
       </BookingDetailsProvider>
     </NewBookingContext.Provider>
   );
