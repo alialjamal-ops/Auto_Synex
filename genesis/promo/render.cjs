@@ -27,8 +27,9 @@ const path = require("node:path");
   const audio = process.env.PROMO_AUDIO;
   const args = ["-y", "-f", "image2pipe", "-framerate", String(FPS), "-i", "-"];
   if (audio) args.push("-i", audio);
-  args.push("-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p", "-movflags", "+faststart");
-  if (audio) args.push("-c:a", "aac", "-b:a", "192k", "-shortest");
+  // High profile, Level 4.0: plays on phones, browsers and social platforms (Level 5.x is often rejected).
+  args.push("-c:v", "libx264", "-profile:v", "high", "-level:v", "4.0", "-refs", "3", "-bf", "2", "-g", "60", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p", "-movflags", "+faststart");
+  if (audio) args.push("-c:a", "aac", "-ar", "44100", "-b:a", "160k", "-shortest");
   args.push(out);
   const ff = spawn("ffmpeg", args, { stdio: ["pipe", "ignore", "inherit"] });
   const total = Math.round(duration * FPS);
