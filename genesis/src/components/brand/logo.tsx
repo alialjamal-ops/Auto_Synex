@@ -1,26 +1,20 @@
+import Image from "next/image";
 import { cn, hueStyle } from "@/lib/utils";
 
-/** Auto Synex product mark. */
+/** Auto Synex brand mark (graphite "A" on light surfaces, silver on dark). */
 export function AutoSynexMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" aria-hidden className={cn("size-8", className)}>
-      <defs>
-        <linearGradient id="as-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="oklch(0.62 0.19 255)" />
-          <stop offset="1" stopColor="oklch(0.47 0.22 266)" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="8" fill="url(#as-g)" />
-      <path d="M8.5 23 14.2 9h3.6l5.7 14h-3.7l-1.2-3.1h-5.2L12.2 23H8.5Zm5.9-6h3.2L16 12.8 14.4 17Z" fill="white" />
-      <path d="M20.2 9h3.3v3.2h-3.3z" fill="white" opacity=".55" />
-    </svg>
+    <span aria-hidden className={cn("inline-flex h-8 shrink-0 items-center", className)}>
+      <Image src="/brand/mark.png" alt="" width={550} height={382} className="h-full w-auto dark:hidden" />
+      <Image src="/brand/mark-dark.png" alt="" width={550} height={382} className="hidden h-full w-auto dark:block" />
+    </span>
   );
 }
 
 export function AutoSynexLogo({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)} dir="ltr">
-      <AutoSynexMark />
+      <AutoSynexMark className="h-9" />
       {!compact && (
         <span className="grid leading-none">
           <span className="text-[15px] font-semibold tracking-tight">Auto Synex</span>

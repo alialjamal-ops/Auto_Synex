@@ -86,7 +86,7 @@ function PortalShell({ children }: { children: React.ReactNode }) {
               {t.manage.linkLabel}
             </Link>
             <Link href="/" className="inline-flex items-center gap-2 transition-colors hover:text-foreground">
-              <AutoSynexMark className="size-5" />
+              <AutoSynexMark className="h-5" />
               {t.booking.poweredBy}
             </Link>
           </div>
