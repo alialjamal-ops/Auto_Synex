@@ -1,0 +1,4 @@
+# Not needed in the Vercel build
+promo
+tests
+docs

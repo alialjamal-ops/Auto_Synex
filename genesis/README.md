@@ -18,6 +18,10 @@ public booking portal and business dashboard.
 | ![Dashboard overview](docs/screenshots/03-dashboard-overview.png) | ![Week calendar](docs/screenshots/04-calendar-week.png) |
 | ![Arabic dashboard, dark mode](docs/screenshots/05-dashboard-arabic-dark.png) | ![Mobile booking in Arabic](docs/screenshots/06-mobile-booking-arabic.png) |
 
+## Live demo
+
+https://auto-synex-genesis.vercel.app (Vercel project `auto-synex-genesis`, root directory `genesis`).
+
 ## Quick start
 
 ```bash
