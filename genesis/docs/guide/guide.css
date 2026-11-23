@@ -111,7 +111,7 @@ h2 { font-size: 76px; font-weight: 700; color: var(--navy); line-height: 1.2; }
 .endbrand i { color: var(--blue); }
 .foot { position: absolute; bottom: 44px; left: 130px; right: 130px; display: flex; justify-content: space-between; font-size: 22px; color: #9aa3b5; }
 #progress { position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: #edf1f8; }
-#progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--sky), var(--blue)); margin-inline-start: auto; }
+#progress i { display: block; height: 100%; width: 0; background: linear-gradient(270deg, var(--sky), var(--blue)); }
 /* fit tweaks */
 .slide[data-i="1"] .sub { margin-bottom: 40px; }
 .slide[data-i="1"] .card { padding: 30px 34px; }
